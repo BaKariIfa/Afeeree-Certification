@@ -8,6 +8,7 @@ import { ArrowRight, User, Mail } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
+import * as SplashScreen from 'expo-splash-screen';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -30,6 +31,12 @@ export default function OnboardingScreen() {
     DMSans_500Medium,
     DMSans_600SemiBold,
   });
+
+  React.useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
     return null;

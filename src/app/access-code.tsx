@@ -8,6 +8,7 @@ import { Key, ShieldCheck, AlertCircle, CreditCard } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp, useSharedValue, useAnimatedStyle, withSequence, withTiming } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
+import * as SplashScreen from 'expo-splash-screen';
 import * as Haptics from 'expo-haptics';
 
 import { colors } from '@/lib/theme';
@@ -46,6 +47,12 @@ export default function AccessCodeScreen() {
     DMSans_500Medium,
     DMSans_600SemiBold,
   });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
     return null;

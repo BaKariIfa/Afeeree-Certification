@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -9,7 +10,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  initialRouteName: 'start',
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -21,6 +22,7 @@ function RootLayoutNav({ colorScheme }: { colorScheme: 'light' | 'dark' | null |
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
+        <Stack.Screen name="start" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="access-code" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
@@ -38,6 +40,14 @@ function RootLayoutNav({ colorScheme }: { colorScheme: 'light' | 'dark' | null |
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  // Ensure we never get stuck behind the native splash on routes
+  // that load fonts asynchronously (e.g. access-code, onboarding).
+  useEffect(() => {
+    SplashScreen.hideAsync().catch(() => {
+      // no-op: can throw if called too early or already hidden
+    });
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
