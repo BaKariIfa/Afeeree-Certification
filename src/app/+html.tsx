@@ -15,6 +15,12 @@ export default function Root({ children }: { children: React.ReactNode }) {
         {/* Favicon and app icon */}
         <link rel="icon" type="image/png" href="/image-1769399524.png" />
         <link rel="apple-touch-icon" href="/image-1769399524.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/image-1769399524.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/image-1769399524.png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/image-1769399524.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="AFeeree" />
         <title>AFeeree - The Physical Language</title>
         <meta name="description" content="AFeeree Introduction to Certification - Experience the physicality of Africanist movement" />
 
