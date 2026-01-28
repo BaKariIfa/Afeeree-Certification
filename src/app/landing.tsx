@@ -1,6 +1,2 @@
-import { Redirect } from 'expo-router';
-
-// On mobile, redirect to the main app flow
-export default function LandingPage() {
-  return <Redirect href="/(tabs)/" />;
-}
+// Use the same landing experience on native and web.
+export { default } from './landing.web';

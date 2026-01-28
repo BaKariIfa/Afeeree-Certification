@@ -29,7 +29,7 @@ export default function StartScreen() {
       didNavigateRef.current = true;
 
       if (!hasAccess) {
-        router.replace('/access-code');
+        router.replace('/landing');
         return;
       }
 
