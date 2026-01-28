@@ -12,8 +12,14 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-        {/* 
-          Disable body scrolling on web. This makes ScrollView components work closer to how they do on native. 
+        {/* Favicon and app icon */}
+        <link rel="icon" type="image/png" href="/image-1769399524.png" />
+        <link rel="apple-touch-icon" href="/image-1769399524.png" />
+        <title>AFeeree - The Physical Language</title>
+        <meta name="description" content="AFeeree Introduction to Certification - Experience the physicality of Africanist movement" />
+
+        {/*
+          Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.
           However, body scrolling is often nice to have for mobile web. If you want to enable it, remove this line.
         */}
         <ScrollViewStyleReset />
