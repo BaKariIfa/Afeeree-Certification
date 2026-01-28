@@ -71,7 +71,9 @@ export default function SyllabusScreen() {
 
   const handleModulePress = (module: Module) => {
     triggerHaptic();
-    router.push(`/module/${module.id}` as any);
+    if (module.pdfLink) {
+      Linking.openURL(module.pdfLink);
+    }
   };
 
   const handleCategoryPress = (category: string) => {
