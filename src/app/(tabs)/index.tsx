@@ -132,13 +132,13 @@ export default function HomeScreen() {
               className="items-center mt-2"
             >
               <Image
-                source={require('../../../public/image-1769613702.png')}
-                style={{ width: 220, height: 110 }}
-                contentFit="contain"
+                source={require('../../../public/image-1769650557.png')}
+                style={{ width: 140, height: 140, borderRadius: 24 }}
+                contentFit="cover"
               />
               <Text
                 style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.8)' }}
-                className="text-sm mt-2 text-center"
+                className="text-sm mt-3 text-center"
               >
                 The Physical Language
               </Text>
