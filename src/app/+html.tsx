@@ -14,6 +14,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
 
         {/* Favicon and app icon */}
         <link rel="icon" type="image/png" href="/image-1769399524.png" />
+        <link rel="apple-touch-icon" href="/afeeree-icon.png" />
         <link rel="apple-touch-icon" href="/image-1769399524.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/image-1769399524.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/image-1769399524.png" />

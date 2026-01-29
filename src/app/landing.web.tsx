@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -21,19 +21,6 @@ import { colors } from '@/lib/theme';
 
 export default function LandingPage() {
   const router = useRouter();
-
-  // Add apple-touch-icon to head on web
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      const existingLink = document.querySelector('link[rel="apple-touch-icon"]');
-      if (!existingLink) {
-        const link = document.createElement('link');
-        link.rel = 'apple-touch-icon';
-        link.href = '/afeeree-icon.png';
-        document.head.appendChild(link);
-      }
-    }
-  }, []);
 
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
