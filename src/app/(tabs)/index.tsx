@@ -132,19 +132,13 @@ export default function HomeScreen() {
               className="items-center mt-2"
             >
               <Image
-                source={require('../../../public/image-1769399524.png')}
-                style={{ width: 100, height: 100, borderRadius: 50 }}
-                contentFit="cover"
+                source={require('../../../public/image-1769613702.png')}
+                style={{ width: 220, height: 110 }}
+                contentFit="contain"
               />
               <Text
-                style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.gold[300] }}
-                className="text-lg mt-3 text-center"
-              >
-                AFeeree Certification Program
-              </Text>
-              <Text
                 style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.8)' }}
-                className="text-sm mt-1 text-center"
+                className="text-sm mt-2 text-center"
               >
                 The Physical Language
               </Text>
