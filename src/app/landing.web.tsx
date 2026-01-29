@@ -3,7 +3,6 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import Head from 'expo-router/head';
 import {
   BookOpen,
   Award,
@@ -22,6 +21,19 @@ import { colors } from '@/lib/theme';
 
 export default function LandingPage() {
   const router = useRouter();
+
+  // Add apple-touch-icon to head on web
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const existingLink = document.querySelector('link[rel="apple-touch-icon"]');
+      if (!existingLink) {
+        const link = document.createElement('link');
+        link.rel = 'apple-touch-icon';
+        link.href = '/afeeree-icon.png';
+        document.head.appendChild(link);
+      }
+    }
+  }, []);
 
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
@@ -63,9 +75,6 @@ export default function LandingPage() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.cream[100] }}>
-      <Head>
-        <link rel="apple-touch-icon" href="/afeeree-icon.png" />
-      </Head>
       {/* Hero Section */}
       <LinearGradient
         colors={[colors.primary[600], colors.primary[500]]}
