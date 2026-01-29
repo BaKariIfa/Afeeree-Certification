@@ -3,6 +3,7 @@ import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import Head from 'expo-router/head';
 import {
   BookOpen,
   Award,
@@ -62,6 +63,9 @@ export default function LandingPage() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+      <Head>
+        <link rel="apple-touch-icon" href="/afeeree-icon.png" />
+      </Head>
       {/* Hero Section */}
       <LinearGradient
         colors={[colors.primary[600], colors.primary[500]]}
