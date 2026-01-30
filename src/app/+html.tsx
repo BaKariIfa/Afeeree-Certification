@@ -12,9 +12,8 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-        {/* Favicon and app icon */}
+        {/* Favicon and app icon - Afeeree circular logo */}
         <link rel="icon" type="image/png" href="/image-1769399524.png" />
-        <link rel="apple-touch-icon" href="/afeeree-icon.png" />
         <link rel="apple-touch-icon" href="/image-1769399524.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/image-1769399524.png" />
         <link rel="apple-touch-icon" sizes="152x152" href="/image-1769399524.png" />

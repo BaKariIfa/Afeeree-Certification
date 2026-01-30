@@ -126,14 +126,14 @@ export default function HomeScreen() {
               </Pressable>
             </Animated.View>
 
-            {/* Logo */}
+            {/* Logo - Afeeree app icon */}
             <Animated.View
               entering={FadeInDown.duration(600).delay(100)}
               className="items-center mt-2"
             >
               <Image
-                source={require('../../../public/image-1769650557.png')}
-                style={{ width: 140, height: 140, borderRadius: 24 }}
+                source={require('../../../public/image-1769399524.png')}
+                style={{ width: 140, height: 140, borderRadius: 70 }}
                 contentFit="cover"
               />
               <Text
