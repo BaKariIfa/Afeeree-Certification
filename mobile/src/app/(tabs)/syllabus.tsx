@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, Linking, RefreshControl } from 'reac
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BookOpen, Clock, ChevronRight, Play, FileText, ArrowLeft, Video, Timer, BookOpenText } from 'lucide-react-native';
+import { BookOpen, Clock, ChevronRight, Play, FileText, ArrowLeft, Video, Timer, BookOpenText, Lock } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
@@ -15,6 +15,7 @@ import { useUserStore } from '@/lib/userStore';
 import type { Module } from '@/lib/types';
 import PracticeTimer from '@/components/PracticeTimer';
 import MandinkaTerms from '@/components/MandinkaTerms';
+import DemoBanner from '@/components/DemoBanner';
 
 const triggerHaptic = () => {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -31,6 +32,7 @@ export default function SyllabusScreen() {
   const [showTerms, setShowTerms] = useState(false);
 
   const completedLessons = useUserStore(s => s.completedLessons);
+  const isDemoMode = useUserStore(s => s.isDemoMode);
 
   const onRefresh = useCallback(() => {
     triggerHaptic();
@@ -90,6 +92,7 @@ export default function SyllabusScreen() {
     <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
       <PracticeTimer visible={showTimer} onClose={() => setShowTimer(false)} />
       <MandinkaTerms visible={showTerms} onClose={() => setShowTerms(false)} />
+      <DemoBanner />
 
       <ScrollView
         className="flex-1"
@@ -294,7 +297,9 @@ export default function SyllabusScreen() {
 
         {/* Modules List */}
         <View className="px-6 mt-6">
-          {filteredModules.map((module, index) => (
+          {filteredModules.map((module, index) => {
+            const isLocked = isDemoMode && index >= 2;
+            return (
             <Animated.View
               key={module.id}
               entering={FadeInUp.duration(500).delay(200 + index * 100)}
@@ -308,9 +313,40 @@ export default function SyllabusScreen() {
                   shadowOpacity: 0.08,
                   shadowRadius: 12,
                   elevation: 3,
+                  opacity: isLocked ? 0.6 : 1,
                 }}
-                onPress={() => handleModulePress(module)}
+                onPress={() => isLocked ? null : handleModulePress(module)}
               >
+                {isLocked && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 0, left: 0, right: 0, bottom: 0,
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      zIndex: 10,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <View
+                      style={{
+                        backgroundColor: colors.primary[600],
+                        borderRadius: 20,
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Lock size={14} color="white" />
+                      <Text
+                        style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 12, marginLeft: 6 }}
+                      >
+                        Full Program Only
+                      </Text>
+                    </View>
+                  </View>
+                )}
                 <View className="flex-row">
                   {/* Module Image */}
                   <View className="relative">
@@ -422,7 +458,8 @@ export default function SyllabusScreen() {
                 </View>
               </Pressable>
             </Animated.View>
-          ))}
+            );
+          })}
         </View>
 
         {/* Info Card */}

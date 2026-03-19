@@ -2,7 +2,28 @@
 
 A mobile app for dancers and teachers participating in the AFeeree Dance Certification Program. This app supports in-class sessions, allows participants to submit assignments, and track their certification progress.
 
-## Access Control
+## Preview Mode (Free Testing)
+
+A limited Preview Mode allows people to evaluate the app without an access code or payment.
+
+### How it works:
+1. On the access code screen, tap **"Preview App"**
+2. They enter the app immediately with limited access
+3. A **"Preview Mode — Limited access"** banner appears at the top of every screen
+4. Tapping **"Exit Preview"** returns them to the access code screen
+
+### What preview users can see:
+- Full Home dashboard
+- First **2 modules** of the Syllabus (rest are locked with "Full Program Only")
+- Assignments list (submission is disabled — button shows "Enroll to Submit")
+- Profile screen
+
+### What is locked:
+- Modules 3 and beyond in the Syllabus
+- Submitting assignments
+- Full program progress tracking
+
+
 
 This app uses an **access code system** instead of app store payments. Users must enter a valid access code to use the app.
 

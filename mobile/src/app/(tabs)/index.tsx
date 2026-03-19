@@ -14,6 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '@/lib/theme';
 import { mockModules, mockAssignments, mockNotifications } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
+import DemoBanner from '@/components/DemoBanner';
 
 // Helper function for haptic feedback on button press
 const triggerHaptic = () => {
@@ -81,6 +82,7 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
+      <DemoBanner />
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}

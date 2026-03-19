@@ -25,6 +25,9 @@ export default function AccessCodeScreen() {
   const inputRef = useRef<TextInput>(null);
 
   const setAccess = useUserStore(s => s.setAccess);
+  const setDemoMode = useUserStore(s => s.setDemoMode);
+  const setOnboarded = useUserStore(s => s.setOnboarded);
+  const setUser = useUserStore(s => s.setUser);
   const isCodeValid = useAccessCodeStore(s => s.isCodeValid);
   const markCodeUsed = useAccessCodeStore(s => s.markCodeUsed);
   const loadCodes = useAccessCodeStore(s => s.loadCodes);
@@ -94,6 +97,15 @@ export default function AccessCodeScreen() {
       triggerShake();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
+  };
+
+  const handlePreview = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setDemoMode(true);
+    setAccess(true, 'DEMO');
+    setUser('Preview User', '');
+    setOnboarded(true);
+    router.replace('/(tabs)');
   };
 
   return (
@@ -260,6 +272,27 @@ export default function AccessCodeScreen() {
                       Enroll Now — $600
                     </Text>
                   </Pressable>
+                </View>
+
+                <View className="mt-4">
+                  <Pressable
+                    onPress={handlePreview}
+                    className="py-3 rounded-xl flex-row items-center justify-center"
+                    style={{ backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.primary[300] }}
+                  >
+                    <Text
+                      style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600] }}
+                      className="text-sm"
+                    >
+                      Preview App
+                    </Text>
+                  </Pressable>
+                  <Text
+                    style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400] }}
+                    className="text-xs text-center mt-2"
+                  >
+                    Explore a limited preview without enrolling
+                  </Text>
                 </View>
               </Animated.View>
             </Animated.View>

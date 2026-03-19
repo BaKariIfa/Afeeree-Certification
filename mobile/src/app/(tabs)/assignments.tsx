@@ -25,6 +25,8 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '@/lib/theme';
 import { mockAssignments } from '@/lib/mockData';
 import type { Assignment } from '@/lib/types';
+import DemoBanner from '@/components/DemoBanner';
+import { useUserStore } from '@/lib/userStore';
 
 const triggerHaptic = () => {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -39,6 +41,8 @@ export default function AssignmentsScreen() {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const isDemoMode = useUserStore(s => s.isDemoMode);
 
   const onRefresh = useCallback(() => {
     triggerHaptic();
@@ -114,6 +118,7 @@ export default function AssignmentsScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
+      <DemoBanner />
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -397,16 +402,16 @@ export default function AssignmentsScreen() {
             {selectedAssignment.status === 'pending' && (
               <View className="px-6 pb-8 pt-4" style={{ backgroundColor: colors.cream[100] }}>
                 <Pressable
-                  onPress={handleSubmitPress}
+                  onPress={isDemoMode ? undefined : handleSubmitPress}
                   className="py-4 rounded-xl flex-row items-center justify-center"
-                  style={{ backgroundColor: colors.primary[500] }}
+                  style={{ backgroundColor: isDemoMode ? colors.neutral[300] : colors.primary[500] }}
                 >
                   <Upload size={20} color="white" />
                   <Text
                     style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }}
                     className="text-base ml-2"
                   >
-                    Submit Assignment
+                    {isDemoMode ? 'Enroll to Submit' : 'Submit Assignment'}
                   </Text>
                 </Pressable>
               </View>

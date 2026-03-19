@@ -6,8 +6,9 @@ interface UserState {
   email: string;
   enrollmentDate: string;
   isOnboarded: boolean;
-  hasAccess: boolean; // NEW: tracks if user has valid access
-  accessCode: string; // NEW: the code they used
+  hasAccess: boolean;
+  accessCode: string;
+  isDemoMode: boolean;
   completedLessons: string[];
   moduleProgress: Record<string, number>;
   notes: Record<string, string>;
@@ -17,13 +18,14 @@ interface UserState {
   // Actions
   setUser: (name: string, email: string) => void;
   setOnboarded: (value: boolean) => void;
-  setAccess: (hasAccess: boolean, code: string) => void; // NEW
+  setAccess: (hasAccess: boolean, code: string) => void;
+  setDemoMode: (value: boolean) => void;
   markLessonComplete: (moduleId: string, lessonIndex: number) => void;
   saveNote: (moduleId: string, note: string) => void;
   addPracticeTime: (seconds: number) => void;
   toggleDarkMode: () => void;
   loadUserData: () => Promise<void>;
-  logout: () => Promise<void>; // NEW: allows user to logout
+  logout: () => Promise<void>;
 }
 
 export const useUserStore = create<UserState>((set, get) => ({
@@ -33,6 +35,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   isOnboarded: false,
   hasAccess: false,
   accessCode: '',
+  isDemoMode: false,
   completedLessons: [],
   moduleProgress: {},
   notes: {},
@@ -54,6 +57,10 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ hasAccess, accessCode: code });
     AsyncStorage.setItem('hasAccess', hasAccess ? 'true' : 'false');
     AsyncStorage.setItem('accessCode', code);
+  },
+
+  setDemoMode: (value) => {
+    set({ isDemoMode: value });
   },
 
   logout: async () => {
