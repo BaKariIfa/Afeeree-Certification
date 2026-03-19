@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Linking, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -16,9 +16,14 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
 
 import { colors } from '@/lib/theme';
 import { resourceLinks, videoLinks, mandinkaTerms, foundationalPrinciples } from '@/lib/mockData';
+import { useNotationStore } from '@/lib/notationStore';
+import VideoModal from '@/components/VideoModal';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
 const triggerHaptic = () => {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -28,6 +33,12 @@ export default function ResourcesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [videoModal, setVideoModal] = useState<{ vimeoId: string; title: string; subtitle: string } | null>(null);
+
+  const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
+  const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
+
+  React.useEffect(() => { loadNotationPdfUrl(); }, []);
 
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
@@ -42,9 +53,26 @@ export default function ResourcesScreen() {
     setTimeout(() => setRefreshing(false), 1500);
   };
 
-  const openLink = (url: string) => {
+  const openPdf = (fallbackUrl: string) => {
     triggerHaptic();
-    Linking.openURL(url);
+    const pdfUrl = notationPdfUrl ?? fallbackUrl;
+    const viewerUrl = `${BACKEND_URL}/api/notation/view?url=${encodeURIComponent(pdfUrl)}`;
+    WebBrowser.openBrowserAsync(viewerUrl, {
+      presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+    });
+  };
+
+  const openRawPdf = (url: string) => {
+    triggerHaptic();
+    const viewerUrl = `${BACKEND_URL}/api/notation/view?url=${encodeURIComponent(url)}`;
+    WebBrowser.openBrowserAsync(viewerUrl, {
+      presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+    });
+  };
+
+  const openVideo = (vimeoId: string, title: string, subtitle: string) => {
+    triggerHaptic();
+    setVideoModal({ vimeoId, title, subtitle });
   };
 
   if (!fontsLoaded) {
@@ -53,6 +81,14 @@ export default function ResourcesScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
+      <VideoModal
+        visible={videoModal !== null}
+        onClose={() => setVideoModal(null)}
+        vimeoId={videoModal?.vimeoId ?? ''}
+        title={videoModal?.title ?? ''}
+        subtitle={videoModal?.subtitle}
+      />
+
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -104,7 +140,7 @@ export default function ResourcesScreen() {
             Cultural Research
           </Text>
           <Pressable
-            onPress={() => openLink(resourceLinks.culturalResearch)}
+            onPress={() => openRawPdf(resourceLinks.culturalResearch)}
             className="p-4 rounded-2xl flex-row items-center"
             style={{
               backgroundColor: 'white',
@@ -145,7 +181,7 @@ export default function ResourcesScreen() {
             Video: Key Principles
           </Text>
           <Pressable
-            onPress={() => openLink(videoLinks.keyPrinciples)}
+            onPress={() => openVideo(videoLinks.keyPrinciples, 'Seven Foundational Principles', 'Key movement principles')}
             className="p-4 rounded-2xl flex-row items-center"
             style={{
               backgroundColor: colors.primary[500],
@@ -290,7 +326,7 @@ export default function ResourcesScreen() {
           </Text>
 
           <Pressable
-            onPress={() => openLink(resourceLinks.notationImages)}
+            onPress={() => openRawPdf(resourceLinks.notationImages)}
             className="p-4 rounded-2xl flex-row items-center mb-3"
             style={{
               backgroundColor: 'white',
@@ -322,7 +358,7 @@ export default function ResourcesScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => openLink(resourceLinks.syllabus)}
+            onPress={() => openPdf(resourceLinks.syllabus)}
             className="p-4 rounded-2xl flex-row items-center"
             style={{
               backgroundColor: 'white',
@@ -347,7 +383,7 @@ export default function ResourcesScreen() {
                 style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
                 className="text-sm"
               >
-                Complete curriculum document
+                {notationPdfUrl ? 'Uploaded version · watermarked' : 'Complete curriculum document'}
               </Text>
             </View>
             <ChevronRight size={20} color={colors.neutral[400]} />

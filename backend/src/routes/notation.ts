@@ -3,16 +3,35 @@ import { PDFDocument, rgb, degrees } from "pdf-lib";
 
 const notationRouter = new Hono();
 
+// Convert Google Drive view/sharing URLs to direct download URLs
+function resolveDownloadUrl(url: string): string {
+  // Handle: https://drive.google.com/file/d/{ID}/view?...
+  const fileMatch = url.match(/drive\.google\.com\/file\/d\/([^/?#]+)/);
+  if (fileMatch) {
+    return `https://drive.google.com/uc?export=download&id=${fileMatch[1]}`;
+  }
+  // Handle: https://drive.google.com/open?id={ID}
+  const openMatch = url.match(/drive\.google\.com\/open\?.*id=([^&]+)/);
+  if (openMatch) {
+    return `https://drive.google.com/uc?export=download&id=${openMatch[1]}`;
+  }
+  return url;
+}
+
 // Serve a watermarked version of a PDF given its URL
 notationRouter.get("/view", async (c) => {
-  const url = c.req.query("url");
-  if (!url) {
+  const rawUrl = c.req.query("url");
+  if (!rawUrl) {
     return c.text("Missing url parameter", 400);
   }
 
+  const url = resolveDownloadUrl(rawUrl);
+
   let pdfBytes: ArrayBuffer;
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+    });
     if (!res.ok) throw new Error(`Failed to fetch PDF: ${res.status}`);
     pdfBytes = await res.arrayBuffer();
   } catch (err) {
