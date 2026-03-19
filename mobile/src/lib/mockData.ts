@@ -43,7 +43,7 @@ export const foundationalPrinciples = [
 
 // Mandinka Terminology
 export const mandinkaTerms = [
-  { term: 'A-Feeree', meaning: 'Training/Method', phonetic: 'Ah Fee tee' },
+  { term: 'A-Feeree', meaning: 'Training/Method', phonetic: 'Ah Fee tree' },
   { term: 'Kunidi', meaning: 'Awakening', phonetic: 'Koo nee thee' },
   { term: 'Kata', meaning: 'Movement', phonetic: 'Kar tah' },
   { term: 'Bala', meaning: 'On', phonetic: 'Bar La' },
