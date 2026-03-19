@@ -17,6 +17,7 @@ import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-d
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
+import * as Speech from 'expo-speech';
 
 import { colors } from '@/lib/theme';
 import { resourceLinks, videoLinks, mandinkaTerms, foundationalPrinciples } from '@/lib/mockData';
@@ -34,6 +35,7 @@ export default function ResourcesScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [videoModal, setVideoModal] = useState<{ vimeoId: string; title: string; subtitle: string } | null>(null);
+  const [speakingTerm, setSpeakingTerm] = useState<string | null>(null);
 
   const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
   const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
@@ -73,6 +75,25 @@ export default function ResourcesScreen() {
   const openVideo = (vimeoId: string, title: string, subtitle: string) => {
     triggerHaptic();
     setVideoModal({ vimeoId, title, subtitle });
+  };
+
+  const handleSpeakTerm = async (term: string) => {
+    triggerHaptic();
+    if (speakingTerm === term) {
+      await Speech.stop();
+      setSpeakingTerm(null);
+      return;
+    }
+    await Speech.stop();
+    setSpeakingTerm(term);
+    Speech.speak(term, {
+      language: 'en',
+      pitch: 1.0,
+      rate: 0.75,
+      onDone: () => setSpeakingTerm(null),
+      onError: () => setSpeakingTerm(null),
+      onStopped: () => setSpeakingTerm(null),
+    });
   };
 
   if (!fontsLoaded) {
@@ -291,12 +312,13 @@ export default function ResourcesScreen() {
                   borderBottomColor: colors.neutral[100],
                 }}
               >
-                <View
+                <Pressable
+                  onPress={() => handleSpeakTerm(item.term)}
                   className="w-10 h-10 rounded-full items-center justify-center"
-                  style={{ backgroundColor: colors.primary[100] }}
+                  style={{ backgroundColor: speakingTerm === item.term ? colors.primary[500] : colors.primary[100] }}
                 >
-                  <Volume2 size={20} color={colors.primary[500]} />
-                </View>
+                  <Volume2 size={20} color={speakingTerm === item.term ? 'white' : colors.primary[500]} />
+                </Pressable>
                 <View className="flex-1 ml-3">
                   <Text
                     style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600] }}

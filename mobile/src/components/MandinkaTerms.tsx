@@ -5,6 +5,7 @@ import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-nati
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
+import * as Speech from 'expo-speech';
 
 import { colors } from '@/lib/theme';
 import { mandinkaTerms } from '@/lib/mockData';
@@ -33,18 +34,25 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
   const handlePlayAudio = async (term: string) => {
     triggerHaptic();
 
-    // Audio playback would go here when audio files are uploaded
-    // For now, we'll show a visual feedback
+    // Stop if already speaking this term
+    if (playingTerm === term) {
+      await Speech.stop();
+      setPlayingTerm(null);
+      return;
+    }
+
+    // Stop any current speech
+    await Speech.stop();
     setPlayingTerm(term);
 
-    // Log for development - user can see in expo.log
-    console.log(`[MandinkaTerms] Audio playback requested for: ${term}`);
-    console.log('[MandinkaTerms] To add audio, upload files via the SOUNDS tab in Vibecode');
-
-    // Reset after a short delay to show the button was pressed
-    setTimeout(() => {
-      setPlayingTerm(null);
-    }, 1000);
+    Speech.speak(term, {
+      language: 'en',
+      pitch: 1.0,
+      rate: 0.75,
+      onDone: () => setPlayingTerm(null),
+      onError: () => setPlayingTerm(null),
+      onStopped: () => setPlayingTerm(null),
+    });
   };
 
   return (
@@ -142,24 +150,7 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
             </View>
           ))}
 
-          {/* Info Note */}
-          <View
-            className="p-4 mt-2 mb-6 rounded-xl"
-            style={{ backgroundColor: colors.gold[50], borderWidth: 1, borderColor: colors.gold[200] }}
-          >
-            <Text
-              style={{ fontFamily: 'DMSans_500Medium', color: colors.gold[800] }}
-              className="text-sm"
-            >
-              Audio pronunciation coming soon
-            </Text>
-            <Text
-              style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[700] }}
-              className="text-xs mt-1"
-            >
-              Tap the speaker icon to hear the proper pronunciation of each term.
-            </Text>
-          </View>
+          <View className="h-6" />
         </ScrollView>
       </Animated.View>
     </Animated.View>
