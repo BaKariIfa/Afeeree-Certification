@@ -43,14 +43,14 @@ export const foundationalPrinciples = [
 
 // Mandinka Terminology
 export const mandinkaTerms = [
-  { term: 'A-Feeree', meaning: 'Training/Method' },
-  { term: 'Kunidi', meaning: 'Awakening' },
-  { term: 'Kata', meaning: 'Movement' },
-  { term: 'Bala', meaning: 'On' },
-  { term: 'Barente', meaning: 'Move' },
-  { term: 'Saba', meaning: 'Stretch' },
-  { term: 'Semboo', meaning: 'Strength' },
-  { term: 'Lapi', meaning: 'Beat' },
+  { term: 'A-Feeree', meaning: 'Training/Method', phonetic: 'Ah Fee tee' },
+  { term: 'Kunidi', meaning: 'Awakening', phonetic: 'Koo nee thee' },
+  { term: 'Kata', meaning: 'Movement', phonetic: 'Kar tah' },
+  { term: 'Bala', meaning: 'On', phonetic: 'Bar La' },
+  { term: 'Barente', meaning: 'Move', phonetic: 'Bar ren teh' },
+  { term: 'Saba', meaning: 'Stretch', phonetic: 'Sah Bah' },
+  { term: 'Semboo', meaning: 'Strength', phonetic: 'Sem Boo' },
+  { term: 'Lapi', meaning: 'Beat', phonetic: 'Lah pee' },
 ];
 
 export const mockUser: User = {

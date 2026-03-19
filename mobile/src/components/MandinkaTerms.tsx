@@ -31,21 +31,19 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
 
   if (!visible || !fontsLoaded) return null;
 
-  const handlePlayAudio = async (term: string) => {
+  const handlePlayAudio = async (term: string, phonetic: string) => {
     triggerHaptic();
 
-    // Stop if already speaking this term
     if (playingTerm === term) {
       await Speech.stop();
       setPlayingTerm(null);
       return;
     }
 
-    // Stop any current speech
     await Speech.stop();
     setPlayingTerm(term);
 
-    Speech.speak(term, {
+    Speech.speak(phonetic, {
       language: 'en',
       pitch: 1.0,
       rate: 0.75,
@@ -135,7 +133,7 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
               </View>
 
               <Pressable
-                onPress={() => handlePlayAudio(item.term)}
+                onPress={() => handlePlayAudio(item.term, item.phonetic)}
                 className="w-12 h-12 rounded-full items-center justify-center"
                 style={{
                   backgroundColor: playingTerm === item.term ? colors.primary[500] : colors.primary[100],

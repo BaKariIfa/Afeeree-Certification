@@ -77,7 +77,7 @@ export default function ResourcesScreen() {
     setVideoModal({ vimeoId, title, subtitle });
   };
 
-  const handleSpeakTerm = async (term: string) => {
+  const handleSpeakTerm = async (term: string, phonetic: string) => {
     triggerHaptic();
     if (speakingTerm === term) {
       await Speech.stop();
@@ -86,7 +86,7 @@ export default function ResourcesScreen() {
     }
     await Speech.stop();
     setSpeakingTerm(term);
-    Speech.speak(term, {
+    Speech.speak(phonetic, {
       language: 'en',
       pitch: 1.0,
       rate: 0.75,
@@ -313,7 +313,7 @@ export default function ResourcesScreen() {
                 }}
               >
                 <Pressable
-                  onPress={() => handleSpeakTerm(item.term)}
+                  onPress={() => handleSpeakTerm(item.term, item.phonetic)}
                   className="w-10 h-10 rounded-full items-center justify-center"
                   style={{ backgroundColor: speakingTerm === item.term ? colors.primary[500] : colors.primary[100] }}
                 >
