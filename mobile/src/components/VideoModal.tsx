@@ -27,6 +27,10 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle 
   const id = getVimeoId(vimeoId);
   const embedUrl = `https://player.vimeo.com/video/${id}?autoplay=1&color=C9963C&title=0&byline=0&portrait=0`;
 
+  React.useEffect(() => {
+    if (visible && id) setLoading(true);
+  }, [visible, id]);
+
   return (
     <Modal
       visible={visible}
@@ -132,16 +136,19 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle 
               </Text>
             </View>
           )}
-          <WebView
-            source={{ uri: embedUrl }}
-            style={{ flex: 1, backgroundColor: '#000' }}
-            allowsFullscreenVideo
-            mediaPlaybackRequiresUserAction={false}
-            onLoadEnd={() => setLoading(false)}
-            onError={() => setLoading(false)}
-            javaScriptEnabled
-            allowsInlineMediaPlayback
-          />
+          {id ? (
+            <WebView
+              key={id}
+              source={{ uri: embedUrl }}
+              style={{ flex: 1, backgroundColor: '#000' }}
+              allowsFullscreenVideo
+              mediaPlaybackRequiresUserAction={false}
+              onLoadEnd={() => setLoading(false)}
+              onError={() => setLoading(false)}
+              javaScriptEnabled
+              allowsInlineMediaPlayback
+            />
+          ) : null}
         </View>
 
         {/* Footer note */}
