@@ -8,6 +8,9 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
 import { colors } from '@/lib/theme';
 import { mockModules, resourceLinks, videoLinks } from '@/lib/mockData';
@@ -72,10 +75,18 @@ export default function SyllabusScreen() {
     return Math.round((completed / module.lessons) * 100);
   };
 
+  const openNotationPdf = (fallbackUrl: string) => {
+    const pdfUrl = notationPdfUrl ?? fallbackUrl;
+    const viewerUrl = `${BACKEND_URL}/api/notation/view?url=${encodeURIComponent(pdfUrl)}`;
+    WebBrowser.openBrowserAsync(viewerUrl, {
+      presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+    });
+  };
+
   const openSyllabusPDF = () => {
     if (isDemoMode) return;
     triggerHaptic();
-    Linking.openURL(notationPdfUrl ?? resourceLinks.syllabus);
+    openNotationPdf(resourceLinks.syllabus);
   };
 
   const openVideo = (url: string) => {
@@ -87,7 +98,7 @@ export default function SyllabusScreen() {
   const handleModulePress = (module: Module) => {
     if (isDemoMode) return;
     triggerHaptic();
-    Linking.openURL(notationPdfUrl ?? module.pdfLink ?? resourceLinks.syllabus);
+    openNotationPdf(module.pdfLink ?? resourceLinks.syllabus);
   };
 
   const handleCategoryPress = (category: string) => {
