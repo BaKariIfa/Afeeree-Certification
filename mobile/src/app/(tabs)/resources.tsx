@@ -88,8 +88,8 @@ export default function ResourcesScreen() {
     setSpeakingTerm(term);
     Speech.speak(phonetic, {
       language: 'en',
-      pitch: 1.0,
-      rate: 0.75,
+      pitch: 0.7,
+      rate: 0.8,
       onDone: () => setSpeakingTerm(null),
       onError: () => setSpeakingTerm(null),
       onStopped: () => setSpeakingTerm(null),
