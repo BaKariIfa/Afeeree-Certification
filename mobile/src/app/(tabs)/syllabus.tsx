@@ -20,6 +20,7 @@ import type { Module } from '@/lib/types';
 import PracticeTimer from '@/components/PracticeTimer';
 import MandinkaTerms from '@/components/MandinkaTerms';
 import DemoBanner from '@/components/DemoBanner';
+import VideoModal from '@/components/VideoModal';
 
 const triggerHaptic = () => {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -34,6 +35,7 @@ export default function SyllabusScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [videoModal, setVideoModal] = useState<{ vimeoId: string; title: string; subtitle: string } | null>(null);
 
   const completedLessons = useUserStore(s => s.completedLessons);
   const isDemoMode = useUserStore(s => s.isDemoMode);
@@ -89,10 +91,10 @@ export default function SyllabusScreen() {
     openNotationPdf(resourceLinks.syllabus);
   };
 
-  const openVideo = (url: string) => {
+  const openVideo = (vimeoId: string, title: string, subtitle: string) => {
     if (isDemoMode) return;
     triggerHaptic();
-    Linking.openURL(url);
+    setVideoModal({ vimeoId, title, subtitle });
   };
 
   const handleModulePress = (module: Module) => {
@@ -111,6 +113,13 @@ export default function SyllabusScreen() {
       <PracticeTimer visible={showTimer} onClose={() => setShowTimer(false)} />
       <MandinkaTerms visible={showTerms} onClose={() => setShowTerms(false)} />
       <DemoBanner />
+      <VideoModal
+        visible={videoModal !== null}
+        onClose={() => setVideoModal(null)}
+        vimeoId={videoModal?.vimeoId ?? ''}
+        title={videoModal?.title ?? ''}
+        subtitle={videoModal?.subtitle}
+      />
 
       <ScrollView
         className="flex-1"
@@ -220,7 +229,7 @@ export default function SyllabusScreen() {
           ) : (
             <View className="flex-row gap-3">
               <Pressable
-                onPress={() => openVideo(videoLinks.part1)}
+                onPress={() => openVideo(videoLinks.part1, 'Part 1', 'Kata & Context')}
                 className="flex-1 flex-row items-center p-4 rounded-2xl"
                 style={{ backgroundColor: colors.gold[500] }}
               >
@@ -232,7 +241,7 @@ export default function SyllabusScreen() {
                 <Play size={18} color="white" fill="white" />
               </Pressable>
               <Pressable
-                onPress={() => openVideo(videoLinks.part2)}
+                onPress={() => openVideo(videoLinks.part2, 'Part 2', 'Kata & Context')}
                 className="flex-1 flex-row items-center p-4 rounded-2xl"
                 style={{ backgroundColor: colors.gold[500] }}
               >
