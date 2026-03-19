@@ -12,6 +12,7 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '@/lib/theme';
 import { mockModules, resourceLinks, videoLinks } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
+import { useNotationStore } from '@/lib/notationStore';
 import type { Module } from '@/lib/types';
 import PracticeTimer from '@/components/PracticeTimer';
 import MandinkaTerms from '@/components/MandinkaTerms';
@@ -33,6 +34,11 @@ export default function SyllabusScreen() {
 
   const completedLessons = useUserStore(s => s.completedLessons);
   const isDemoMode = useUserStore(s => s.isDemoMode);
+  const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
+  const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
+
+  // Load uploaded notation URL on mount
+  React.useEffect(() => { loadNotationPdfUrl(); }, []);
 
   const onRefresh = useCallback(() => {
     triggerHaptic();
@@ -69,7 +75,7 @@ export default function SyllabusScreen() {
   const openSyllabusPDF = () => {
     if (isDemoMode) return;
     triggerHaptic();
-    Linking.openURL(resourceLinks.syllabus);
+    Linking.openURL(notationPdfUrl ?? resourceLinks.syllabus);
   };
 
   const openVideo = (url: string) => {
@@ -79,10 +85,9 @@ export default function SyllabusScreen() {
   };
 
   const handleModulePress = (module: Module) => {
+    if (isDemoMode) return;
     triggerHaptic();
-    if (module.pdfLink) {
-      Linking.openURL(module.pdfLink);
-    }
+    Linking.openURL(notationPdfUrl ?? module.pdfLink ?? resourceLinks.syllabus);
   };
 
   const handleCategoryPress = (category: string) => {

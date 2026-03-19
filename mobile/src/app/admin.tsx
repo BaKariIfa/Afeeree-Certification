@@ -6,26 +6,35 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Lock, Plus, Trash2, Copy, Check, ArrowLeft } from 'lucide-react-native';
+import { Lock, Plus, Trash2, Copy, Check, ArrowLeft, FileText, Upload, CheckCircle } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
+import * as DocumentPicker from 'expo-document-picker';
 import { useAccessCodeStore, ADMIN_PASSWORD } from '@/lib/accessCodeStore';
+import { useNotationStore } from '@/lib/notationStore';
+import { uploadFile } from '@/lib/upload';
 
 export default function AdminScreen() {
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { codes, loadCodes, generateCode, deleteCode, isAdmin, setAdmin } = useAccessCodeStore();
+  const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
+  const setNotationPdfUrl = useNotationStore(s => s.setNotationPdfUrl);
+  const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
 
   useEffect(() => {
     if (isAdmin) {
       setIsAuthenticated(true);
       loadCodes();
     }
+    loadNotationPdfUrl();
   }, [isAdmin]);
 
   const handleLogin = () => {
@@ -58,6 +67,31 @@ export default function AdminScreen() {
         { text: 'Delete', style: 'destructive', onPress: () => deleteCode(code) },
       ]
     );
+  };
+
+  const handleUploadNotation = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['application/pdf', 'image/*'],
+      copyToCacheDirectory: true,
+    });
+
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    setIsUploading(true);
+    try {
+      const uploaded = await uploadFile(
+        asset.uri,
+        asset.name,
+        asset.mimeType ?? 'application/pdf'
+      );
+      await setNotationPdfUrl(uploaded.url);
+      Alert.alert('Success', `"${asset.name}" uploaded and saved to the app.`);
+    } catch (err) {
+      Alert.alert('Upload Failed', err instanceof Error ? err.message : 'Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const unusedCodes = codes.filter(c => !c.usedBy);
@@ -113,9 +147,57 @@ export default function AdminScreen() {
       </View>
 
       <ScrollView className="flex-1 px-4">
+
+        {/* Notation File Upload */}
+        <View className="mt-6 bg-gray-800 rounded-2xl p-4">
+          <View className="flex-row items-center mb-3">
+            <FileText size={20} color="#F59E0B" />
+            <Text className="text-white text-lg font-bold ml-2">Notation File</Text>
+          </View>
+
+          {notationPdfUrl ? (
+            <View className="mb-3 flex-row items-start bg-green-500/10 rounded-xl p-3">
+              <CheckCircle size={18} color="#10B981" style={{ marginTop: 2 }} />
+              <View className="flex-1 ml-2">
+                <Text className="text-green-400 text-sm font-semibold">File uploaded</Text>
+                <Text className="text-gray-400 text-xs mt-0.5" numberOfLines={1}>
+                  {notationPdfUrl.split('/').pop()}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            <View className="mb-3 bg-gray-700/50 rounded-xl p-3">
+              <Text className="text-gray-400 text-sm text-center">
+                No notation file uploaded yet.{'\n'}Currently using Google Drive links.
+              </Text>
+            </View>
+          )}
+
+          <Pressable
+            className="py-3 rounded-xl flex-row items-center justify-center"
+            style={{ backgroundColor: isUploading ? '#374151' : '#F59E0B' }}
+            onPress={handleUploadNotation}
+            disabled={isUploading}
+          >
+            {isUploading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <>
+                <Upload size={18} color={isUploading ? '#9CA3AF' : '#000'} />
+                <Text className="text-black font-bold ml-2">
+                  {notationPdfUrl ? 'Replace Notation File' : 'Upload Notation File'}
+                </Text>
+              </>
+            )}
+          </Pressable>
+          <Text className="text-gray-500 text-xs text-center mt-2">
+            Supports PDF and image files · Saved to all participants instantly
+          </Text>
+        </View>
+
         {/* Generate Button */}
         <Pressable
-          className="bg-amber-500 py-4 rounded-xl items-center flex-row justify-center mt-4"
+          className="bg-amber-500 py-4 rounded-xl items-center flex-row justify-center mt-6"
           onPress={handleGenerateCode}
         >
           <Plus size={24} color="#000" />
