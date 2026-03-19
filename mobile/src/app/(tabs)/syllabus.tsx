@@ -67,8 +67,15 @@ export default function SyllabusScreen() {
   };
 
   const openSyllabusPDF = () => {
+    if (isDemoMode) return;
     triggerHaptic();
     Linking.openURL(resourceLinks.syllabus);
+  };
+
+  const openVideo = (url: string) => {
+    if (isDemoMode) return;
+    triggerHaptic();
+    Linking.openURL(url);
   };
 
   const handleModulePress = (module: Module) => {
@@ -81,11 +88,6 @@ export default function SyllabusScreen() {
   const handleCategoryPress = (category: string) => {
     Haptics.selectionAsync();
     setSelectedCategory(category);
-  };
-
-  const openVideo = (url: string) => {
-    triggerHaptic();
-    Linking.openURL(url);
   };
 
   return (
@@ -150,24 +152,24 @@ export default function SyllabusScreen() {
           <Pressable
             onPress={openSyllabusPDF}
             className="flex-row items-center p-4 rounded-2xl"
-            style={{ backgroundColor: colors.primary[500] }}
+            style={{ backgroundColor: isDemoMode ? colors.neutral[300] : colors.primary[500] }}
           >
-            <FileText size={24} color="white" />
+            {isDemoMode ? <Lock size={24} color={colors.neutral[500]} /> : <FileText size={24} color="white" />}
             <View className="flex-1 ml-3">
               <Text
-                style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }}
+                style={{ fontFamily: 'DMSans_600SemiBold', color: isDemoMode ? colors.neutral[500] : 'white' }}
                 className="text-base"
               >
-                View Full Syllabus PDF
+                {isDemoMode ? 'Full Program Only' : 'View Full Syllabus PDF'}
               </Text>
               <Text
-                style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[300] }}
+                style={{ fontFamily: 'DMSans_400Regular', color: isDemoMode ? colors.neutral[400] : colors.gold[300] }}
                 className="text-sm"
               >
-                Complete curriculum by BaKari Ifasegun Lindsay
+                {isDemoMode ? 'Enroll to access the complete curriculum' : 'Complete curriculum by BaKari Ifasegun Lindsay'}
               </Text>
             </View>
-            <ChevronRight size={20} color="white" />
+            {!isDemoMode && <ChevronRight size={20} color="white" />}
           </Pressable>
         </Animated.View>
 
@@ -179,52 +181,54 @@ export default function SyllabusScreen() {
           >
             Video Demonstrations
           </Text>
-          <View className="flex-row gap-3">
-            <Pressable
-              onPress={() => openVideo(videoLinks.part1)}
-              className="flex-1 flex-row items-center p-4 rounded-2xl"
-              style={{ backgroundColor: colors.gold[500] }}
+          {isDemoMode ? (
+            <View
+              className="flex-row items-center p-4 rounded-2xl"
+              style={{ backgroundColor: colors.neutral[100], borderWidth: 1.5, borderColor: colors.neutral[200], borderStyle: 'dashed' }}
             >
-              <Video size={22} color="white" />
+              <View
+                className="w-10 h-10 rounded-full items-center justify-center"
+                style={{ backgroundColor: colors.neutral[200] }}
+              >
+                <Lock size={18} color={colors.neutral[400]} />
+              </View>
               <View className="flex-1 ml-3">
-                <Text
-                  style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }}
-                  className="text-sm"
-                >
-                  Part 1
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500] }} className="text-sm">
+                  Videos locked in Preview Mode
                 </Text>
-                <Text
-                  style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[100] }}
-                  className="text-xs"
-                >
-                  Kata & Context
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400] }} className="text-xs mt-0.5">
+                  Enroll to watch Part 1 & Part 2 demonstrations
                 </Text>
               </View>
-              <Play size={18} color="white" fill="white" />
-            </Pressable>
-            <Pressable
-              onPress={() => openVideo(videoLinks.part2)}
-              className="flex-1 flex-row items-center p-4 rounded-2xl"
-              style={{ backgroundColor: colors.gold[500] }}
-            >
-              <Video size={22} color="white" />
-              <View className="flex-1 ml-3">
-                <Text
-                  style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }}
-                  className="text-sm"
-                >
-                  Part 2
-                </Text>
-                <Text
-                  style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[100] }}
-                  className="text-xs"
-                >
-                  Kata & Context
-                </Text>
-              </View>
-              <Play size={18} color="white" fill="white" />
-            </Pressable>
-          </View>
+            </View>
+          ) : (
+            <View className="flex-row gap-3">
+              <Pressable
+                onPress={() => openVideo(videoLinks.part1)}
+                className="flex-1 flex-row items-center p-4 rounded-2xl"
+                style={{ backgroundColor: colors.gold[500] }}
+              >
+                <Video size={22} color="white" />
+                <View className="flex-1 ml-3">
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }} className="text-sm">Part 1</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[100] }} className="text-xs">Kata & Context</Text>
+                </View>
+                <Play size={18} color="white" fill="white" />
+              </Pressable>
+              <Pressable
+                onPress={() => openVideo(videoLinks.part2)}
+                className="flex-1 flex-row items-center p-4 rounded-2xl"
+                style={{ backgroundColor: colors.gold[500] }}
+              >
+                <Video size={22} color="white" />
+                <View className="flex-1 ml-3">
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }} className="text-sm">Part 2</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[100] }} className="text-xs">Kata & Context</Text>
+                </View>
+                <Play size={18} color="white" fill="white" />
+              </Pressable>
+            </View>
+          )}
         </Animated.View>
 
         {/* Mandinka Terms Button */}
