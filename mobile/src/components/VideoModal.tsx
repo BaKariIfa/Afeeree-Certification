@@ -25,7 +25,26 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle 
   const [loading, setLoading] = useState(true);
 
   const id = getVimeoId(vimeoId);
-  const embedUrl = `https://player.vimeo.com/video/${id}?autoplay=1&color=C9963C&title=0&byline=0&portrait=0`;
+
+  const embedHtml = id ? `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+    iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+  <iframe
+    src="https://player.vimeo.com/video/${id}?autoplay=1&color=C9963C&title=0&byline=0&portrait=0&playsinline=1"
+    allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+    allowfullscreen
+  ></iframe>
+</body>
+</html>` : '';
 
   React.useEffect(() => {
     if (visible && id) setLoading(true);
@@ -136,10 +155,10 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle 
               </Text>
             </View>
           )}
-          {id ? (
+          {id && embedHtml ? (
             <WebView
               key={id}
-              source={{ uri: embedUrl }}
+              source={{ html: embedHtml, baseUrl: 'https://player.vimeo.com' }}
               style={{ flex: 1, backgroundColor: '#000' }}
               allowsFullscreenVideo
               mediaPlaybackRequiresUserAction={false}
@@ -147,6 +166,7 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle 
               onError={() => setLoading(false)}
               javaScriptEnabled
               allowsInlineMediaPlayback
+              originWhitelist={['*']}
             />
           ) : null}
         </View>
