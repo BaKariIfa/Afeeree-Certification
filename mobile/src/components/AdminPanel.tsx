@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, TextInput, Modal, FlatList, Share, Alert } from 'react-native';
+import { View, Text, Pressable, TextInput, Modal, FlatList, Share, Alert, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { X, Key, Plus, Copy, Trash2, Share2, ShieldCheck, Users, Check } from 'lucide-react-native';
+import { X, Key, Plus, Copy, Trash2, Share2, ShieldCheck, Users, Check, FileText, Upload, CheckCircle } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
+import * as DocumentPicker from 'expo-document-picker';
 
 import { colors } from '@/lib/theme';
 import { useAccessCodeStore, ADMIN_PASSWORD, AccessCode } from '@/lib/accessCodeStore';
+import { useNotationStore } from '@/lib/notationStore';
+import { uploadFile } from '@/lib/upload';
 
 interface AdminPanelProps {
   visible: boolean;
@@ -22,11 +25,17 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
 
   const codes = useAccessCodeStore(s => s.codes);
   const loadCodes = useAccessCodeStore(s => s.loadCodes);
   const generateCode = useAccessCodeStore(s => s.generateCode);
   const deleteCode = useAccessCodeStore(s => s.deleteCode);
+
+  const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
+  const setNotationPdfUrl = useNotationStore(s => s.setNotationPdfUrl);
+  const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
 
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
@@ -38,6 +47,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
   useEffect(() => {
     if (visible && isAuthenticated) {
       loadCodes();
+      loadNotationPdfUrl();
     }
   }, [visible, isAuthenticated, loadCodes]);
 
@@ -46,6 +56,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
       setIsAuthenticated(false);
       setPassword('');
       setPasswordError('');
+      setUploadSuccess(false);
     }
   }, [visible]);
 
@@ -64,8 +75,6 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
   const handleGenerateCode = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const newCode = await generateCode();
-
-    // Auto-copy to clipboard
     await Clipboard.setStringAsync(newCode);
     setCopiedCode(newCode);
     setTimeout(() => setCopiedCode(null), 2000);
@@ -105,6 +114,36 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
     );
   };
 
+  const handleUploadNotation = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['application/pdf', 'image/*'],
+      copyToCacheDirectory: true,
+    });
+
+    if (result.canceled) return;
+
+    const asset = result.assets[0];
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setIsUploading(true);
+    setUploadSuccess(false);
+    try {
+      const uploaded = await uploadFile(
+        asset.uri,
+        asset.name,
+        asset.mimeType ?? 'application/pdf'
+      );
+      await setNotationPdfUrl(uploaded.url);
+      setUploadSuccess(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setTimeout(() => setUploadSuccess(false), 4000);
+    } catch (err) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert('Upload Failed', err instanceof Error ? err.message : 'Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const unusedCodes = codes.filter(c => !c.usedBy);
   const usedCodes = codes.filter(c => c.usedBy);
 
@@ -139,26 +178,17 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
 
         {!item.usedBy && (
           <View className="flex-row items-center">
-            <Pressable
-              onPress={() => handleCopyCode(item.code)}
-              className="p-2 mr-1"
-            >
+            <Pressable onPress={() => handleCopyCode(item.code)} className="p-2 mr-1">
               {copiedCode === item.code ? (
                 <Check size={20} color={colors.success} />
               ) : (
                 <Copy size={20} color={colors.neutral[500]} />
               )}
             </Pressable>
-            <Pressable
-              onPress={() => handleShareCode(item.code)}
-              className="p-2 mr-1"
-            >
+            <Pressable onPress={() => handleShareCode(item.code)} className="p-2 mr-1">
               <Share2 size={20} color={colors.primary[500]} />
             </Pressable>
-            <Pressable
-              onPress={() => handleDeleteCode(item.code)}
-              className="p-2"
-            >
+            <Pressable onPress={() => handleDeleteCode(item.code)} className="p-2">
               <Trash2 size={20} color={colors.error} />
             </Pressable>
           </View>
@@ -195,150 +225,143 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
         </View>
 
         {!isAuthenticated ? (
-          // Login Screen
-          <Animated.View
-            entering={FadeIn.duration(400)}
-            className="flex-1 justify-center px-6"
-          >
+          <Animated.View entering={FadeIn.duration(400)} className="flex-1 justify-center px-6">
             <View
               className="p-6 rounded-2xl"
               style={{ backgroundColor: 'white', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4 }}
             >
               <View className="items-center mb-6">
-                <View
-                  className="w-16 h-16 rounded-full items-center justify-center"
-                  style={{ backgroundColor: colors.gold[100] }}
-                >
+                <View className="w-16 h-16 rounded-full items-center justify-center" style={{ backgroundColor: colors.gold[100] }}>
                   <Key size={32} color={colors.gold[600]} />
                 </View>
               </View>
 
-              <Text
-                style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }}
-                className="text-xl text-center mb-2"
-              >
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }} className="text-xl text-center mb-2">
                 Admin Access
               </Text>
-              <Text
-                style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
-                className="text-sm text-center mb-6"
-              >
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm text-center mb-6">
                 Enter the admin password to manage access codes
               </Text>
 
-              <View
-                className="flex-row items-center px-4 py-3 rounded-xl mb-4"
-                style={{ backgroundColor: colors.neutral[100] }}
-              >
+              <View className="flex-row items-center px-4 py-3 rounded-xl mb-4" style={{ backgroundColor: colors.neutral[100] }}>
                 <Key size={20} color={colors.neutral[400]} />
                 <TextInput
                   value={password}
-                  onChangeText={(text) => {
-                    setPassword(text);
-                    setPasswordError('');
-                  }}
+                  onChangeText={(text) => { setPassword(text); setPasswordError(''); }}
                   placeholder="Admin Password"
                   placeholderTextColor={colors.neutral[400]}
                   secureTextEntry
                   autoCapitalize="characters"
-                  style={{
-                    fontFamily: 'DMSans_500Medium',
-                    color: colors.neutral[800],
-                    flex: 1,
-                    marginLeft: 12,
-                    fontSize: 16,
-                  }}
+                  style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[800], flex: 1, marginLeft: 12, fontSize: 16 }}
                 />
               </View>
 
               {passwordError ? (
-                <Text
-                  style={{ fontFamily: 'DMSans_400Regular', color: colors.error }}
-                  className="text-sm mb-4 text-center"
-                >
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.error }} className="text-sm mb-4 text-center">
                   {passwordError}
                 </Text>
               ) : null}
 
-              <Pressable
-                onPress={handleLogin}
-                className="py-4 rounded-xl items-center"
-                style={{ backgroundColor: colors.primary[500] }}
-              >
-                <Text
-                  style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }}
-                  className="text-base"
-                >
-                  Login
-                </Text>
+              <Pressable onPress={handleLogin} className="py-4 rounded-xl items-center" style={{ backgroundColor: colors.primary[500] }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }} className="text-base">Login</Text>
               </Pressable>
             </View>
           </Animated.View>
         ) : (
-          // Code Management Screen
           <View className="flex-1 px-6 pt-6">
             {/* Stats */}
-            <View className="flex-row mb-6">
-              <View
-                className="flex-1 p-4 rounded-xl mr-2"
-                style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
-              >
+            <View className="flex-row mb-4">
+              <View className="flex-1 p-4 rounded-xl mr-2" style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}>
                 <View className="flex-row items-center">
                   <Key size={20} color={colors.primary[500]} />
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-2xl ml-2">
-                    {unusedCodes.length}
-                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-2xl ml-2">{unusedCodes.length}</Text>
                 </View>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-xs mt-1">
-                  Available Codes
-                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-xs mt-1">Available Codes</Text>
               </View>
-              <View
-                className="flex-1 p-4 rounded-xl ml-2"
-                style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
-              >
+              <View className="flex-1 p-4 rounded-xl ml-2" style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}>
                 <View className="flex-row items-center">
                   <Users size={20} color={colors.success} />
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-2xl ml-2">
-                    {usedCodes.length}
-                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-2xl ml-2">{usedCodes.length}</Text>
                 </View>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-xs mt-1">
-                  Registered Users
-                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-xs mt-1">Registered Users</Text>
               </View>
             </View>
+
+            {/* Notation File Upload */}
+            <Animated.View
+              entering={FadeInDown.duration(400)}
+              className="mb-4 p-4 rounded-2xl"
+              style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
+            >
+              <View className="flex-row items-center mb-3">
+                <View className="w-8 h-8 rounded-full items-center justify-center mr-2" style={{ backgroundColor: colors.gold[100] }}>
+                  <FileText size={16} color={colors.gold[600]} />
+                </View>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-base">
+                  Notation File
+                </Text>
+              </View>
+
+              {uploadSuccess ? (
+                <View className="flex-row items-center p-3 rounded-xl mb-3" style={{ backgroundColor: 'rgba(16,185,129,0.1)' }}>
+                  <CheckCircle size={16} color="#10B981" />
+                  <Text style={{ fontFamily: 'DMSans_500Medium', color: '#10B981', marginLeft: 8, fontSize: 13 }}>
+                    File uploaded successfully!
+                  </Text>
+                </View>
+              ) : notationPdfUrl ? (
+                <View className="flex-row items-center p-3 rounded-xl mb-3" style={{ backgroundColor: colors.gold[50] }}>
+                  <CheckCircle size={16} color={colors.gold[600]} />
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], marginLeft: 8, fontSize: 12, flex: 1 }} numberOfLines={1}>
+                    {notationPdfUrl.split('/').pop()}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginBottom: 10 }}>
+                  No file uploaded yet — using Google Drive links.
+                </Text>
+              )}
+
+              <Pressable
+                onPress={handleUploadNotation}
+                disabled={isUploading}
+                className="flex-row items-center justify-center py-3 rounded-xl"
+                style={{ backgroundColor: isUploading ? colors.neutral[200] : colors.primary[500] }}
+              >
+                {isUploading ? (
+                  <ActivityIndicator size="small" color={colors.neutral[500]} />
+                ) : (
+                  <>
+                    <Upload size={16} color="white" />
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', marginLeft: 8, fontSize: 14 }}>
+                      {notationPdfUrl ? 'Replace File' : 'Upload Notation File'}
+                    </Text>
+                  </>
+                )}
+              </Pressable>
+            </Animated.View>
 
             {/* Generate Button */}
             <Pressable
               onPress={handleGenerateCode}
-              className="flex-row items-center justify-center py-4 rounded-xl mb-6"
+              className="flex-row items-center justify-center py-4 rounded-xl mb-4"
               style={{ backgroundColor: colors.primary[500] }}
             >
               <Plus size={22} color="white" />
-              <Text
-                style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }}
-                className="text-base ml-2"
-              >
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }} className="text-base ml-2">
                 Generate New Code
               </Text>
             </Pressable>
 
             {/* Code List */}
-            <Text
-              style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }}
-              className="text-lg mb-3"
-            >
+            <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }} className="text-lg mb-3">
               Access Codes
             </Text>
 
             {codes.length === 0 ? (
               <View className="flex-1 items-center justify-center">
                 <Key size={48} color={colors.neutral[300]} />
-                <Text
-                  style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[400] }}
-                  className="text-base mt-4 text-center"
-                >
+                <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[400] }} className="text-base mt-4 text-center">
                   No codes yet.{'\n'}Tap the button above to generate one!
                 </Text>
               </View>
