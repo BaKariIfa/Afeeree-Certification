@@ -44,6 +44,8 @@ export default function HomeScreen() {
     // Initial routing is handled by `src/app/start.tsx` to avoid redirect loops.
   }, [isLoading, hasAccess, isOnboarded, router]);
 
+  const isDemoMode = useUserStore(s => s.isDemoMode);
+
   const onRefresh = useCallback(() => {
     triggerHaptic();
     setRefreshing(true);
@@ -100,7 +102,7 @@ export default function HomeScreen() {
         <View style={{ position: 'relative' }}>
           <ImageBackground
             source={require('../../../public/image-1769399578.jpeg')}
-            style={{ paddingTop: insets.top + 16, paddingBottom: 24, paddingHorizontal: 24 }}
+            style={{ paddingTop: isDemoMode ? 16 : insets.top + 16, paddingBottom: 24, paddingHorizontal: 24 }}
           >
             <LinearGradient
               colors={['rgba(0,0,0,0.6)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.7)']}
