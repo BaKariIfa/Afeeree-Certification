@@ -1,6 +1,35 @@
-module.exports = ({ config }) => ({
-  ...config,
-  plugins: (config.plugins || []).filter(
-    (plugin) => (Array.isArray(plugin) ? plugin[0] : plugin) !== 'expo-video'
-  ),
-});
+module.exports = {
+  name: "AFeeree Certification Program",
+  slug: "afeeree-certification-program",
+  scheme: "vibecode",
+  version: "1.0.0",
+  orientation: "portrait",
+  userInterfaceStyle: "automatic",
+  newArchEnabled: true,
+  ios: {
+    supportsTablet: true,
+    bundleIdentifier: "com.vibecode.afeereecertificationprogram.8nfkhv",
+    buildNumber: "3",
+    infoPlist: {
+      NSCameraUsageDescription:
+        "AFeeree Certification Program uses the camera to capture photos inside the app before you publish them.",
+      NSPhotoLibraryUsageDescription:
+        "AFeeree Certification Program accesses your photo library to let you choose media that appears in the app.",
+      NSMicrophoneUsageDescription:
+        "AFeeree Certification Program uses the microphone to record audio tracks that the app attaches to your creations.",
+    },
+  },
+  android: {
+    edgeToEdgeEnabled: true,
+  },
+  plugins: [
+    "expo-router",
+    "expo-asset",
+    "expo-web-browser",
+    "react-native-edge-to-edge",
+  ],
+  experiments: {
+    typedRoutes: true,
+  },
+  icon: "./icon.png",
+};
