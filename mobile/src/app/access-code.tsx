@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Key, ShieldCheck, AlertCircle, CreditCard, Eye } from 'lucide-react-native';
+import { Key, ShieldCheck, AlertCircle, CreditCard, Eye, ArrowLeft } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp, useSharedValue, useAnimatedStyle, withSequence, withTiming } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
@@ -119,7 +119,20 @@ export default function AccessCodeScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           className="flex-1"
         >
-          <View style={{ paddingTop: insets.top + 60, flex: 1, paddingHorizontal: 24 }}>
+          <View style={{ paddingTop: insets.top + 16, flex: 1, paddingHorizontal: 24 }}>
+            {/* Back Button */}
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.back();
+              }}
+              style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, marginBottom: 8 }}
+            >
+              <ArrowLeft size={24} color="white" />
+              <Text style={{ fontFamily: 'DMSans_500Medium', color: 'white', fontSize: 16, marginLeft: 8 }}>
+                Back
+              </Text>
+            </Pressable>
             {/* Logo */}
             <Animated.View
               entering={FadeInDown.duration(800)}
