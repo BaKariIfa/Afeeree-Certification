@@ -340,12 +340,13 @@ export default function LandingPage() {
         </Text>
         <View style={{ maxWidth: 600, alignSelf: 'center', width: '100%' }}>
           {modules.map((module, index) => (
-            <View
+            <Pressable
               key={index}
-              style={{
+              onPress={() => router.push('/purchase')}
+              style={({ pressed }) => ({
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: 'white',
+                backgroundColor: pressed ? colors.primary[50] : 'white',
                 borderRadius: 12,
                 padding: 16,
                 marginBottom: 12,
@@ -353,7 +354,7 @@ export default function LandingPage() {
                 shadowOffset: { width: 0, height: 2 },
                 shadowOpacity: 0.05,
                 shadowRadius: 8,
-              }}
+              })}
             >
               <View
                 style={{
@@ -380,8 +381,8 @@ export default function LandingPage() {
               >
                 {module}
               </Text>
-              <ChevronRight size={20} color={colors.neutral[400]} />
-            </View>
+              <ChevronRight size={20} color={colors.primary[400]} />
+            </Pressable>
           ))}
         </View>
       </View>
