@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import "./env";
 import { sampleRouter } from "./routes/sample";
 import { uploadRouter } from "./routes/upload";
+import { ttsRouter } from "./routes/tts";
 import { notationRouter } from "./routes/notation";
 import { logger } from "hono/logger";
 
@@ -38,6 +39,7 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 app.route("/api/sample", sampleRouter);
 app.route("/api/upload", uploadRouter);
 app.route("/api/notation", notationRouter);
+app.route("/api/tts", ttsRouter);
 
 const port = Number(process.env.PORT) || 3000;
 

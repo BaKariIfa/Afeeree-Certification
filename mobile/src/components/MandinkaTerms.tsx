@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
-import { Volume2, VolumeX, BookOpen, X } from 'lucide-react-native';
+import { Volume2, BookOpen, X } from 'lucide-react-native';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
-import * as Speech from 'expo-speech';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
 
 import { colors } from '@/lib/theme';
 import { mandinkaTerms } from '@/lib/mockData';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
 interface MandinkaTermsProps {
   visible: boolean;
@@ -21,6 +24,7 @@ const triggerHaptic = () => {
 
 export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) {
   const [playingTerm, setPlayingTerm] = useState<string | null>(null);
+  const soundRef = useRef<Audio.Sound | null>(null);
 
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
@@ -31,26 +35,65 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
 
   if (!visible || !fontsLoaded) return null;
 
+  const stopCurrent = async () => {
+    if (soundRef.current) {
+      await soundRef.current.stopAsync().catch(() => {});
+      await soundRef.current.unloadAsync().catch(() => {});
+      soundRef.current = null;
+    }
+    setPlayingTerm(null);
+  };
+
   const handlePlayAudio = async (term: string, phonetic: string) => {
     triggerHaptic();
 
     if (playingTerm === term) {
-      await Speech.stop();
-      setPlayingTerm(null);
+      await stopCurrent();
       return;
     }
 
-    await Speech.stop();
+    await stopCurrent();
     setPlayingTerm(term);
 
-    Speech.speak(phonetic, {
-      language: 'en',
-      pitch: 0.7,
-      rate: 0.8,
-      onDone: () => setPlayingTerm(null),
-      onError: () => setPlayingTerm(null),
-      onStopped: () => setPlayingTerm(null),
-    });
+    try {
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+
+      const response = await fetch(`${BACKEND_URL}/api/tts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: phonetic }),
+      });
+
+      if (!response.ok) throw new Error('TTS failed');
+
+      const blob = await response.blob();
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+
+      const path = `${FileSystem.cacheDirectory}tts_${term.replace(/[^a-z0-9]/gi, '_')}.mp3`;
+      await FileSystem.writeAsStringAsync(path, base64, { encoding: FileSystem.EncodingType.Base64 });
+
+      const { sound } = await Audio.Sound.createAsync({ uri: path });
+      soundRef.current = sound;
+      await sound.playAsync();
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setPlayingTerm(null);
+          sound.unloadAsync().catch(() => {});
+          soundRef.current = null;
+        }
+      });
+    } catch (e) {
+      console.error('[TTS]', e);
+      setPlayingTerm(null);
+    }
   };
 
   return (
@@ -96,6 +139,7 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
           <Pressable
             onPress={() => {
               triggerHaptic();
+              stopCurrent();
               onClose();
             }}
             className="w-8 h-8 rounded-full items-center justify-center"
@@ -107,7 +151,7 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
 
         {/* Terms List */}
         <ScrollView className="px-6 py-4" showsVerticalScrollIndicator={false}>
-          {mandinkaTerms.map((item, index) => (
+          {mandinkaTerms.map((item) => (
             <View
               key={item.term}
               className="flex-row items-center p-4 mb-3 rounded-xl"
@@ -139,11 +183,7 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
                   backgroundColor: playingTerm === item.term ? colors.primary[500] : colors.primary[100],
                 }}
               >
-                {playingTerm === item.term ? (
-                  <Volume2 size={22} color="white" />
-                ) : (
-                  <Volume2 size={22} color={colors.primary[500]} />
-                )}
+                <Volume2 size={22} color={playingTerm === item.term ? 'white' : colors.primary[500]} />
               </Pressable>
             </View>
           ))}

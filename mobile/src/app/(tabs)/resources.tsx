@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -17,7 +17,8 @@ import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-d
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
-import * as Speech from 'expo-speech';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
 
 import { colors } from '@/lib/theme';
 import { resourceLinks, videoLinks, mandinkaTerms, foundationalPrinciples } from '@/lib/mockData';
@@ -77,23 +78,56 @@ export default function ResourcesScreen() {
     setVideoModal({ vimeoId, title, subtitle });
   };
 
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  const stopCurrent = async () => {
+    if (soundRef.current) {
+      await soundRef.current.stopAsync().catch(() => {});
+      await soundRef.current.unloadAsync().catch(() => {});
+      soundRef.current = null;
+    }
+    setSpeakingTerm(null);
+  };
+
   const handleSpeakTerm = async (term: string, phonetic: string) => {
     triggerHaptic();
     if (speakingTerm === term) {
-      await Speech.stop();
-      setSpeakingTerm(null);
+      await stopCurrent();
       return;
     }
-    await Speech.stop();
+    await stopCurrent();
     setSpeakingTerm(term);
-    Speech.speak(phonetic, {
-      language: 'en',
-      pitch: 0.7,
-      rate: 0.8,
-      onDone: () => setSpeakingTerm(null),
-      onError: () => setSpeakingTerm(null),
-      onStopped: () => setSpeakingTerm(null),
-    });
+    try {
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+      const response = await fetch(`${BACKEND_URL}/api/tts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: phonetic }),
+      });
+      if (!response.ok) throw new Error('TTS failed');
+      const blob = await response.blob();
+      const reader = new FileReader();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      const path = `${FileSystem.cacheDirectory}tts_${term.replace(/[^a-z0-9]/gi, '_')}.mp3`;
+      await FileSystem.writeAsStringAsync(path, base64, { encoding: FileSystem.EncodingType.Base64 });
+      const { sound } = await Audio.Sound.createAsync({ uri: path });
+      soundRef.current = sound;
+      await sound.playAsync();
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setSpeakingTerm(null);
+          sound.unloadAsync().catch(() => {});
+          soundRef.current = null;
+        }
+      });
+    } catch (e) {
+      console.error('[TTS]', e);
+      setSpeakingTerm(null);
+    }
   };
 
   if (!fontsLoaded) {
