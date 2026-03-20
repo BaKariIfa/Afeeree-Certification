@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, TextInput, ActivityIndicator, ScrollView } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, Pressable, TextInput, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -21,6 +21,8 @@ export default function PurchaseScreen() {
   const router = useRouter();
 
   const [step, setStep] = useState<PaymentStep>('details');
+  const emailRef = useRef<TextInput>(null);
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -108,11 +110,18 @@ export default function PurchaseScreen() {
         locations={[0, 0.35, 1]}
         style={{ flex: 1 }}
       >
-        <ScrollView
+        <KeyboardAvoidingView
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingTop: insets.top + 16, paddingHorizontal: 24, paddingBottom: 40 }}
-          keyboardShouldPersistTaps="handled"
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={0}
         >
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingTop: insets.top + 16, paddingHorizontal: 24, paddingBottom: 60 }}
+            keyboardShouldPersistTaps="handled"
+            automaticallyAdjustKeyboardInsets
+            showsVerticalScrollIndicator={false}
+          >
           {/* Back Button */}
           {step !== 'success' && (
             <Pressable
@@ -266,6 +275,9 @@ export default function PurchaseScreen() {
                       }}
                       placeholder="Enter your full name"
                       placeholderTextColor={colors.neutral[400]}
+                      returnKeyType="next"
+                      onSubmitEditing={() => emailRef.current?.focus()}
+                      blurOnSubmit={false}
                       style={{
                         flex: 1,
                         marginLeft: 12,
@@ -301,6 +313,7 @@ export default function PurchaseScreen() {
                   >
                     <Mail size={20} color={colors.neutral[400]} />
                     <TextInput
+                      ref={emailRef}
                       value={email}
                       onChangeText={(text) => {
                         setEmail(text);
@@ -310,6 +323,8 @@ export default function PurchaseScreen() {
                       placeholderTextColor={colors.neutral[400]}
                       keyboardType="email-address"
                       autoCapitalize="none"
+                      returnKeyType="done"
+                      onSubmitEditing={handlePurchase}
                       style={{
                         flex: 1,
                         marginLeft: 12,
@@ -554,6 +569,7 @@ export default function PurchaseScreen() {
             )}
           </View>
         </ScrollView>
+        </KeyboardAvoidingView>
       </LinearGradient>
     </View>
   );
