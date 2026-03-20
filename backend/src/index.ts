@@ -5,6 +5,7 @@ import "./env";
 import { sampleRouter } from "./routes/sample";
 import { uploadRouter } from "./routes/upload";
 import { ttsRouter } from "./routes/tts";
+import { squareRouter } from "./routes/square";
 import { notationRouter } from "./routes/notation";
 import { logger } from "hono/logger";
 
@@ -40,6 +41,7 @@ app.route("/api/sample", sampleRouter);
 app.route("/api/upload", uploadRouter);
 app.route("/api/notation", notationRouter);
 app.route("/api/tts", ttsRouter);
+app.route("/api/square", squareRouter);
 
 const port = Number(process.env.PORT) || 3000;
 

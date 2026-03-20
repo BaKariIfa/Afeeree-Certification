@@ -7,6 +7,7 @@ import { ArrowLeft, ShieldCheck, CreditCard, Mail, User, Copy, ArrowRight, Check
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
 import * as Clipboard from 'expo-clipboard';
 
 import { colors } from '@/lib/theme';
@@ -46,7 +47,6 @@ export default function PurchaseScreen() {
   };
 
   const handlePurchase = async () => {
-    // Validate inputs
     if (!name.trim()) {
       setError('Please enter your full name');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -58,18 +58,34 @@ export default function PurchaseScreen() {
       return;
     }
 
+    setError('');
+    setStep('processing');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    // Open Square Checkout Link
-    const SQUARE_CHECKOUT_URL = 'https://square.link/u/v0CpuVqO';
+    try {
+      const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
+      const res = await fetch(`${BACKEND_URL}/api/square/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), amountCents: 60000 }),
+      });
+      const data = await res.json() as { url?: string; error?: string };
 
-    // On web, open in same window. On mobile, open in browser
-    if (typeof window !== 'undefined') {
-      window.open(SQUARE_CHECKOUT_URL, '_blank');
-    } else {
-      // For React Native, use Linking
-      const { Linking } = require('react-native');
-      Linking.openURL(SQUARE_CHECKOUT_URL);
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? 'Could not create checkout');
+      }
+
+      await WebBrowser.openBrowserAsync(data.url, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+      });
+
+      // Return to details step after browser closes so user can try again if needed
+      setStep('details');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Something went wrong';
+      setError(msg);
+      setStep('details');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
 
