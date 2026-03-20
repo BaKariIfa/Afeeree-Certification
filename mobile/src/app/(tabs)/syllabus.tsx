@@ -79,7 +79,9 @@ export default function SyllabusScreen() {
 
   const openNotationPdf = (fallbackUrl: string) => {
     const pdfUrl = notationPdfUrl ?? fallbackUrl;
-    const viewerUrl = `${BACKEND_URL}/api/notation/view?url=${encodeURIComponent(pdfUrl)}`;
+    const params = new URLSearchParams({ url: pdfUrl });
+    if (isDemoMode) params.set('maxPages', '5');
+    const viewerUrl = `${BACKEND_URL}/api/notation/view?${params.toString()}`;
     WebBrowser.openBrowserAsync(viewerUrl, {
       presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
     });

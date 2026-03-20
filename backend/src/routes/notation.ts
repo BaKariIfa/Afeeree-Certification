@@ -21,6 +21,9 @@ function resolveDownloadUrl(url: string): string {
 // Serve a watermarked version of a PDF given its URL
 notationRouter.get("/view", async (c) => {
   const rawUrl = c.req.query("url");
+  const maxPagesParam = c.req.query("maxPages");
+  const maxPages = maxPagesParam ? parseInt(maxPagesParam, 10) : null;
+
   if (!rawUrl) {
     return c.text("Missing url parameter", 400);
   }
@@ -53,9 +56,19 @@ notationRouter.get("/view", async (c) => {
   }
 
   const pages = pdfDoc.getPages();
+
+  // Trim to maxPages if specified (preview mode)
+  if (maxPages && !isNaN(maxPages) && maxPages > 0 && pages.length > maxPages) {
+    // Remove pages from the end, working backwards
+    for (let i = pages.length - 1; i >= maxPages; i--) {
+      pdfDoc.removePage(i);
+    }
+  }
+
+  const remainingPages = pdfDoc.getPages();
   const watermarkText = "AFeeree Certification Program — Confidential";
 
-  for (const page of pages) {
+  for (const page of remainingPages) {
     const { width, height } = page.getSize();
 
     // Draw watermark multiple times across the page diagonally
