@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BookOpen, Trophy, Clock, ChevronRight, Bell, Home, FileText, User, Library, MessageCircle, CreditCard, ArrowRight } from 'lucide-react-native';
+import { BookOpen, Trophy, Clock, ChevronRight, Bell, Home, FileText, User, Library, MessageCircle, CreditCard, ArrowRight, ShieldCheck } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
@@ -15,6 +15,7 @@ import { colors } from '@/lib/theme';
 import { mockModules, mockAssignments, mockNotifications } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
 import DemoBanner from '@/components/DemoBanner';
+import { AdminPanel } from '@/components/AdminPanel';
 
 // Helper function for haptic feedback on button press
 const triggerHaptic = () => {
@@ -26,6 +27,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   const userName = useUserStore(s => s.name);
   const isOnboarded = useUserStore(s => s.isOnboarded);
@@ -85,6 +87,7 @@ export default function HomeScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
       <DemoBanner />
+      <AdminPanel visible={showAdmin} onClose={() => setShowAdmin(false)} />
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -499,6 +502,19 @@ export default function HomeScreen() {
               </View>
             </View>
           </View>
+        </Animated.View>
+        {/* Admin Access */}
+        <Animated.View entering={FadeInDown.duration(600).delay(550)} className="px-6 mt-2 mb-4">
+          <Pressable
+            onPress={() => { triggerHaptic(); setShowAdmin(true); }}
+            className="flex-row items-center justify-center py-3 rounded-xl"
+            style={{ backgroundColor: colors.neutral[100], borderWidth: 1, borderColor: colors.neutral[200] }}
+          >
+            <ShieldCheck size={18} color={colors.neutral[500]} />
+            <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 14, marginLeft: 8 }}>
+              Admin Access
+            </Text>
+          </Pressable>
         </Animated.View>
       </ScrollView>
 
