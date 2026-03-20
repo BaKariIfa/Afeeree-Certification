@@ -43,14 +43,14 @@ export const foundationalPrinciples = [
 
 // Mandinka Terminology
 export const mandinkaTerms = [
-  { term: 'A-Feeree', meaning: 'Training/Method', phonetic: 'Ah Fee Ree' },
-  { term: 'Kunidi', meaning: 'Awakening', phonetic: 'Koo nee thee' },
-  { term: 'Kata', meaning: 'Movement', phonetic: 'Kar tar' },
-  { term: 'Bala', meaning: 'On', phonetic: 'Bar La' },
-  { term: 'Barente', meaning: 'Move', phonetic: 'Bar Ren teh' },
-  { term: 'Saba', meaning: 'Stretch', phonetic: 'Sah Bah' },
-  { term: 'Semboo', meaning: 'Strength', phonetic: 'Sem Bow' },
-  { term: 'Lapi', meaning: 'Beat', phonetic: 'Lah pee' },
+  { term: 'A-Feeree', meaning: 'Training/Method', phonetic: 'Ah Fee Ree', audio: require('../../assets/audio/afeeree.m4a') },
+  { term: 'Kunidi', meaning: 'Awakening', phonetic: 'Koo nee thee', audio: require('../../assets/audio/kunidi.m4a') },
+  { term: 'Kata', meaning: 'Movement', phonetic: 'Kar tar', audio: require('../../assets/audio/kata.m4a') },
+  { term: 'Bala', meaning: 'On', phonetic: 'Bar La', audio: require('../../assets/audio/bala.m4a') },
+  { term: 'Barente', meaning: 'Move', phonetic: 'Bar Ren teh', audio: require('../../assets/audio/barente.m4a') },
+  { term: 'Saba', meaning: 'Stretch', phonetic: 'Sah Bah', audio: require('../../assets/audio/saba.m4a') },
+  { term: 'Semboo', meaning: 'Strength', phonetic: 'Sem Bow', audio: require('../../assets/audio/semboo.m4a') },
+  { term: 'Lapi', meaning: 'Beat', phonetic: 'Lah pee', audio: require('../../assets/audio/lapi.m4a') },
 ];
 
 export const mockUser: User = {

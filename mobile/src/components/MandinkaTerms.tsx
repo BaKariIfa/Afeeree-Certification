@@ -6,12 +6,9 @@ import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-d
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
 
 import { colors } from '@/lib/theme';
 import { mandinkaTerms } from '@/lib/mockData';
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
 interface MandinkaTermsProps {
   visible: boolean;
@@ -44,7 +41,7 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
     setPlayingTerm(null);
   };
 
-  const handlePlayAudio = async (term: string, phonetic: string) => {
+  const handlePlayAudio = async (term: string, audio: number) => {
     triggerHaptic();
 
     if (playingTerm === term) {
@@ -57,30 +54,7 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
 
     try {
       await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
-
-      const response = await fetch(`${BACKEND_URL}/api/tts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: phonetic }),
-      });
-
-      if (!response.ok) throw new Error('TTS failed');
-
-      const blob = await response.blob();
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => {
-          const result = reader.result as string;
-          resolve(result.split(',')[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-
-      const path = `${FileSystem.cacheDirectory}tts_${term.replace(/[^a-z0-9]/gi, '_')}.mp3`;
-      await FileSystem.writeAsStringAsync(path, base64, { encoding: FileSystem.EncodingType.Base64 });
-
-      const { sound } = await Audio.Sound.createAsync({ uri: path });
+      const { sound } = await Audio.Sound.createAsync(audio);
       soundRef.current = sound;
       await sound.playAsync();
       sound.setOnPlaybackStatusUpdate((status) => {
@@ -91,7 +65,7 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
         }
       });
     } catch (e) {
-      console.error('[TTS]', e);
+      console.error('[Audio]', e);
       setPlayingTerm(null);
     }
   };
@@ -177,7 +151,7 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
               </View>
 
               <Pressable
-                onPress={() => handlePlayAudio(item.term, item.phonetic)}
+                onPress={() => handlePlayAudio(item.term, item.audio)}
                 className="w-12 h-12 rounded-full items-center justify-center"
                 style={{
                   backgroundColor: playingTerm === item.term ? colors.primary[500] : colors.primary[100],

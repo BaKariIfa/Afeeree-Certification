@@ -18,7 +18,6 @@ import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-g
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
 
 import { colors } from '@/lib/theme';
 import { resourceLinks, videoLinks, mandinkaTerms, foundationalPrinciples } from '@/lib/mockData';
@@ -89,7 +88,7 @@ export default function ResourcesScreen() {
     setSpeakingTerm(null);
   };
 
-  const handleSpeakTerm = async (term: string, phonetic: string) => {
+  const handleSpeakTerm = async (term: string, audio: number) => {
     triggerHaptic();
     if (speakingTerm === term) {
       await stopCurrent();
@@ -99,22 +98,7 @@ export default function ResourcesScreen() {
     setSpeakingTerm(term);
     try {
       await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
-      const response = await fetch(`${BACKEND_URL}/api/tts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: phonetic }),
-      });
-      if (!response.ok) throw new Error('TTS failed');
-      const blob = await response.blob();
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve((reader.result as string).split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-      const path = `${FileSystem.cacheDirectory}tts_${term.replace(/[^a-z0-9]/gi, '_')}.mp3`;
-      await FileSystem.writeAsStringAsync(path, base64, { encoding: FileSystem.EncodingType.Base64 });
-      const { sound } = await Audio.Sound.createAsync({ uri: path });
+      const { sound } = await Audio.Sound.createAsync(audio);
       soundRef.current = sound;
       await sound.playAsync();
       sound.setOnPlaybackStatusUpdate((status) => {
@@ -125,7 +109,7 @@ export default function ResourcesScreen() {
         }
       });
     } catch (e) {
-      console.error('[TTS]', e);
+      console.error('[Audio]', e);
       setSpeakingTerm(null);
     }
   };
@@ -347,7 +331,7 @@ export default function ResourcesScreen() {
                 }}
               >
                 <Pressable
-                  onPress={() => handleSpeakTerm(item.term, item.phonetic)}
+                  onPress={() => handleSpeakTerm(item.term, item.audio)}
                   className="w-10 h-10 rounded-full items-center justify-center"
                   style={{ backgroundColor: speakingTerm === item.term ? colors.primary[500] : colors.primary[100] }}
                 >
