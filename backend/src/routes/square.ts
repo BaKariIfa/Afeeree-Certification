@@ -34,17 +34,6 @@ squareRouter.post("/checkout", async (c) => {
           },
         },
       ],
-      ...(body.name || body.email ? {
-        fulfillments: [{
-          type: "DIGITAL",
-          digital_fulfillment_details: {
-            recipient: {
-              display_name: body.name ?? "",
-              email_address: body.email ?? "",
-            },
-          },
-        }],
-      } : {}),
     },
     checkout_options: {
       redirect_url: "https://afeeree.com",
