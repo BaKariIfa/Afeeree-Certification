@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, Modal, ActivityIndicator, StatusBar } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Pressable, Modal, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { X, Play } from 'lucide-react-native';
+import { X, Play, Lock } from 'lucide-react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { colors } from '@/lib/theme';
+
+const PREVIEW_LIMIT_SECONDS = 60;
 
 interface VideoModalProps {
   visible: boolean;
@@ -12,6 +14,7 @@ interface VideoModalProps {
   vimeoId: string;
   title: string;
   subtitle?: string;
+  previewMode?: boolean;
 }
 
 function getVimeoId(url: string): string {
@@ -20,11 +23,39 @@ function getVimeoId(url: string): string {
   return match ? match[1] : url;
 }
 
-export default function VideoModal({ visible, onClose, vimeoId, title, subtitle }: VideoModalProps) {
+export default function VideoModal({ visible, onClose, vimeoId, title, subtitle, previewMode }: VideoModalProps) {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
+  const [secondsLeft, setSecondsLeft] = useState(PREVIEW_LIMIT_SECONDS);
+  const [expired, setExpired] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const id = getVimeoId(vimeoId);
+
+  // Reset and start timer when modal opens in preview mode
+  useEffect(() => {
+    if (visible && previewMode) {
+      setSecondsLeft(PREVIEW_LIMIT_SECONDS);
+      setExpired(false);
+      timerRef.current = setInterval(() => {
+        setSecondsLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            setExpired(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setSecondsLeft(PREVIEW_LIMIT_SECONDS);
+      setExpired(false);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [visible, previewMode]);
 
   const embedHtml = id ? `<!DOCTYPE html>
 <html>
@@ -49,6 +80,8 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle 
   React.useEffect(() => {
     if (visible && id) setLoading(true);
   }, [visible, id]);
+
+  const showCountdown = previewMode && !expired && secondsLeft <= 15;
 
   return (
     <Modal
@@ -169,6 +202,68 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle 
               originWhitelist={['*']}
             />
           ) : null}
+
+          {/* Countdown warning — last 15 seconds */}
+          {showCountdown && (
+            <Animated.View
+              entering={FadeIn.duration(300)}
+              style={{
+                position: 'absolute',
+                bottom: 20,
+                left: 20,
+                right: 20,
+                backgroundColor: 'rgba(0,0,0,0.85)',
+                borderRadius: 14,
+                padding: 14,
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: colors.gold[500],
+              }}
+            >
+              <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.gold[500], alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 14 }}>{secondsLeft}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>Preview ending soon</Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 2 }}>Enroll to watch the full video</Text>
+              </View>
+            </Animated.View>
+          )}
+
+          {/* Expired overlay */}
+          {expired && (
+            <Animated.View
+              entering={FadeIn.duration(400)}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundColor: 'rgba(0,0,0,0.92)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 32,
+              }}
+            >
+              <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: colors.primary[600], alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Lock size={28} color="white" />
+              </View>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22, textAlign: 'center', marginBottom: 10 }}>
+                Preview Ended
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.65)', fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 28 }}>
+                Your 1-minute preview has ended. Enroll in the full AFeeree Certification Program to watch all video content.
+              </Text>
+              <Pressable
+                onPress={onClose}
+                style={{ backgroundColor: colors.gold[500], borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 }}
+              >
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>Enroll Now</Text>
+              </Pressable>
+              <Pressable onPress={onClose} style={{ marginTop: 14 }}>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>Close</Text>
+              </Pressable>
+            </Animated.View>
+          )}
         </View>
 
         {/* Footer note */}

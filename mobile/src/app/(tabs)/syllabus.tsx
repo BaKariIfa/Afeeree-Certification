@@ -92,13 +92,12 @@ export default function SyllabusScreen() {
   };
 
   const openVideo = (vimeoId: string, title: string, subtitle: string) => {
-    if (isDemoMode) return;
     triggerHaptic();
     setVideoModal({ vimeoId, title, subtitle });
   };
 
-  const handleModulePress = (module: Module) => {
-    if (isDemoMode) return;
+  const handleModulePress = (module: Module, index: number) => {
+    if (isDemoMode && index >= 2) return;
     triggerHaptic();
     openNotationPdf(module.pdfLink ?? resourceLinks.syllabus);
   };
@@ -119,6 +118,7 @@ export default function SyllabusScreen() {
         vimeoId={videoModal?.vimeoId ?? ''}
         title={videoModal?.title ?? ''}
         subtitle={videoModal?.subtitle}
+        previewMode={isDemoMode}
       />
 
       <ScrollView
@@ -207,23 +207,40 @@ export default function SyllabusScreen() {
             Video Demonstrations
           </Text>
           {isDemoMode ? (
-            <View
-              className="flex-row items-center p-4 rounded-2xl"
-              style={{ backgroundColor: colors.neutral[100], borderWidth: 1.5, borderColor: colors.neutral[200], borderStyle: 'dashed' }}
-            >
+            <View className="gap-3">
               <View
-                className="w-10 h-10 rounded-full items-center justify-center"
-                style={{ backgroundColor: colors.neutral[200] }}
+                className="rounded-xl px-3 py-2 mb-1"
+                style={{ backgroundColor: colors.gold[100], borderWidth: 1, borderColor: colors.gold[200] }}
               >
-                <Lock size={18} color={colors.neutral[400]} />
+                <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.gold[700], fontSize: 12, textAlign: 'center' }}>
+                  Preview: videos limited to 1 minute
+                </Text>
               </View>
-              <View className="flex-1 ml-3">
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500] }} className="text-sm">
-                  Videos locked in Preview Mode
-                </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400] }} className="text-xs mt-0.5">
-                  Enroll to watch Part 1 & Part 2 demonstrations
-                </Text>
+              <View className="flex-row gap-3">
+                <Pressable
+                  onPress={() => openVideo(videoLinks.part1, 'Part 1', 'Kata & Context')}
+                  className="flex-1 flex-row items-center p-4 rounded-2xl"
+                  style={{ backgroundColor: colors.gold[500] }}
+                >
+                  <Video size={22} color="white" />
+                  <View className="flex-1 ml-3">
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }} className="text-sm">Part 1</Text>
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[100] }} className="text-xs">Kata & Context</Text>
+                  </View>
+                  <Play size={18} color="white" fill="white" />
+                </Pressable>
+                <Pressable
+                  onPress={() => openVideo(videoLinks.part2, 'Part 2', 'Kata & Context')}
+                  className="flex-1 flex-row items-center p-4 rounded-2xl"
+                  style={{ backgroundColor: colors.gold[500] }}
+                >
+                  <Video size={22} color="white" />
+                  <View className="flex-1 ml-3">
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }} className="text-sm">Part 2</Text>
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[100] }} className="text-xs">Kata & Context</Text>
+                  </View>
+                  <Play size={18} color="white" fill="white" />
+                </Pressable>
               </View>
             </View>
           ) : (
@@ -344,7 +361,7 @@ export default function SyllabusScreen() {
                   elevation: 3,
                   opacity: isLocked ? 0.6 : 1,
                 }}
-                onPress={() => isLocked ? null : handleModulePress(module)}
+                onPress={() => isLocked ? null : handleModulePress(module, index)}
               >
                 {isLocked && (
                   <View
