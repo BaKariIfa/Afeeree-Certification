@@ -60,7 +60,7 @@ export default function LandingPage() {
     },
     {
       title: 'Experiencing the Physical Language',
-      synopsis: 'Hands-on exploration of Africanist movement through guided practice. Students embody the concepts through warm-up sequences, basic kata forms, and partner observation, developing a felt sense of the methodology.',
+      synopsis: 'Hands-on exploration of Africanist movement through guided practice. Students embody the concepts by developing through the natural bends of the body, basic kata forms, and partner observation, cultivating a felt sense of the methodology.',
     },
     {
       title: 'Polyrhythmic Body Isolations',
