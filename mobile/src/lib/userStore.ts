@@ -84,6 +84,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       isOnboarded: false,
       hasAccess: false,
       accessCode: '',
+      isDemoMode: false,
       completedLessons: [],
       moduleProgress: {},
       notes: {},

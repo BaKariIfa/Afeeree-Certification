@@ -60,6 +60,7 @@ export default function ProfileScreen() {
   const practiceTime = useUserStore(s => s.practiceTime);
   const darkMode = useUserStore(s => s.darkMode);
   const toggleDarkMode = useUserStore(s => s.toggleDarkMode);
+  const isDemoMode = useUserStore(s => s.isDemoMode);
   const logout = useUserStore(s => s.logout);
 
   useEffect(() => {
@@ -222,7 +223,7 @@ export default function ProfileScreen() {
   const handleSignOut = async () => {
     triggerHaptic();
     await logout();
-    router.replace('/access-code');
+    router.replace(isDemoMode ? '/landing' : '/access-code');
   };
 
   const menuItems = [
@@ -258,7 +259,7 @@ export default function ProfileScreen() {
       onPress: handleSettingsPress
     },
     { icon: <HelpCircle size={22} color={colors.neutral[600]} />, label: 'Help & Support', onPress: () => triggerHaptic() },
-    { icon: <LogOut size={22} color={colors.error} />, label: 'Sign Out', onPress: handleSignOut, isDestructive: true },
+    { icon: <LogOut size={22} color={colors.error} />, label: isDemoMode ? 'Exit Preview' : 'Sign Out', onPress: handleSignOut, isDestructive: true },
   ];
 
   return (
