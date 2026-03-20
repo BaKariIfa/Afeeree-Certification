@@ -39,11 +39,6 @@ squareRouter.post("/checkout", async (c) => {
       redirect_url: "https://afeeree.com",
       ask_for_shipping_address: false,
     },
-    ...(body.email ? {
-      pre_populated_data: {
-        buyer_email: body.email,
-      },
-    } : {}),
   };
 
   const response = await fetch(`${SQUARE_BASE}/v2/online-checkout/payment-links`, {
