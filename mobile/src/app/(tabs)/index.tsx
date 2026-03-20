@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BookOpen, Trophy, Clock, ChevronRight, Bell, Home, FileText, User, Library, MessageCircle } from 'lucide-react-native';
+import { BookOpen, Trophy, Clock, ChevronRight, Bell, Home, FileText, User, Library, MessageCircle, CreditCard, ArrowRight } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
@@ -195,6 +195,45 @@ export default function HomeScreen() {
               <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500] }} className="text-xs mt-1">Resources</Text>
             </Pressable>
           </View>
+        </Animated.View>
+
+        {/* Enroll Banner — prominent for testers */}
+        <Animated.View entering={FadeInDown.duration(600).delay(180)} className="mx-6 mt-4">
+          <Pressable
+            onPress={() => navigateWithHaptic('/purchase')}
+            style={{
+              borderRadius: 16,
+              overflow: 'hidden',
+              shadowColor: colors.gold[600],
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 12,
+              elevation: 6,
+            }}
+          >
+            <LinearGradient
+              colors={[colors.gold[500], colors.gold[700]]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 16, paddingHorizontal: 20 }}
+            >
+              <View
+                className="w-11 h-11 rounded-full items-center justify-center mr-4"
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+              >
+                <CreditCard size={22} color="white" />
+              </View>
+              <View className="flex-1">
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>
+                  Enroll Now — $600 CAD
+                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 }}>
+                  AFeeree Certification Program
+                </Text>
+              </View>
+              <ArrowRight size={20} color="white" />
+            </LinearGradient>
+          </Pressable>
         </Animated.View>
 
         {/* Welcome Section - Simplified */}
