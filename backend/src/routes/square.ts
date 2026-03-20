@@ -30,7 +30,7 @@ squareRouter.post("/checkout", async (c) => {
           quantity: "1",
           base_price_money: {
             amount: body.amountCents ?? 60000,
-            currency: "USD",
+            currency: "CAD",
           },
         },
       ],

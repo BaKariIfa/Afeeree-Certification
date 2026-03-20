@@ -32,6 +32,7 @@ export default function PurchaseScreen() {
 
   // Program price
   const PROGRAM_PRICE = 600;
+  const PROGRAM_CURRENCY = 'CAD';
   const PROGRAM_NAME = 'AFeeree Certification Program';
 
   const [fontsLoaded] = useFonts({
@@ -221,7 +222,7 @@ export default function PurchaseScreen() {
                       fontSize: 32,
                     }}
                   >
-                    ${PROGRAM_PRICE}
+                    ${PROGRAM_PRICE} {PROGRAM_CURRENCY}
                   </Text>
                   <Text
                     style={{
@@ -355,7 +356,7 @@ export default function PurchaseScreen() {
                       fontSize: 16,
                     }}
                   >
-                    Pay ${PROGRAM_PRICE}
+                    Pay ${PROGRAM_PRICE} {PROGRAM_CURRENCY}
                   </Text>
                 </Pressable>
 
