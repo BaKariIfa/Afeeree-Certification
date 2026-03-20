@@ -188,7 +188,7 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle,
               </Text>
             </View>
           )}
-          {id && embedHtml ? (
+          {id && embedHtml && !expired ? (
             <WebView
               key={id}
               source={{ html: embedHtml, baseUrl: 'https://player.vimeo.com' }}
