@@ -22,6 +22,7 @@ import { Audio } from 'expo-av';
 import { colors } from '@/lib/theme';
 import { resourceLinks, videoLinks, mandinkaTerms, foundationalPrinciples } from '@/lib/mockData';
 import { useNotationStore } from '@/lib/notationStore';
+import { useUserStore } from '@/lib/userStore';
 import VideoModal from '@/components/VideoModal';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
@@ -39,6 +40,7 @@ export default function ResourcesScreen() {
 
   const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
   const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
+  const isDemoMode = useUserStore(s => s.isDemoMode);
 
   React.useEffect(() => { loadNotationPdfUrl(); }, []);
 
@@ -58,7 +60,9 @@ export default function ResourcesScreen() {
   const openPdf = (fallbackUrl: string) => {
     triggerHaptic();
     const pdfUrl = notationPdfUrl ?? fallbackUrl;
-    const viewerUrl = `${BACKEND_URL}/api/notation/view?url=${encodeURIComponent(pdfUrl)}`;
+    const params = new URLSearchParams({ url: pdfUrl });
+    if (isDemoMode) params.set('maxPages', '5');
+    const viewerUrl = `${BACKEND_URL}/api/notation/view?${params.toString()}`;
     WebBrowser.openBrowserAsync(viewerUrl, {
       presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
     });
@@ -66,7 +70,9 @@ export default function ResourcesScreen() {
 
   const openRawPdf = (url: string) => {
     triggerHaptic();
-    const viewerUrl = `${BACKEND_URL}/api/notation/view?url=${encodeURIComponent(url)}`;
+    const params = new URLSearchParams({ url });
+    if (isDemoMode) params.set('maxPages', '5');
+    const viewerUrl = `${BACKEND_URL}/api/notation/view?${params.toString()}`;
     WebBrowser.openBrowserAsync(viewerUrl, {
       presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
     });
@@ -126,6 +132,7 @@ export default function ResourcesScreen() {
         vimeoId={videoModal?.vimeoId ?? ''}
         title={videoModal?.title ?? ''}
         subtitle={videoModal?.subtitle}
+        previewMode={isDemoMode}
       />
 
       <ScrollView
