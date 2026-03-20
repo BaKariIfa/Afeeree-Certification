@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView, Modal } from 'react-native';
 import { Volume2, BookOpen, X } from 'lucide-react-native';
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -30,7 +30,7 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
     DMSans_600SemiBold,
   });
 
-  if (!visible || !fontsLoaded) return null;
+  if (!fontsLoaded) return null;
 
   const stopCurrent = async () => {
     if (soundRef.current) {
@@ -71,106 +71,110 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
   };
 
   return (
-    <Animated.View
-      entering={FadeIn.duration(200)}
-      exiting={FadeOut.duration(200)}
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-      }}
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+      statusBarTranslucent
     >
-      <Pressable style={{ flex: 1 }} onPress={onClose} />
-
       <Animated.View
-        entering={SlideInDown.duration(300)}
-        exiting={SlideOutDown.duration(300)}
-        style={{ backgroundColor: colors.cream[100], maxHeight: '80%', borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+        entering={FadeIn.duration(200)}
+        exiting={FadeOut.duration(200)}
+        style={{
+          flex: 1,
+          justifyContent: 'flex-end',
+          backgroundColor: 'rgba(0,0,0,0.5)',
+        }}
       >
-        {/* Header */}
-        <View className="flex-row items-center justify-between px-6 pt-6 pb-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[200] }}>
-          <View className="flex-row items-center">
-            <View
-              className="w-10 h-10 rounded-full items-center justify-center mr-3"
-              style={{ backgroundColor: colors.gold[100] }}
-            >
-              <BookOpen size={20} color={colors.gold[600]} />
-            </View>
-            <View>
-              <Text
-                style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }}
-                className="text-xl"
-              >
-                Mandinka Terms
-              </Text>
-              <Text
-                style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
-                className="text-sm"
-              >
-                Key vocabulary for AFeeree
-              </Text>
-            </View>
-          </View>
+        <Pressable style={{ flex: 1 }} onPress={onClose} />
 
-          <Pressable
-            onPress={() => {
-              triggerHaptic();
-              stopCurrent();
-              onClose();
-            }}
-            className="w-8 h-8 rounded-full items-center justify-center"
-            style={{ backgroundColor: colors.neutral[100] }}
-          >
-            <X size={18} color={colors.neutral[600]} />
-          </Pressable>
-        </View>
-
-        {/* Terms List */}
-        <ScrollView className="px-6 py-4" showsVerticalScrollIndicator={false}>
-          {mandinkaTerms.map((item) => (
-            <View
-              key={item.term}
-              className="flex-row items-center p-4 mb-3 rounded-xl"
-              style={{
-                backgroundColor: 'white',
-                borderWidth: 1,
-                borderColor: colors.neutral[200],
-              }}
-            >
-              <View className="flex-1">
+        <Animated.View
+          entering={SlideInDown.duration(300)}
+          exiting={SlideOutDown.duration(300)}
+          style={{ backgroundColor: colors.cream[100], maxHeight: '80%', borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
+        >
+          {/* Header */}
+          <View className="flex-row items-center justify-between px-6 pt-6 pb-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[200] }}>
+            <View className="flex-row items-center">
+              <View
+                className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                style={{ backgroundColor: colors.gold[100] }}
+              >
+                <BookOpen size={20} color={colors.gold[600]} />
+              </View>
+              <View>
                 <Text
-                  style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600] }}
-                  className="text-lg"
+                  style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }}
+                  className="text-xl"
                 >
-                  {item.term}
+                  Mandinka Terms
                 </Text>
                 <Text
-                  style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600] }}
-                  className="text-base mt-1"
+                  style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
+                  className="text-sm"
                 >
-                  {item.meaning}
+                  Key vocabulary for AFeeree
                 </Text>
               </View>
+            </View>
 
-              <Pressable
-                onPress={() => handlePlayAudio(item.term, item.audio)}
-                className="w-12 h-12 rounded-full items-center justify-center"
+            <Pressable
+              onPress={() => {
+                triggerHaptic();
+                stopCurrent();
+                onClose();
+              }}
+              className="w-8 h-8 rounded-full items-center justify-center"
+              style={{ backgroundColor: colors.neutral[100] }}
+            >
+              <X size={18} color={colors.neutral[600]} />
+            </Pressable>
+          </View>
+
+          {/* Terms List */}
+          <ScrollView className="px-6 py-4" showsVerticalScrollIndicator={false}>
+            {mandinkaTerms.map((item) => (
+              <View
+                key={item.term}
+                className="flex-row items-center p-4 mb-3 rounded-xl"
                 style={{
-                  backgroundColor: playingTerm === item.term ? colors.primary[500] : colors.primary[100],
+                  backgroundColor: 'white',
+                  borderWidth: 1,
+                  borderColor: colors.neutral[200],
                 }}
               >
-                <Volume2 size={22} color={playingTerm === item.term ? 'white' : colors.primary[500]} />
-              </Pressable>
-            </View>
-          ))}
+                <View className="flex-1">
+                  <Text
+                    style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600] }}
+                    className="text-lg"
+                  >
+                    {item.term}
+                  </Text>
+                  <Text
+                    style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600] }}
+                    className="text-base mt-1"
+                  >
+                    {item.meaning}
+                  </Text>
+                </View>
 
-          <View className="h-6" />
-        </ScrollView>
+                <Pressable
+                  onPress={() => handlePlayAudio(item.term, item.audio)}
+                  className="w-12 h-12 rounded-full items-center justify-center"
+                  style={{
+                    backgroundColor: playingTerm === item.term ? colors.primary[500] : colors.primary[100],
+                  }}
+                >
+                  <Volume2 size={22} color={playingTerm === item.term ? 'white' : colors.primary[500]} />
+                </Pressable>
+              </View>
+            ))}
+
+            <View className="h-6" />
+          </ScrollView>
+        </Animated.View>
       </Animated.View>
-    </Animated.View>
+    </Modal>
   );
 }
