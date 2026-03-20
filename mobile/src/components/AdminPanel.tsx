@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, TextInput, Modal, FlatList, Share, Alert, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { X, Key, Plus, Copy, Trash2, Share2, ShieldCheck, Users, Check, FileText, Upload, CheckCircle } from 'lucide-react-native';
+import { X, Key, Plus, Copy, Trash2, Share2, ShieldCheck, Users, Check, FileText, Upload, CheckCircle, CreditCard } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
 import * as DocumentPicker from 'expo-document-picker';
+import { useRouter } from 'expo-router';
 
 import { colors } from '@/lib/theme';
 import { useAccessCodeStore, ADMIN_PASSWORD, AccessCode } from '@/lib/accessCodeStore';
 import { useNotationStore } from '@/lib/notationStore';
 import { uploadFile } from '@/lib/upload';
+import { logSquareConfig } from '@/lib/squareConfig';
 
 interface AdminPanelProps {
   visible: boolean;
@@ -21,6 +23,7 @@ interface AdminPanelProps {
 
 export function AdminPanel({ visible, onClose }: AdminPanelProps) {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [passwordError, setPasswordError] = useState('');
@@ -340,6 +343,27 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                 )}
               </Pressable>
             </Animated.View>
+
+            {/* Test Square Payment */}
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                const config = logSquareConfig();
+                if (config.isConfigured) {
+                  onClose();
+                  router.push('/purchase');
+                } else {
+                  Alert.alert('Square Not Configured', 'Add Square credentials in the ENV tab to enable payments.');
+                }
+              }}
+              className="flex-row items-center justify-center py-4 rounded-xl mb-3"
+              style={{ backgroundColor: colors.success + '20', borderWidth: 1, borderColor: colors.success + '40' }}
+            >
+              <CreditCard size={20} color={colors.success} />
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.success, marginLeft: 8, fontSize: 15 }}>
+                Test Square Payment
+              </Text>
+            </Pressable>
 
             {/* Generate Button */}
             <Pressable

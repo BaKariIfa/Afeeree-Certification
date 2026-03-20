@@ -23,8 +23,6 @@ import {
   Camera,
   Moon,
   Sun,
-  ShieldCheck,
-  CreditCard
 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -36,8 +34,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '@/lib/theme';
 import { mockModules, mockAssignments } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
-import { AdminPanel } from '@/components/AdminPanel';
-import { logSquareConfig } from '@/lib/squareConfig';
 
 const PROFILE_IMAGE_KEY = 'user_profile_image';
 
@@ -49,7 +45,6 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
   // User store values
@@ -210,16 +205,6 @@ export default function ProfileScreen() {
 
   const earnedCount = achievements.filter(a => a.earned).length;
 
-  const testSquareConnection = () => {
-    triggerHaptic();
-    const config = logSquareConfig();
-    if (config.isConfigured) {
-      router.push('/purchase');
-    } else {
-      console.log('Square not configured - check ENV tab');
-    }
-  };
-
   const handleSignOut = async () => {
     triggerHaptic();
     await logout();
@@ -227,23 +212,6 @@ export default function ProfileScreen() {
   };
 
   const menuItems = [
-    {
-      icon: <CreditCard size={22} color={colors.success} />,
-      label: 'Test Square Payment',
-      sublabel: 'Verify payment connection',
-      onPress: testSquareConnection,
-      isTest: true
-    },
-    {
-      icon: <ShieldCheck size={22} color={colors.gold[600]} />,
-      label: 'Admin Panel',
-      sublabel: 'Manage access codes',
-      onPress: () => {
-        triggerHaptic();
-        setShowAdminPanel(true);
-      },
-      isAdmin: true
-    },
     {
       icon: darkMode ? <Sun size={22} color={colors.gold[500]} /> : <Moon size={22} color={colors.neutral[600]} />,
       label: darkMode ? 'Light Mode' : 'Dark Mode',
@@ -613,12 +581,6 @@ export default function ProfileScreen() {
           </Text>
         </Animated.View>
       </ScrollView>
-
-      {/* Admin Panel Modal */}
-      <AdminPanel
-        visible={showAdminPanel}
-        onClose={() => setShowAdminPanel(false)}
-      />
     </View>
   );
 }
