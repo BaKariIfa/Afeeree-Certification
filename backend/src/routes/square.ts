@@ -2,8 +2,7 @@ import { Hono } from "hono";
 
 const squareRouter = new Hono();
 
-const isSandbox = process.env.SQUARE_ACCESS_TOKEN?.startsWith('EAAA') &&
-  (process.env.EXPO_PUBLIC_SQUARE_APP_ID ?? '').startsWith('sandbox');
+const isSandbox = (process.env.SQUARE_APP_ID ?? '').startsWith('sandbox');
 
 const SQUARE_BASE = isSandbox
   ? 'https://connect.squareupsandbox.com'
