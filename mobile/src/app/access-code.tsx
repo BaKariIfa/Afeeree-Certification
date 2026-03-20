@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Key, ShieldCheck, AlertCircle, CreditCard } from 'lucide-react-native';
+import { Key, ShieldCheck, AlertCircle, CreditCard, Eye } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp, useSharedValue, useAnimatedStyle, withSequence, withTiming } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
@@ -277,12 +277,13 @@ export default function AccessCodeScreen() {
                 <View className="mt-4">
                   <Pressable
                     onPress={handlePreview}
-                    className="py-3 rounded-xl flex-row items-center justify-center"
-                    style={{ backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.primary[300] }}
+                    className="py-4 rounded-xl flex-row items-center justify-center"
+                    style={{ backgroundColor: colors.primary[600] }}
                   >
+                    <Eye size={20} color="white" />
                     <Text
-                      style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600] }}
-                      className="text-sm"
+                      style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}
+                      className="ml-2"
                     >
                       Preview App
                     </Text>
