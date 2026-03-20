@@ -29,6 +29,8 @@ export default function LandingPage() {
     DMSans_600SemiBold,
   });
 
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
   if (!fontsLoaded) {
     return null;
   }
@@ -52,12 +54,30 @@ export default function LandingPage() {
   ];
 
   const modules = [
-    'Introduction to AFeeree Movement Principles',
-    'Experiencing the Physical Language',
-    'Polyrhythmic Body Isolations',
-    'Understanding the Research Foundation',
-    'Cultural Context & Historical Framework',
-    'Preparation for Advanced Study',
+    {
+      title: 'Introduction to AFeeree Movement Principles',
+      synopsis: 'An overview of the AFeeree methodology and its foundational movement vocabulary. Students are introduced to the seven principles that underpin every aspect of the physical language, including polyrhythm, polycentrism, and holism.',
+    },
+    {
+      title: 'Experiencing the Physical Language',
+      synopsis: 'Hands-on exploration of Africanist movement through guided practice. Students embody the concepts through warm-up sequences, basic kata forms, and partner observation, developing a felt sense of the methodology.',
+    },
+    {
+      title: 'Polyrhythmic Body Isolations',
+      synopsis: 'A focused study of the body\'s ability to move multiple centres simultaneously. Exercises develop independence between the upper and lower body, training feet to hold a foundational rhythm while the torso layers additional patterns.',
+    },
+    {
+      title: 'Understanding the Research Foundation',
+      synopsis: 'An introduction to the scholarly research behind AFeeree, drawing on African aesthetics theory, ethnochoreology, and BaKari Lindsay\'s master\'s thesis. Students gain insight into how academic research informs practical movement training.',
+    },
+    {
+      title: 'Cultural Context & Historical Framework',
+      synopsis: 'An exploration of the African and Caribbean cultural traditions that shape the AFeeree aesthetic. Students examine how history, diaspora, and community inform movement practices and the responsibilities that come with teaching this work.',
+    },
+    {
+      title: 'Preparation for Advanced Study',
+      synopsis: 'A reflective session bridging introductory experience with the full Certification Program. Students review core concepts, discuss pathways toward teaching certification, and are guided on how to deepen their practice.',
+    },
   ];
 
   return (
@@ -339,51 +359,79 @@ export default function LandingPage() {
           Experience the physicality and explore the research behind AFeeree methodology
         </Text>
         <View style={{ maxWidth: 600, alignSelf: 'center', width: '100%' }}>
-          {modules.map((module, index) => (
-            <Pressable
-              key={index}
-              onPress={() => router.push('/purchase')}
-              style={({ pressed }) => ({
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: pressed ? colors.primary[50] : 'white',
-                borderRadius: 12,
-                padding: 16,
-                marginBottom: 12,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 8,
-              })}
-            >
+          {modules.map((module, index) => {
+            const isExpanded = expandedIndex === index;
+            return (
               <View
+                key={index}
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  backgroundColor: colors.primary[100],
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: 16,
+                  backgroundColor: 'white',
+                  borderRadius: 12,
+                  marginBottom: 12,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.05,
+                  shadowRadius: 8,
+                  overflow: 'hidden',
                 }}
               >
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600], fontSize: 14 }}>
-                  {index + 1}
-                </Text>
+                <Pressable
+                  onPress={() => setExpandedIndex(isExpanded ? null : index)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 16,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
+                      backgroundColor: colors.primary[100],
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 16,
+                    }}
+                  >
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600], fontSize: 14 }}>
+                      {index + 1}
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      fontFamily: 'DMSans_500Medium',
+                      color: colors.neutral[800],
+                      fontSize: 15,
+                      flex: 1,
+                    }}
+                  >
+                    {module.title}
+                  </Text>
+                  <ChevronRight
+                    size={20}
+                    color={colors.neutral[400]}
+                    style={{ transform: [{ rotate: isExpanded ? '90deg' : '0deg' }] }}
+                  />
+                </Pressable>
+                {isExpanded && (
+                  <View style={{ paddingHorizontal: 16, paddingBottom: 16, paddingTop: 4 }}>
+                    <View style={{ height: 1, backgroundColor: colors.neutral[100], marginBottom: 12 }} />
+                    <Text
+                      style={{
+                        fontFamily: 'DMSans_400Regular',
+                        color: colors.neutral[600],
+                        fontSize: 14,
+                        lineHeight: 22,
+                      }}
+                    >
+                      {module.synopsis}
+                    </Text>
+                  </View>
+                )}
               </View>
-              <Text
-                style={{
-                  fontFamily: 'DMSans_500Medium',
-                  color: colors.neutral[800],
-                  fontSize: 15,
-                  flex: 1,
-                }}
-              >
-                {module}
-              </Text>
-              <ChevronRight size={20} color={colors.primary[400]} />
-            </Pressable>
-          ))}
+            );
+          })}
         </View>
       </View>
 
