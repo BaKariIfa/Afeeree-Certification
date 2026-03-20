@@ -65,25 +65,26 @@ codesRouter.post("/generate", (c) => {
   return c.json({ code: newCode.code });
 });
 
-// POST /api/codes/validate — check if a code is valid (public)
+// POST /api/codes/validate — check if a code exists (public)
 codesRouter.post("/validate", async (c) => {
   const body = await c.req.json<{ code?: string }>();
   const normalised = (body.code ?? "").toUpperCase().trim();
   const codes = readCodes();
   const found = codes.find((entry) => entry.code === normalised);
-  const valid = found !== undefined && found.usedBy === null;
+  const valid = found !== undefined;
   return c.json({ valid });
 });
 
-// POST /api/codes/use — mark a code as used (public)
+// POST /api/codes/use — record that a code was used (public, informational only)
 codesRouter.post("/use", async (c) => {
   const body = await c.req.json<{ code?: string; email?: string }>();
   const normalised = (body.code ?? "").toUpperCase().trim();
   const codes = readCodes();
   const idx = codes.findIndex((entry) => entry.code === normalised);
-  if (idx === -1 || codes[idx]!.usedBy !== null) {
-    return c.json({ error: "Code not found or already used" }, 400);
+  if (idx === -1) {
+    return c.json({ error: "Code not found" }, 400);
   }
+  // Record the most recent use; codes are reusable
   const existing = codes[idx]!;
   codes[idx] = {
     code: existing.code,
