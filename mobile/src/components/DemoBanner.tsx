@@ -13,9 +13,10 @@ export default function DemoBanner() {
 
   if (!isDemoMode) return null;
 
-  const handleExit = () => {
+  const handleExit = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    logout().then(() => router.replace('/access-code'));
+    await logout();
+    router.replace('/landing');
   };
 
   return (
