@@ -85,12 +85,23 @@ export default function AccessCodeScreen() {
     // Simulate a brief verification delay
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    const valid = await isCodeValid(code);
-    if (valid) {
+    const result = await isCodeValid(code);
+    if (result.valid) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      await markCodeUsed(code.toUpperCase().trim(), ''); // Will be updated with email during onboarding
-      setAccess(true, code.toUpperCase().trim());
-      router.replace('/onboarding');
+      const normCode = code.toUpperCase().trim();
+      setAccess(true, normCode);
+
+      if (result.userName && result.userEmail) {
+        // Returning user — restore their profile and skip onboarding
+        setUser(result.userName, result.userEmail);
+        setOnboarded(true);
+        await markCodeUsed(normCode, result.userEmail, result.userName);
+        router.replace('/(tabs)');
+      } else {
+        // First time — collect name/email via onboarding
+        await markCodeUsed(normCode, '');
+        router.replace('/onboarding');
+      }
     } else {
       setIsVerifying(false);
       setError('Invalid access code. Please check your code and try again.');

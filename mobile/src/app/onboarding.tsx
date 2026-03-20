@@ -13,6 +13,8 @@ import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { colors } from '@/lib/theme';
+import { useUserStore } from '@/lib/userStore';
+import { useAccessCodeStore } from '@/lib/accessCodeStore';
 
 const triggerHaptic = () => {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -24,6 +26,11 @@ export default function OnboardingScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [step, setStep] = useState(1);
+
+  const accessCode = useUserStore(s => s.accessCode);
+  const setUser = useUserStore(s => s.setUser);
+  const setOnboarded = useUserStore(s => s.setOnboarded);
+  const markCodeUsed = useAccessCodeStore(s => s.markCodeUsed);
 
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
@@ -48,13 +55,16 @@ export default function OnboardingScreen() {
     if (step === 1) {
       setStep(2);
     } else {
-      // Save user data
-      await AsyncStorage.setItem('userName', name);
-      await AsyncStorage.setItem('userEmail', email);
-      await AsyncStorage.setItem('onboardingComplete', 'true');
+      // Save user data locally
       await AsyncStorage.setItem('enrollmentDate', new Date().toISOString());
+      setUser(name, email);
+      setOnboarded(true);
 
-      // Navigate to home
+      // Persist to backend so any device can restore this profile
+      if (accessCode) {
+        await markCodeUsed(accessCode, email, name);
+      }
+
       router.replace('/(tabs)/');
     }
   };

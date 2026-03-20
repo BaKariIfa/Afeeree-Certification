@@ -14,6 +14,8 @@ interface AccessCode {
   createdAt: string;
   usedBy: string | null;
   usedAt: string | null;
+  userName: string | null;
+  userEmail: string | null;
 }
 
 function readCodes(): AccessCode[] {
@@ -59,6 +61,8 @@ codesRouter.post("/generate", (c) => {
     createdAt: new Date().toISOString(),
     usedBy: null,
     usedAt: null,
+    userName: null,
+    userEmail: null,
   };
   codes.push(newCode);
   writeCodes(codes);
@@ -71,13 +75,17 @@ codesRouter.post("/validate", async (c) => {
   const normalised = (body.code ?? "").toUpperCase().trim();
   const codes = readCodes();
   const found = codes.find((entry) => entry.code === normalised);
-  const valid = found !== undefined;
-  return c.json({ valid });
+  if (!found) return c.json({ valid: false });
+  return c.json({
+    valid: true,
+    userName: found.userName ?? null,
+    userEmail: found.userEmail ?? null,
+  });
 });
 
 // POST /api/codes/use — record that a code was used (public, informational only)
 codesRouter.post("/use", async (c) => {
-  const body = await c.req.json<{ code?: string; email?: string }>();
+  const body = await c.req.json<{ code?: string; email?: string; name?: string }>();
   const normalised = (body.code ?? "").toUpperCase().trim();
   const codes = readCodes();
   const idx = codes.findIndex((entry) => entry.code === normalised);
@@ -89,8 +97,10 @@ codesRouter.post("/use", async (c) => {
   codes[idx] = {
     code: existing.code,
     createdAt: existing.createdAt,
-    usedBy: body.email ?? "unknown",
+    usedBy: body.email ?? existing.usedBy ?? "unknown",
     usedAt: new Date().toISOString(),
+    userName: body.name ?? existing.userName ?? null,
+    userEmail: body.email ?? existing.userEmail ?? null,
   };
   writeCodes(codes);
   return c.json({ ok: true });

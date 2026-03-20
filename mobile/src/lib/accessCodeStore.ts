@@ -10,6 +10,8 @@ export interface AccessCode {
   createdAt: string;
   usedBy: string | null;
   usedAt: string | null;
+  userName: string | null;
+  userEmail: string | null;
 }
 
 interface AccessCodeStore {
@@ -19,8 +21,8 @@ interface AccessCodeStore {
   loadCodes: () => Promise<void>;
   generateCode: () => Promise<string>;
   deleteCode: (code: string) => Promise<void>;
-  markCodeUsed: (code: string, email: string) => Promise<void>;
-  isCodeValid: (code: string) => Promise<boolean>;
+  markCodeUsed: (code: string, email: string, name?: string) => Promise<void>;
+  isCodeValid: (code: string) => Promise<{ valid: boolean; userName: string | null; userEmail: string | null }>;
   setAdmin: (isAdmin: boolean) => void;
 }
 
@@ -73,11 +75,11 @@ export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
     }
   },
 
-  markCodeUsed: async (code: string, email: string) => {
+  markCodeUsed: async (code: string, email: string, name?: string) => {
     await fetch(`${BACKEND_URL}/api/codes/use`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code, email }),
+      body: JSON.stringify({ code, email, name }),
     });
   },
 
@@ -88,10 +90,11 @@ export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),
       });
-      const data = await res.json() as { valid: boolean };
-      return data.valid === true;
+      const data = await res.json() as { valid: boolean; userName: string | null; userEmail: string | null };
+      if (!data.valid) return { valid: false, userName: null, userEmail: null };
+      return { valid: true, userName: data.userName ?? null, userEmail: data.userEmail ?? null };
     } catch {
-      return false;
+      return { valid: false, userName: null, userEmail: null };
     }
   },
 
