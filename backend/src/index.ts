@@ -7,6 +7,7 @@ import { uploadRouter } from "./routes/upload";
 import { ttsRouter } from "./routes/tts";
 import { squareRouter } from "./routes/square";
 import { notationRouter } from "./routes/notation";
+import { codesRouter } from "./routes/codes";
 import { logger } from "hono/logger";
 
 const app = new Hono();
@@ -42,6 +43,7 @@ app.route("/api/upload", uploadRouter);
 app.route("/api/notation", notationRouter);
 app.route("/api/tts", ttsRouter);
 app.route("/api/square", squareRouter);
+app.route("/api/codes", codesRouter);
 
 const port = Number(process.env.PORT) || 3000;
 

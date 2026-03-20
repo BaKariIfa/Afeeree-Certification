@@ -1,13 +1,14 @@
 import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Admin password to access code generation (change this!)
+// Admin password (must match backend)
 export const ADMIN_PASSWORD = 'BAKARI2024';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
 export interface AccessCode {
   code: string;
   createdAt: string;
-  usedBy: string | null; // email of user who used it
+  usedBy: string | null;
   usedAt: string | null;
 }
 
@@ -15,7 +16,6 @@ interface AccessCodeStore {
   codes: AccessCode[];
   isAdmin: boolean;
 
-  // Actions
   loadCodes: () => Promise<void>;
   generateCode: () => Promise<string>;
   deleteCode: (code: string) => Promise<void>;
@@ -24,74 +24,75 @@ interface AccessCodeStore {
   setAdmin: (isAdmin: boolean) => void;
 }
 
-// Generate a random 8-character code
-const generateRandomCode = (): string => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed confusing characters like 0/O, 1/I
-  let code = 'AF-'; // Prefix for AFeeree
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-};
-
-export const useAccessCodeStore = create<AccessCodeStore>((set, get) => ({
+export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
   codes: [],
   isAdmin: false,
 
   loadCodes: async () => {
     try {
-      const stored = await AsyncStorage.getItem('accessCodes');
-      if (stored) {
-        set({ codes: JSON.parse(stored) });
-      }
+      const res = await fetch(`${BACKEND_URL}/api/codes`, {
+        headers: { 'x-admin-password': ADMIN_PASSWORD },
+      });
+      if (!res.ok) return;
+      const data = await res.json() as { codes: AccessCode[] };
+      set({ codes: data.codes });
     } catch (error) {
       console.error('Error loading access codes:', error);
     }
   },
 
   generateCode: async () => {
-    const newCode: AccessCode = {
-      code: generateRandomCode(),
-      createdAt: new Date().toISOString(),
-      usedBy: null,
-      usedAt: null,
-    };
-
-    const updated = [...get().codes, newCode];
-    set({ codes: updated });
-    await AsyncStorage.setItem('accessCodes', JSON.stringify(updated));
-
-    return newCode.code;
+    const res = await fetch(`${BACKEND_URL}/api/codes/generate`, {
+      method: 'POST',
+      headers: { 'x-admin-password': ADMIN_PASSWORD },
+    });
+    const data = await res.json() as { code: string };
+    // Refresh list
+    const listRes = await fetch(`${BACKEND_URL}/api/codes`, {
+      headers: { 'x-admin-password': ADMIN_PASSWORD },
+    });
+    if (listRes.ok) {
+      const listData = await listRes.json() as { codes: AccessCode[] };
+      set({ codes: listData.codes });
+    }
+    return data.code;
   },
 
   deleteCode: async (code: string) => {
-    const updated = get().codes.filter(c => c.code !== code);
-    set({ codes: updated });
-    await AsyncStorage.setItem('accessCodes', JSON.stringify(updated));
+    await fetch(`${BACKEND_URL}/api/codes/${encodeURIComponent(code)}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-password': ADMIN_PASSWORD },
+    });
+    // Refresh list
+    const res = await fetch(`${BACKEND_URL}/api/codes`, {
+      headers: { 'x-admin-password': ADMIN_PASSWORD },
+    });
+    if (res.ok) {
+      const data = await res.json() as { codes: AccessCode[] };
+      set({ codes: data.codes });
+    }
   },
 
   markCodeUsed: async (code: string, email: string) => {
-    const updated = get().codes.map(c => {
-      if (c.code === code) {
-        return {
-          ...c,
-          usedBy: email,
-          usedAt: new Date().toISOString(),
-        };
-      }
-      return c;
+    await fetch(`${BACKEND_URL}/api/codes/use`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, email }),
     });
-    set({ codes: updated });
-    await AsyncStorage.setItem('accessCodes', JSON.stringify(updated));
   },
 
   isCodeValid: async (code: string) => {
-    await get().loadCodes();
-    const upperCode = code.toUpperCase().trim();
-    const found = get().codes.find(c => c.code === upperCode);
-
-    // Code is valid if it exists and hasn't been used
-    return found !== undefined && found.usedBy === null;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/codes/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json() as { valid: boolean };
+      return data.valid === true;
+    } catch {
+      return false;
+    }
   },
 
   setAdmin: (isAdmin: boolean) => {
