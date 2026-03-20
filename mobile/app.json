@@ -14,22 +14,29 @@
       "infoPlist": {
         "NSCameraUsageDescription": "AFeeree Certification Program uses the camera to capture photos inside the app before you publish them.",
         "NSPhotoLibraryUsageDescription": "AFeeree Certification Program accesses your photo library to let you choose media that appears in the app.",
-        "NSMicrophoneUsageDescription": "AFeeree Certification Program uses the microphone to record audio tracks that the app attaches to your creations."
+        "NSMicrophoneUsageDescription": "AFeeree Certification Program uses the microphone to record audio tracks that the app attaches to your creations.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.vibecode.afeereecertificationprogram.x8nfkhv"
     },
     "plugins": [
       "expo-router",
       "expo-asset",
-      "expo-video",
       "expo-web-browser",
       "react-native-edge-to-edge"
     ],
     "experiments": {
       "typedRoutes": true
     },
-    "icon": "./icon.png"
+    "icon": "./icon.png",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "08f94cee-a852-4347-9e52-6dcc19bf0356"
+      }
+    }
   }
 }
