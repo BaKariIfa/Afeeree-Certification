@@ -114,8 +114,7 @@ export default function PracticeTimer({ visible, onClose }: PracticeTimerProps) 
         <Animated.View
           entering={FadeIn.duration(300)}
           exiting={FadeOut.duration(200)}
-          className="w-[90%] max-w-[340px] rounded-3xl overflow-hidden"
-          style={{ backgroundColor: colors.cream[100] }}
+          style={{ width: '90%', maxWidth: 340, borderRadius: 24, overflow: 'hidden', backgroundColor: colors.cream[100] }}
         >
           {/* Header */}
           <View

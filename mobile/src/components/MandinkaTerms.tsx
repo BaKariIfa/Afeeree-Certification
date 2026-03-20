@@ -74,16 +74,22 @@ export default function MandinkaTerms({ visible, onClose }: MandinkaTermsProps) 
     <Animated.View
       entering={FadeIn.duration(200)}
       exiting={FadeOut.duration(200)}
-      className="absolute inset-0 justify-end"
-      style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'flex-end',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+      }}
     >
-      <Pressable className="flex-1" onPress={onClose} />
+      <Pressable style={{ flex: 1 }} onPress={onClose} />
 
       <Animated.View
         entering={SlideInDown.duration(300)}
         exiting={SlideOutDown.duration(300)}
-        className="rounded-t-3xl"
-        style={{ backgroundColor: colors.cream[100], maxHeight: '80%' }}
+        style={{ backgroundColor: colors.cream[100], maxHeight: '80%', borderTopLeftRadius: 24, borderTopRightRadius: 24 }}
       >
         {/* Header */}
         <View className="flex-row items-center justify-between px-6 pt-6 pb-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[200] }}>
