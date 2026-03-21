@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router';
 import {
   Lock, Plus, Trash2, Copy, Check, ArrowLeft, FileText,
   Upload, CheckCircle, MessageCircle, Send, User, ChevronRight,
-  ShieldCheck, Key, Users, Share2, Video,
+  ShieldCheck, Key, Users, Share2, Video, Inbox, ExternalLink,
 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -48,7 +48,19 @@ interface BackendMessage {
   mediaType?: 'audio' | 'video';
 }
 
-type AdminView = 'dashboard' | 'messages' | 'conversation';
+type AdminView = 'dashboard' | 'messages' | 'conversation' | 'submissions';
+
+interface Submission {
+  id: string;
+  participantCode: string;
+  participantName: string;
+  assignmentTitle: string;
+  type: 'video' | 'file' | 'reflection';
+  fileUrl?: string;
+  fileName?: string;
+  reflection?: string;
+  submittedAt: string;
+}
 
 export default function AdminScreen() {
   const insets = useSafeAreaInsets();
@@ -76,6 +88,10 @@ export default function AdminScreen() {
   // Notification toast
   const [toast, setToast] = useState<ToastData | null>(null);
   const prevUnreadTotalRef = useRef(-1); // -1 = not yet loaded
+
+  // Submissions state
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
 
   const { codes, loadCodes, generateCode, deleteCode, isAdmin, setAdmin } = useAccessCodeStore();
   const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
@@ -145,6 +161,20 @@ export default function AdminScreen() {
       }
     } catch {}
   }, []);
+
+  const fetchSubmissions = async () => {
+    setIsLoadingSubmissions(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/submissions`);
+      if (res.ok) {
+        const data = await res.json() as { submissions: Submission[] };
+        setSubmissions(data.submissions.reverse());
+      }
+    } catch {}
+    finally {
+      setIsLoadingSubmissions(false);
+    }
+  };
 
   const markRead = async (code: string) => {
     try {
@@ -473,6 +503,127 @@ export default function AdminScreen() {
     );
   }
 
+  // ── Submissions ──
+  if (adminView === 'submissions') {
+    const typeBadge = (type: Submission['type']) => {
+      if (type === 'video') return { label: 'Video', bg: colors.primary[100], color: colors.primary[500] };
+      if (type === 'file') return { label: 'File', bg: colors.gold[100], color: colors.gold[600] };
+      return { label: 'Reflection', bg: 'rgba(16,185,129,0.1)', color: '#10B981' };
+    };
+
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <NotificationToast toast={toast} onDismiss={() => setToast(null)} />
+        <View style={{
+          paddingTop: insets.top + 16,
+          paddingBottom: 20,
+          paddingHorizontal: 24,
+          backgroundColor: colors.primary[500],
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={() => setAdminView('dashboard')} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
+              <ArrowLeft size={24} color="white" />
+            </Pressable>
+            <View>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Submissions</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 1 }}>
+                {submissions.length} submission{submissions.length !== 1 ? 's' : ''}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
+          {isLoadingSubmissions ? (
+            <View style={{ alignItems: 'center', paddingTop: 80 }}>
+              <ActivityIndicator color={colors.primary[500]} size="large" />
+            </View>
+          ) : submissions.length === 0 ? (
+            <Animated.View entering={FadeInUp.duration(500)} style={{ alignItems: 'center', paddingTop: 80 }}>
+              <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.neutral[100], alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <Inbox size={40} color={colors.neutral[300]} />
+              </View>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 17 }}>No submissions yet</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 6, textAlign: 'center', paddingHorizontal: 24 }}>
+                Participant submissions will appear here once they complete assignments
+              </Text>
+            </Animated.View>
+          ) : (
+            submissions.map((sub, i) => {
+              const badge = typeBadge(sub.type);
+              return (
+                <Animated.View key={sub.id} entering={FadeInDown.duration(400).delay(i * 60)}>
+                  <View style={{
+                    backgroundColor: 'white',
+                    borderRadius: 16,
+                    padding: 16,
+                    marginBottom: 12,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.06,
+                    shadowRadius: 8,
+                    elevation: 2,
+                  }}>
+                    {/* Header row */}
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                          {sub.participantName}
+                        </Text>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginTop: 2 }}>
+                          {sub.assignmentTitle}
+                        </Text>
+                      </View>
+                      <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: badge.bg, marginLeft: 8 }}>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: badge.color, fontSize: 11 }}>{badge.label}</Text>
+                      </View>
+                    </View>
+
+                    {/* Date */}
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginBottom: 8 }}>
+                      Submitted {new Date(sub.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                    </Text>
+
+                    {/* Reflection text */}
+                    {sub.reflection ? (
+                      <View style={{ backgroundColor: colors.neutral[50], borderRadius: 10, padding: 12, marginBottom: 8 }}>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700], fontSize: 14, lineHeight: 20 }}>
+                          {sub.reflection}
+                        </Text>
+                      </View>
+                    ) : null}
+
+                    {/* File/Video link */}
+                    {sub.fileUrl ? (
+                      <Pressable
+                        onPress={async () => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          await Clipboard.setStringAsync(sub.fileUrl!);
+                          Alert.alert('Link Copied', 'The file URL has been copied to your clipboard. Paste it in a browser to view.');
+                        }}
+                        style={{
+                          flexDirection: 'row', alignItems: 'center',
+                          backgroundColor: colors.primary[50] ?? colors.primary[100],
+                          borderRadius: 10, padding: 12,
+                        }}
+                      >
+                        <ExternalLink size={16} color={colors.primary[500]} />
+                        <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500], fontSize: 13, marginLeft: 8, flex: 1 }} numberOfLines={1}>
+                          {sub.fileName ?? 'View submitted file'}
+                        </Text>
+                        <Copy size={14} color={colors.primary[400]} />
+                      </Pressable>
+                    ) : null}
+                  </View>
+                </Animated.View>
+              );
+            })
+          )}
+        </ScrollView>
+      </View>
+    );
+  }
+
   // ── Conversation ──
   if (adminView === 'conversation') {
     return (
@@ -725,6 +876,37 @@ export default function AdminScreen() {
               </View>
             )}
             <ChevronRight size={20} color={totalUnread > 0 ? 'rgba(255,255,255,0.6)' : colors.neutral[300]} />
+          </Pressable>
+        </Animated.View>
+
+        {/* Submissions Card */}
+        <Animated.View entering={FadeInDown.duration(400).delay(90)}>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); fetchSubmissions(); setAdminView('submissions'); }}
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              elevation: 2,
+            }}
+          >
+            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.gold[100], alignItems: 'center', justifyContent: 'center' }}>
+              <Inbox size={24} color={colors.gold[600]} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 14 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Submissions</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>
+                View files, videos & reflections
+              </Text>
+            </View>
+            <ChevronRight size={20} color={colors.neutral[300]} />
           </Pressable>
         </Animated.View>
 

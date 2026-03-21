@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BookOpen, Trophy, Clock, ChevronRight, Bell, Home, FileText, User, Library, MessageCircle, CreditCard, ArrowRight } from 'lucide-react-native';
+import { BookOpen, Trophy, Clock, ChevronRight, Bell, Home, FileText, User, Library, MessageCircle, CreditCard, ArrowRight, ClipboardList } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
@@ -562,12 +562,24 @@ export default function HomeScreen() {
         </Pressable>
 
         <Pressable
-          onPress={() => navigateWithHaptic('/(tabs)/syllabus')}
+          onPress={() => navigateWithHaptic('/(tabs)/assignments')}
           className="items-center py-2 px-3"
         >
-          <Library size={24} color={colors.neutral[400]} />
+          <View style={{ position: 'relative' }}>
+            <ClipboardList size={24} color={colors.neutral[400]} />
+            {pendingAssignments > 0 && (
+              <View style={{
+                position: 'absolute', top: -4, right: -4,
+                backgroundColor: colors.gold[500], borderRadius: 8,
+                minWidth: 16, height: 16, paddingHorizontal: 3,
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 9 }}>{pendingAssignments}</Text>
+              </View>
+            )}
+          </View>
           <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[400] }} className="text-xs mt-1">
-            Syllabus
+            Assignments
           </Text>
         </Pressable>
 
