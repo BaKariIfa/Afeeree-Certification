@@ -3,7 +3,7 @@
     {
       "id": "1774055351773-9decyj6zsb",
       "senderId": "admin",
-      "senderName": "Admin",
+      "senderName": "BaKari Lindsay",
       "text": "THIS IS A TRIAL. MESSAGE",
       "timestamp": "2026-03-21T01:09:11.773Z",
       "readByAdmin": true,
@@ -12,7 +12,7 @@
     {
       "id": "1774056102106-eg94q5wlnjb",
       "senderId": "admin",
-      "senderName": "Admin",
+      "senderName": "BaKari Lindsay",
       "text": "MESSAGE NUMBER 2",
       "timestamp": "2026-03-21T01:21:42.106Z",
       "readByAdmin": true,
@@ -22,12 +22,12 @@
   "AF-GXWKES": [
     {
       "id": "1774057301528-u56biyleok",
-      "senderId": "admin",
-      "senderName": "BaKari Lindsay",
+      "senderId": "participant",
+      "senderName": "GUEST",
       "text": "HEY BAKARI I HAVE A QUESTION DO YOU HAVE SOME TIME NOMW",
       "timestamp": "2026-03-21T01:41:41.528Z",
-      "readByAdmin": true,
-      "readByParticipant": false
+      "readByAdmin": false,
+      "readByParticipant": true
     }
   ]
 }
