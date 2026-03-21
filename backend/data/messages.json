@@ -18,5 +18,16 @@
       "readByAdmin": true,
       "readByParticipant": false
     }
+  ],
+  "AF-GXWKES": [
+    {
+      "id": "1774057301528-u56biyleok",
+      "senderId": "admin",
+      "senderName": "BaKari Lindsay",
+      "text": "HEY BAKARI I HAVE A QUESTION DO YOU HAVE SOME TIME NOMW",
+      "timestamp": "2026-03-21T01:41:41.528Z",
+      "readByAdmin": true,
+      "readByParticipant": false
+    }
   ]
 }

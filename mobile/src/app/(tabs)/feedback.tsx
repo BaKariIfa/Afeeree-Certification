@@ -182,10 +182,11 @@ export default function FeedbackScreen() {
     triggerHaptic();
     setIsSending(true);
 
-    // Admin replying to a selected participant, or participant messaging instructor
+    // If replying to a selected participant → instructor sending. Otherwise → participant sending.
+    const isInstructorReplying = !!selectedParticipant;
     const conversationCode = selectedParticipant?.id ?? accessCode ?? '';
-    const senderRole = isAdmin ? 'admin' : 'participant';
-    const senderName = isAdmin ? 'BaKari Lindsay' : (userName ?? 'Participant');
+    const senderRole = isInstructorReplying ? 'admin' : 'participant';
+    const senderName = isInstructorReplying ? 'BaKari Lindsay' : (userName ?? 'Participant');
 
     try {
       const res = await fetch(`${BACKEND_URL}/api/messages/${conversationCode}`, {
