@@ -355,8 +355,7 @@ export default function HomeScreen() {
         )}
 
         {/* Upcoming Assignments */}
-        {mockAssignments.length > 0 && (
-          <Animated.View entering={FadeInDown.duration(600).delay(350)} className="px-6 mt-6">
+        <Animated.View entering={FadeInDown.duration(600).delay(350)} className="px-6 mt-6">
             <View className="flex-row justify-between items-center mb-4">
               <Text
                 style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }}
@@ -417,7 +416,6 @@ export default function HomeScreen() {
                 </Animated.View>
               ))}
           </Animated.View>
-        )}
 
         {/* Biography */}
         <Animated.View entering={FadeInDown.duration(600).delay(450)} className="px-6 mt-8 mb-4">

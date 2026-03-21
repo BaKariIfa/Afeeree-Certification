@@ -195,7 +195,48 @@ export const mockModules: Module[] = [
   },
 ];
 
-export const mockAssignments: Assignment[] = [];
+export const mockAssignments: Assignment[] = [
+  {
+    id: 'assign-1',
+    title: 'Foundational Footwork Video',
+    description: 'Record a short video (2–5 minutes) demonstrating the foundational footwork patterns from Module 1. Focus on weight transfer, knee placement, and rhythmic accuracy. You will be evaluated on technique and musicality.',
+    moduleId: 'module-1',
+    moduleName: 'Foundations of AFeeree',
+    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
+    type: 'video',
+  },
+  {
+    id: 'assign-2',
+    title: 'Cultural Research Reflection',
+    description: 'Write a reflection (300–500 words) on the cultural origins and significance of AFeeree dance. Use the provided research document as a starting point. How does this history inform your practice?',
+    moduleId: 'module-2',
+    moduleName: 'Cultural Context & History',
+    dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
+    type: 'reflection',
+  },
+  {
+    id: 'assign-3',
+    title: 'Teaching Demo — Warm-Up Sequence',
+    description: 'Upload a video of yourself teaching the warm-up sequence to at least one other person. Demonstrate clear verbal cues, proper demonstration, and the ability to correct form in real time.',
+    moduleId: 'module-3',
+    moduleName: 'Teaching Methodology',
+    dueDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
+    type: 'teaching_demo',
+  },
+  {
+    id: 'assign-4',
+    title: 'Notation Study Upload',
+    description: 'Download the notation PDF, annotate it with your personal notes and interpretation, and upload your annotated version. Include at least 5 written notes explaining your interpretation of the notation symbols.',
+    moduleId: 'module-4',
+    moduleName: 'Movement Notation',
+    dueDate: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'pending',
+    type: 'document',
+  },
+];
 
 export const mockNotifications: Notification[] = [];
 
