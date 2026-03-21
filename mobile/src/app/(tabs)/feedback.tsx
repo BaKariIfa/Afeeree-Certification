@@ -624,7 +624,7 @@ export default function FeedbackScreen() {
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18 }}>
                 Kalandenw
               </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 2, marginBottom: 14 }}>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 0, marginBottom: 14 }}>
                 One who studies, absorbs, and prepares to carry forward tradition
               </Text>
             </View>
@@ -856,7 +856,7 @@ export default function FeedbackScreen() {
             <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18 }}>
               Kalandenw
             </Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 2, marginBottom: 14 }}>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 0, marginBottom: 14 }}>
               One who studies, absorbs, and prepares to carry forward tradition
             </Text>
           </View>

@@ -373,7 +373,7 @@ export default function ProfileScreen() {
             >
               {userName || 'Kalanden'}
             </Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.55)', fontSize: 12, fontStyle: 'italic', marginTop: 4, textAlign: 'center', paddingHorizontal: 16 }}>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.55)', fontSize: 12, fontStyle: 'italic', marginTop: 1, textAlign: 'center', paddingHorizontal: 16 }}>
               One who studies, absorbs, and prepares to carry forward tradition
             </Text>
 
@@ -641,10 +641,10 @@ export default function ProfileScreen() {
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>
                 Kalanden Agreement
               </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 10, fontStyle: 'italic', marginTop: 2 }}>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 10, fontStyle: 'italic', marginTop: 0 }}>
                 One who studies, absorbs, and prepares to carry forward tradition
               </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 3 }}>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 4 }}>
                 View your signed agreement
               </Text>
             </View>
@@ -901,7 +901,7 @@ export default function ProfileScreen() {
             </View>
 
             {/* Contact */}
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase mb-1">
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase">
               Contact Your Jeli
             </Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginBottom: 12 }}>

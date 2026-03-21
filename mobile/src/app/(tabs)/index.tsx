@@ -286,7 +286,7 @@ export default function HomeScreen() {
               style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
               className="text-sm"
             >
-              Welcome back, Kalanden
+              Welcome back
             </Text>
             <Text
               style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }}
@@ -294,7 +294,10 @@ export default function HomeScreen() {
             >
               {userName || 'Kalanden'}
             </Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 3 }}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 12, marginTop: 4 }}>
+              Kalanden
+            </Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 1 }}>
               One who studies, absorbs, and prepares to carry forward tradition
             </Text>
           </View>
