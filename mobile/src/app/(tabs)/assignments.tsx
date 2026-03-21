@@ -327,23 +327,13 @@ export default function AssignmentsScreen() {
                       </Text>
 
                       <View className="flex-row items-center mt-3">
-                        <Clock size={14} color={colors.neutral[400]} />
-                        <Text
-                          style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
-                          className="text-xs ml-1"
-                        >
-                          Due: {new Date(assignment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </Text>
                         {assignment.grade && (
-                          <>
-                            <View className="mx-2 w-1 h-1 rounded-full" style={{ backgroundColor: colors.neutral[300] }} />
-                            <Text
-                              style={{ fontFamily: 'DMSans_600SemiBold', color: colors.success }}
-                              className="text-xs"
-                            >
-                              Grade: {assignment.grade}
-                            </Text>
-                          </>
+                          <Text
+                            style={{ fontFamily: 'DMSans_600SemiBold', color: colors.success }}
+                            className="text-xs"
+                          >
+                            Grade: {assignment.grade}
+                          </Text>
                         )}
                       </View>
                     </View>
@@ -420,30 +410,12 @@ export default function AssignmentsScreen() {
                 </Text>
 
                 {/* Details Card */}
-                <View
-                  className="mt-6 p-4 rounded-xl"
-                  style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
-                >
-                  <View className="flex-row justify-between py-2">
-                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}>
-                      Due Date
-                    </Text>
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }}>
-                      {new Date(selectedAssignment.dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </Text>
-                  </View>
-                  {selectedAssignment.submittedDate && (
-                    <View className="flex-row justify-between py-2 border-t" style={{ borderTopColor: colors.neutral[100] }}>
-                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}>
-                        Submitted
-                      </Text>
-                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }}>
-                        {new Date(selectedAssignment.submittedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                      </Text>
-                    </View>
-                  )}
-                  {selectedAssignment.grade && (
-                    <View className="flex-row justify-between py-2 border-t" style={{ borderTopColor: colors.neutral[100] }}>
+                {selectedAssignment.grade && (
+                  <View
+                    className="mt-6 p-4 rounded-xl"
+                    style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
+                  >
+                    <View className="flex-row justify-between py-2">
                       <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}>
                         Grade
                       </Text>
@@ -451,8 +423,8 @@ export default function AssignmentsScreen() {
                         {selectedAssignment.grade}
                       </Text>
                     </View>
-                  )}
-                </View>
+                  </View>
+                )}
 
                 {/* Feedback */}
                 {selectedAssignment.feedback && (
