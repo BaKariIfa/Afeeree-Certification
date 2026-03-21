@@ -14,7 +14,10 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '@/lib/theme';
 import { mockModules, mockAssignments, mockNotifications } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
+import { ADMIN_PASSWORD } from '@/lib/accessCodeStore';
 import DemoBanner from '@/components/DemoBanner';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
 // Helper function for haptic feedback on button press
 const triggerHaptic = () => {
@@ -45,6 +48,25 @@ export default function HomeScreen() {
   }, [isLoading, hasAccess, isOnboarded, router]);
 
   const isDemoMode = useUserStore(s => s.isDemoMode);
+
+  const [unreadFeedback, setUnreadFeedback] = useState(0);
+
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/messages/unread-count`, {
+        headers: { 'x-admin-password': ADMIN_PASSWORD },
+      });
+      if (!res.ok) return;
+      const data = await res.json() as { count: number };
+      setUnreadFeedback(data.count);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 15000);
+    return () => clearInterval(interval);
+  }, [fetchUnreadCount]);
 
   const onRefresh = useCallback(() => {
     triggerHaptic();
@@ -181,8 +203,20 @@ export default function HomeScreen() {
               className="items-center py-2 px-3"
               onPress={() => navigateWithHaptic('/(tabs)/feedback')}
             >
-              <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: colors.neutral[100] }}>
-                <MessageCircle size={20} color={colors.neutral[500]} />
+              <View style={{ position: 'relative' }}>
+                <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: colors.neutral[100] }}>
+                  <MessageCircle size={20} color={colors.neutral[500]} />
+                </View>
+                {unreadFeedback > 0 && (
+                  <View style={{
+                    position: 'absolute', top: -2, right: -2,
+                    backgroundColor: colors.primary[500], borderRadius: 8,
+                    minWidth: 16, height: 16, paddingHorizontal: 3,
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 9 }}>{unreadFeedback}</Text>
+                  </View>
+                )}
               </View>
               <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500] }} className="text-xs mt-1">Feedback</Text>
             </Pressable>
@@ -543,7 +577,19 @@ export default function HomeScreen() {
           onPress={() => navigateWithHaptic('/(tabs)/feedback')}
           className="items-center py-2 px-3"
         >
-          <MessageCircle size={24} color={colors.neutral[400]} />
+          <View style={{ position: 'relative' }}>
+            <MessageCircle size={24} color={colors.neutral[400]} />
+            {unreadFeedback > 0 && (
+              <View style={{
+                position: 'absolute', top: -4, right: -4,
+                backgroundColor: colors.primary[500], borderRadius: 8,
+                minWidth: 16, height: 16, paddingHorizontal: 3,
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 9 }}>{unreadFeedback}</Text>
+              </View>
+            )}
+          </View>
           <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[400] }} className="text-xs mt-1">
             Feedback
           </Text>
