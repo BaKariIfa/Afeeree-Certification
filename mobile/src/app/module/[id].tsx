@@ -70,8 +70,10 @@ export default function ModuleDetailScreen() {
 
   const handleViewNotation = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (module.pdfLink) {
-      Linking.openURL(module.pdfLink);
+    if (module.pdfLink && module.pdfPage) {
+      const backendUrl = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
+      const pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(module.pdfLink)}&startPage=${module.pdfPage}&endPage=${module.pdfEndPage ?? module.pdfPage}`;
+      Linking.openURL(pageUrl);
     }
     if (selectedLesson !== null) {
       setNotationViewed(prev => new Set([...prev, selectedLesson]));

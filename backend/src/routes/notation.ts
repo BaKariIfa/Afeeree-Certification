@@ -18,11 +18,13 @@ function resolveDownloadUrl(url: string): string {
   return url;
 }
 
-// Serve a watermarked version of a PDF given its URL
+// Serve a watermarked version of a PDF given its URL, optionally extracting a page range
 notationRouter.get("/view", async (c) => {
   const rawUrl = c.req.query("url");
+  const startPageParam = c.req.query("startPage");
+  const endPageParam = c.req.query("endPage");
+  // Legacy param kept for compatibility
   const maxPagesParam = c.req.query("maxPages");
-  const maxPages = maxPagesParam ? parseInt(maxPagesParam, 10) : null;
 
   if (!rawUrl) {
     return c.text("Missing url parameter", 400);
@@ -41,9 +43,9 @@ notationRouter.get("/view", async (c) => {
     return c.text("Could not load notation file", 502);
   }
 
-  let pdfDoc: PDFDocument;
+  let srcDoc: PDFDocument;
   try {
-    pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+    srcDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
   } catch {
     // If pdf-lib can't parse it (e.g. it's an image), just stream it back
     return new Response(pdfBytes, {
@@ -55,29 +57,44 @@ notationRouter.get("/view", async (c) => {
     });
   }
 
-  const pages = pdfDoc.getPages();
+  const totalPages = srcDoc.getPageCount();
 
-  // Trim to maxPages if specified (preview mode)
-  if (maxPages && !isNaN(maxPages) && maxPages > 0 && pages.length > maxPages) {
-    // Remove pages from the end, working backwards
-    for (let i = pages.length - 1; i >= maxPages; i--) {
-      pdfDoc.removePage(i);
-    }
+  // Determine which pages to include (1-based from user, 0-based for pdf-lib)
+  let firstPage = 1;
+  let lastPage = totalPages;
+
+  if (startPageParam) {
+    const s = parseInt(startPageParam, 10);
+    if (!isNaN(s) && s >= 1) firstPage = Math.min(s, totalPages);
   }
 
-  const remainingPages = pdfDoc.getPages();
+  if (endPageParam) {
+    const e = parseInt(endPageParam, 10);
+    if (!isNaN(e) && e >= firstPage) lastPage = Math.min(e, totalPages);
+  } else if (maxPagesParam && !startPageParam) {
+    // Legacy: maxPages limits from page 1
+    const m = parseInt(maxPagesParam, 10);
+    if (!isNaN(m) && m > 0) lastPage = Math.min(m, totalPages);
+  }
+
+  // Build a new document with only the requested pages
+  const outDoc = await PDFDocument.create();
+  const pageIndices: number[] = [];
+  for (let i = firstPage - 1; i <= lastPage - 1; i++) {
+    pageIndices.push(i);
+  }
+  const copiedPages = await outDoc.copyPages(srcDoc, pageIndices);
+  copiedPages.forEach((p: import('pdf-lib').PDFPage) => outDoc.addPage(p));
+
+  // Add watermark to every page
   const watermarkText = "AFeeree Certification Program — Confidential";
-
-  for (const page of remainingPages) {
+  for (const page of outDoc.getPages()) {
     const { width, height } = page.getSize();
-
-    // Draw watermark multiple times across the page diagonally
     const positions = [
       { x: width * 0.5, y: height * 0.5 },
       { x: width * 0.25, y: height * 0.75 },
       { x: width * 0.75, y: height * 0.25 },
     ];
-
     for (const pos of positions) {
       page.drawText(watermarkText, {
         x: pos.x - 180,
@@ -90,12 +107,12 @@ notationRouter.get("/view", async (c) => {
     }
   }
 
-  const watermarkedBytes = await pdfDoc.save();
+  const watermarkedBytes = await outDoc.save();
 
   return new Response(watermarkedBytes, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": "inline; filename=\"notation.pdf\"",
+      "Content-Disposition": `inline; filename="notation-p${firstPage}-${lastPage}.pdf"`,
       "Cache-Control": "no-store",
     },
   });
