@@ -100,7 +100,7 @@ export default function OnboardingScreen() {
                 AFeeree Certification
               </Text>
               <Text
-                style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.8)' }}
+                style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)' }}
                 className="text-base mt-2 text-center"
               >
                 The Physical Language
