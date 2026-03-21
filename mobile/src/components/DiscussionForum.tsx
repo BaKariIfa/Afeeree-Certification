@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, TextInput, Pressable, ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform,
+  View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { MessageCircle, Send, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react-native';
-import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
 import { colors } from '@/lib/theme';
 
@@ -34,7 +33,6 @@ interface Props {
   participantCode: string;
   participantName: string;
   isAdmin?: boolean;
-  adminReplyMode?: boolean; // when true, shows reply inputs
 }
 
 function timeAgo(iso: string): string {
@@ -60,8 +58,9 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
+  const [showInput, setShowInput] = useState(false);
 
-  const myPost = posts.find((p) => p.participantCode === participantCode);
+  const hasPosted = posts.some((p) => p.participantCode === participantCode);
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -87,8 +86,9 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
       });
       if (res.ok) {
         const post = await res.json() as DiscussionPost;
-        setPosts((prev) => [post, ...prev]);
+        setPosts((prev) => [...prev, post]);
         setQuestionText('');
+        setShowInput(false);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch {}
@@ -112,6 +112,8 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
         );
         setReplyTexts((prev) => ({ ...prev, [postId]: '' }));
         setReplyingTo(null);
+        // Auto-expand the post to show the new reply
+        setExpandedPosts((prev) => new Set([...prev, postId]));
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch {}
@@ -136,8 +138,9 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={{ marginTop: 24, paddingTop: 20, borderTopWidth: 1, borderTopColor: colors.neutral[100] }}>
+
         {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
           <MessageCircle size={16} color={colors.primary[500]} />
           <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15, marginLeft: 6, flex: 1 }}>
             Discussion Forum
@@ -149,17 +152,17 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
           )}
         </View>
 
-        {/* Required badge */}
-        {!myPost && !isAdmin && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: '#FEF3C7', borderWidth: 1, borderColor: '#FDE68A' }}>
-            <Text style={{ fontFamily: 'DMSans_500Medium', color: '#92400E', fontSize: 12, flex: 1 }}>
+        {/* Required notice for first post — only shown if not yet posted */}
+        {!hasPosted && !isAdmin && (
+          <View style={{ marginBottom: 12, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: '#FEF3C7', borderWidth: 1, borderColor: '#FDE68A' }}>
+            <Text style={{ fontFamily: 'DMSans_500Medium', color: '#92400E', fontSize: 12 }}>
               Required: Pose a question or reflection after completing this reading.
             </Text>
           </View>
         )}
 
-        {/* Post input — only if participant hasn't posted yet */}
-        {!myPost && !isAdmin && (
+        {/* Post input — always accessible for all users */}
+        {!isAdmin && (showInput || !hasPosted) ? (
           <View style={{ marginBottom: 16, borderRadius: 14, borderWidth: 1.5, borderColor: colors.primary[200], backgroundColor: colors.primary[50], overflow: 'hidden' }}>
             <TextInput
               value={questionText}
@@ -169,21 +172,39 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
               multiline
               style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[800], fontSize: 14, padding: 14, minHeight: 80, textAlignVertical: 'top' }}
             />
-            <Pressable
-              onPress={submitQuestion}
-              disabled={!questionText.trim() || submitting}
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, backgroundColor: questionText.trim() ? colors.primary[500] : colors.neutral[200] }}
-            >
-              {submitting
-                ? <ActivityIndicator size="small" color="white" />
-                : <>
-                  <Send size={14} color={questionText.trim() ? 'white' : colors.neutral[400]} />
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: questionText.trim() ? 'white' : colors.neutral[400], fontSize: 14, marginLeft: 6 }}>Post Question</Text>
-                </>
-              }
-            </Pressable>
+            <View style={{ flexDirection: 'row' }}>
+              {hasPosted && (
+                <Pressable onPress={() => { setShowInput(false); setQuestionText(''); }}
+                  style={{ flex: 1, paddingVertical: 12, alignItems: 'center', backgroundColor: colors.neutral[100] }}>
+                  <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 13 }}>Cancel</Text>
+                </Pressable>
+              )}
+              <Pressable
+                onPress={submitQuestion}
+                disabled={!questionText.trim() || submitting}
+                style={{ flex: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, backgroundColor: questionText.trim() ? colors.primary[500] : colors.neutral[200] }}
+              >
+                {submitting
+                  ? <ActivityIndicator size="small" color="white" />
+                  : <>
+                    <Send size={14} color={questionText.trim() ? 'white' : colors.neutral[400]} />
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: questionText.trim() ? 'white' : colors.neutral[400], fontSize: 14, marginLeft: 6 }}>
+                      Post Question
+                    </Text>
+                  </>
+                }
+              </Pressable>
+            </View>
           </View>
-        )}
+        ) : !isAdmin && hasPosted ? (
+          <Pressable onPress={() => setShowInput(true)}
+            style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14, paddingVertical: 10, paddingHorizontal: 14, borderRadius: 12, borderWidth: 1, borderColor: colors.primary[200], backgroundColor: colors.primary[50] }}>
+            <Send size={14} color={colors.primary[400]} />
+            <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[600], fontSize: 13, marginLeft: 8 }}>
+              Add another question or comment…
+            </Text>
+          </Pressable>
+        ) : null}
 
         {/* Posts */}
         {posts.length === 0 ? (
@@ -199,8 +220,9 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
             const isOwn = post.participantCode === participantCode;
             return (
               <View key={post.id} style={{ marginBottom: 12, borderRadius: 14, backgroundColor: 'white', borderWidth: 1, borderColor: isOwn ? colors.primary[200] : colors.neutral[200], overflow: 'hidden' }}>
-                {/* Post header */}
-                <Pressable onPress={() => toggleExpand(post.id)} style={{ padding: 14 }}>
+
+                {/* Post content */}
+                <Pressable onPress={() => post.replies.length > 0 && toggleExpand(post.id)} style={{ padding: 14 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
                     <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: isOwn ? colors.primary[100] : colors.neutral[100], alignItems: 'center', justifyContent: 'center', marginRight: 10, marginTop: 1 }}>
                       <Text style={{ fontFamily: 'DMSans_600SemiBold', color: isOwn ? colors.primary[600] : colors.neutral[500], fontSize: 12 }}>
@@ -259,39 +281,38 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
                   </View>
                 )}
 
-                {/* Reply input — for admin or participant responding to own post */}
-                {(isAdmin || isOwn) && (
-                  <View style={{ borderTopWidth: 1, borderTopColor: colors.neutral[100] }}>
-                    {replyingTo === post.id ? (
-                      <View style={{ padding: 12 }}>
-                        <TextInput
-                          value={replyTexts[post.id] ?? ''}
-                          onChangeText={(t) => setReplyTexts((prev) => ({ ...prev, [post.id]: t }))}
-                          placeholder={isAdmin ? 'Write your reply as Instructor…' : 'Add a follow-up…'}
-                          placeholderTextColor={colors.neutral[400]}
-                          multiline
-                          autoFocus
-                          style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[800], fontSize: 13, backgroundColor: colors.neutral[50], borderRadius: 10, padding: 10, minHeight: 60, textAlignVertical: 'top', marginBottom: 8 }}
-                        />
-                        <View style={{ flexDirection: 'row', gap: 8 }}>
-                          <Pressable onPress={() => setReplyingTo(null)} style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: colors.neutral[100], alignItems: 'center' }}>
-                            <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 13 }}>Cancel</Text>
-                          </Pressable>
-                          <Pressable onPress={() => submitReply(post.id)} style={{ flex: 2, paddingVertical: 8, borderRadius: 8, backgroundColor: isAdmin ? '#16A34A' : colors.primary[500], alignItems: 'center' }}>
-                            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>Send Reply</Text>
-                          </Pressable>
-                        </View>
+                {/* Reply input — open to ALL participants and instructor */}
+                <View style={{ borderTopWidth: 1, borderTopColor: colors.neutral[100] }}>
+                  {replyingTo === post.id ? (
+                    <View style={{ padding: 12 }}>
+                      <TextInput
+                        value={replyTexts[post.id] ?? ''}
+                        onChangeText={(t) => setReplyTexts((prev) => ({ ...prev, [post.id]: t }))}
+                        placeholder={isAdmin ? 'Write your reply as Instructor…' : 'Write your reply…'}
+                        placeholderTextColor={colors.neutral[400]}
+                        multiline
+                        autoFocus
+                        style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[800], fontSize: 13, backgroundColor: colors.neutral[50], borderRadius: 10, padding: 10, minHeight: 60, textAlignVertical: 'top', marginBottom: 8 }}
+                      />
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <Pressable onPress={() => setReplyingTo(null)} style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: colors.neutral[100], alignItems: 'center' }}>
+                          <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 13 }}>Cancel</Text>
+                        </Pressable>
+                        <Pressable onPress={() => submitReply(post.id)} style={{ flex: 2, paddingVertical: 8, borderRadius: 8, backgroundColor: isAdmin ? '#16A34A' : colors.primary[500], alignItems: 'center' }}>
+                          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>Send Reply</Text>
+                        </Pressable>
                       </View>
-                    ) : (
-                      <Pressable onPress={() => setReplyingTo(post.id)} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10 }}>
-                        <Send size={13} color={isAdmin ? '#16A34A' : colors.primary[400]} />
-                        <Text style={{ fontFamily: 'DMSans_500Medium', color: isAdmin ? '#16A34A' : colors.primary[500], fontSize: 13, marginLeft: 6 }}>
-                          {isAdmin ? 'Reply as Instructor' : 'Add follow-up'}
-                        </Text>
-                      </Pressable>
-                    )}
-                  </View>
-                )}
+                    </View>
+                  ) : (
+                    <Pressable onPress={() => setReplyingTo(post.id)} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10 }}>
+                      <Send size={13} color={isAdmin ? '#16A34A' : colors.primary[400]} />
+                      <Text style={{ fontFamily: 'DMSans_500Medium', color: isAdmin ? '#16A34A' : colors.primary[500], fontSize: 13, marginLeft: 6 }}>
+                        {isAdmin ? 'Reply as Instructor' : 'Reply'}
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
+
               </View>
             );
           })
