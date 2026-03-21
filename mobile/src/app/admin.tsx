@@ -665,9 +665,9 @@ export default function AdminScreen() {
                       </View>
                       <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 12 }}>{pct}%</Text>
                     </View>
-                    {/* Notation + Video breakdown */}
-                    <View style={{ flexDirection: 'row', gap: 12 }}>
-                      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.gold[50], borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
+                    {/* Study time breakdown: notation vs video */}
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.gold[50], borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8 }}>
                         <FileText size={12} color={colors.gold[600]} />
                         <View style={{ marginLeft: 6 }}>
                           <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.gold[700], fontSize: 13 }}>{notationHours}h</Text>
