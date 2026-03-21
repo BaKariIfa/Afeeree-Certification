@@ -56,11 +56,11 @@ export default function LandingPage() {
   const modules = [
     {
       title: 'Introduction to AFeeree Movement Principles',
-      synopsis: 'An overview of the AFeeree methodology and its foundational movement vocabulary. Students are introduced to the seven principles that underpin every aspect of the physical language, including polyrhythm, polycentrism, and holism.',
+      synopsis: 'An overview of the AFeeree methodology and its foundational movement vocabulary. Kalandenw are introduced to the seven principles that underpin every aspect of the physical language, including polyrhythm, polycentrism, and holism.',
     },
     {
       title: 'Experiencing the Physical Language',
-      synopsis: 'Hands-on exploration of Africanist movement through guided practice. Students embody the concepts by developing through the natural bends of the body, basic kata forms, and partner observation, cultivating a felt sense of the methodology.',
+      synopsis: 'Hands-on exploration of Africanist movement through guided practice. Kalandenw embody the concepts by developing through the natural bends of the body, basic kata forms, and partner observation, cultivating a felt sense of the methodology.',
     },
     {
       title: 'Polyrhythmic Body Isolations',
@@ -68,15 +68,15 @@ export default function LandingPage() {
     },
     {
       title: 'Understanding the Research Foundation',
-      synopsis: 'An introduction to the scholarly research behind AFeeree, drawing on African aesthetics theory, ethnochoreology, and BaKari Lindsay\'s master\'s thesis. Students gain insight into how academic research informs practical movement training.',
+      synopsis: 'An introduction to the scholarly research behind AFeeree, drawing on African aesthetics theory, ethnochoreology, and BaKari Lindsay\'s master\'s thesis. Kalandenw gain insight into how academic research informs practical movement training.',
     },
     {
       title: 'Cultural Context & Historical Framework',
-      synopsis: 'An exploration of the African and Caribbean cultural traditions that shape the AFeeree aesthetic. Students examine how history, diaspora, and community inform movement practices and the responsibilities that come with teaching this work.',
+      synopsis: 'An exploration of the African and Caribbean cultural traditions that shape the AFeeree aesthetic. Kalandenw examine how history, diaspora, and community inform movement practices and the responsibilities that come with teaching this work.',
     },
     {
       title: 'Preparation for Advanced Study',
-      synopsis: 'A reflective session bridging introductory experience with the full Certification Program. Students review core concepts, discuss pathways toward teaching certification, and are guided on how to deepen their practice.',
+      synopsis: 'A reflective session bridging introductory experience with the full Certification Program. Kalandenw review core concepts, discuss pathways toward teaching certification, and are guided on how to deepen their practice.',
     },
   ];
 

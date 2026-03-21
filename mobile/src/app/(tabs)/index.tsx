@@ -286,13 +286,13 @@ export default function HomeScreen() {
               style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
               className="text-sm"
             >
-              Welcome back, Participant
+              Welcome back, Kalanden
             </Text>
             <Text
               style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }}
               className="text-xl"
             >
-              {userName || 'Participant'}
+              {userName || 'Kalanden'}
             </Text>
           </View>
         </Animated.View>

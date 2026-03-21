@@ -46,7 +46,7 @@ const CLAUSES = [
   {
     id: 'health',
     title: '4. Health, Safety & Physical Activity',
-    body: 'I acknowledge that the AFeeree Programme may involve physical movement, bodywork, and expressive physical activity. I confirm that I am in a suitable physical and mental condition to participate and that I will inform AFeeree of any relevant health conditions, injuries, or limitations prior to commencing or resuming participation.\n\nAFeeree will take reasonable steps to ensure a safe learning environment; however, I accept that participation in physical activity carries inherent risk and I agree to follow all safety guidance provided by instructors. I will not hold AFeeree liable for any injury arising from my failure to disclose relevant health information or to follow reasonable safety instructions.',
+    body: 'I acknowledge that the AFeeree Programme may involve physical movement, bodywork, and expressive physical activity. I confirm that I am in a suitable physical and mental condition to participate and that I will inform AFeeree of any relevant health conditions, injuries, or limitations prior to commencing or resuming participation.\n\nAFeeree will take reasonable steps to ensure a safe learning environment; however, I accept that participation in physical activity carries inherent risk and I agree to follow all safety guidance provided by Jeliw. I will not hold AFeeree liable for any injury arising from my failure to disclose relevant health information or to follow reasonable safety instructions.',
   },
   {
     id: 'ip',
@@ -56,17 +56,17 @@ const CLAUSES = [
   {
     id: 'certification',
     title: '6. Certification & Assessment',
-    body: "Certification is awarded upon satisfactory completion of all required modules, assessments, and any practical evaluations as defined by AFeeree. AFeeree reserves the right to withhold or revoke certification where a participant fails to meet the required standard, breaches this Agreement, or engages in conduct unbecoming of a certified practitioner.\n\nAFeeree's decision regarding certification is final.",
+    body: "Certification is awarded upon satisfactory completion of all required modules, assessments, and any practical evaluations as defined by AFeeree. AFeeree reserves the right to withhold or revoke certification where a Kalanden fails to meet the required standard, breaches this Agreement, or engages in conduct unbecoming of a certified practitioner.\n\nAFeeree's decision regarding certification is final.",
   },
   {
     id: 'conduct',
     title: '7. Code of Conduct',
-    body: 'I agree to engage respectfully with all instructors, fellow participants, and AFeeree staff. I will not engage in discriminatory, abusive, or disruptive behaviour during Programme activities. AFeeree reserves the right to remove any participant from the Programme without refund in the event of a serious breach of conduct.',
+    body: 'I agree to engage respectfully with all Jeliw, fellow Kalandenw, and AFeeree staff. I will not engage in discriminatory, abusive, or disruptive behaviour during Programme activities. AFeeree reserves the right to remove any Kalanden from the Programme without refund in the event of a serious breach of conduct.',
   },
   {
     id: 'confidentiality',
-    title: '8. Confidentiality of Fellow Participants',
-    body: 'The Programme creates a shared learning space. I agree to respect the privacy and confidentiality of fellow participants. I will not record, photograph, or share information about other participants without their express consent.',
+    title: '8. Confidentiality of Fellow Kalandenw',
+    body: 'The Programme creates a shared learning space. I agree to respect the privacy and confidentiality of fellow Kalandenw. I will not record, photograph, or share information about other Kalandenw without their express consent.',
   },
   {
     id: 'refunds',
@@ -81,7 +81,7 @@ const CLAUSES = [
   {
     id: 'gender',
     title: '11. Inclusion, Diversity & Gender Identity',
-    body: 'AFeeree Dance Arts is committed to creating a safe, inclusive, and affirming environment for all participants. We respect and honour every individual\'s gender identity, gender expression, sexual orientation, cultural background, ethnicity, age, ability, and lived experience.\n\nAll participants are expected to:\n\u2022 Use the names and pronouns by which fellow participants identify;\n\u2022 Refrain from making assumptions about another person\'s gender, identity, or background;\n\u2022 Engage with all instructors and participants in a manner that affirms their dignity and identity;\n\u2022 Immediately cease any language or behaviour identified as harmful or disrespectful by the affected individual.\n\nAny conduct that discriminates against, marginalises, or disrespects a person\'s gender identity or expression constitutes a breach of this Agreement and may result in removal from the Programme without refund.',
+    body: 'AFeeree Dance Arts is committed to creating a safe, inclusive, and affirming environment for all Kalandenw. We respect and honour every individual\'s gender identity, gender expression, sexual orientation, cultural background, ethnicity, age, ability, and lived experience.\n\nAll Kalandenw are expected to:\n\u2022 Use the names and pronouns by which fellow Kalandenw identify;\n\u2022 Refrain from making assumptions about another person\'s gender, identity, or background;\n\u2022 Engage with all Jeliw and Kalandenw in a manner that affirms their dignity and identity;\n\u2022 Immediately cease any language or behaviour identified as harmful or disrespectful by the affected individual.\n\nAny conduct that discriminates against, marginalises, or disrespects a person\'s gender identity or expression constitutes a breach of this Agreement and may result in removal from the Programme without refund.',
   },
   {
     id: 'governing',
@@ -91,7 +91,7 @@ const CLAUSES = [
   {
     id: 'amendments',
     title: '13. Amendments',
-    body: 'AFeeree reserves the right to update this Agreement from time to time. Material changes will be communicated to participants via the app or by email. Continued participation in the Programme following notification of a change constitutes acceptance of the revised Agreement.',
+    body: 'AFeeree reserves the right to update this Agreement from time to time. Material changes will be communicated to Kalandenw via the app or by email. Continued participation in the Programme following notification of a change constitutes acceptance of the revised Agreement.',
   },
 ];
 
@@ -204,7 +204,7 @@ export default function AgreementScreen() {
             </Text>
           </View>
           <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 30 }}>
-            {'Participant\nAgreement'}
+            {'Kalanden\nAgreement'}
           </Text>
           <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 8 }}>
             {alreadySigned
@@ -267,7 +267,7 @@ export default function AgreementScreen() {
               <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Date: </Text>{TODAY}
             </Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700], fontSize: 14, marginTop: 4 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Participant: </Text>{name || '[Participant]'}
+              <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Kalanden: </Text>{name || '[Kalanden]'}
             </Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700], fontSize: 14, marginTop: 4 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Organisation: </Text>AFeeree Dance Arts / BaKari IfaSegun Lindsay

@@ -58,7 +58,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'When will I receive feedback on my submissions?',
-    a: 'Your instructor reviews submissions regularly. You will see feedback and a grade appear on the task once reviewed — typically within a few days.',
+    a: 'Your Jeli reviews submissions regularly. You will see feedback and a grade appear on the task once reviewed — typically within a few days.',
   },
   {
     q: 'How do I track my certification progress?',
@@ -66,11 +66,11 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can I resubmit a task?',
-    a: 'Yes. You can submit multiple times. Your instructor will see all submissions and will assess the most recent one.',
+    a: 'Yes. You can submit multiple times. Your Jeli will see all submissions and will assess the most recent one.',
   },
   {
     q: 'What if I forget my access code?',
-    a: 'Contact your instructor directly. They can look up your code from the instructor panel and share it with you.',
+    a: 'Contact your Jeli directly. They can look up your code from the Jeli panel and share it with you.',
   },
 ];
 
@@ -234,7 +234,7 @@ export default function ProfileScreen() {
     },
     {
       id: 2,
-      title: 'Dedicated Learner',
+      title: 'Dedicated Kalanden',
       description: 'Complete 10 lessons',
       icon: <Target size={20} color={colors.primary[500]} />,
       earned: totalLessons >= 10,
@@ -299,7 +299,7 @@ export default function ProfileScreen() {
     },
     {
       icon: <FileText size={22} color={colors.neutral[600]} />,
-      label: 'Participant Agreement',
+      label: 'Kalanden Agreement',
       onPress: () => { triggerHaptic(); router.push('/agreement'); }
     },
     {
@@ -370,7 +370,7 @@ export default function ProfileScreen() {
               style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white' }}
               className="text-2xl"
             >
-              {userName || 'Student'}
+              {userName || 'Kalanden'}
             </Text>
 
             <View
@@ -630,7 +630,7 @@ export default function ProfileScreen() {
             </View>
             <View className="flex-1 ml-4">
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>
-                Participant Agreement
+                Kalanden Agreement
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 1 }}>
                 View your signed agreement
@@ -883,7 +883,7 @@ export default function ProfileScreen() {
 
             {/* Contact */}
             <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase mb-3">
-              Contact Your Instructor
+              Contact Your Jeli
             </Text>
             <View className="rounded-2xl overflow-hidden" style={{ borderWidth: 1, borderColor: colors.neutral[200] }}>
               <View className="flex-row items-center px-4 py-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[100] }}>
@@ -895,7 +895,7 @@ export default function ProfileScreen() {
                     In-App Messaging
                   </Text>
                   <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>
-                    Use the Messages tab to reach your instructor
+                    Use the Messages tab to reach your Jeli
                   </Text>
                 </View>
               </View>

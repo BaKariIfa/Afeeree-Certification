@@ -181,7 +181,7 @@ export default function AdminScreen() {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           setToast({
             id: `admin-unread-${Date.now()}`,
-            title: 'New Message from Participant',
+            title: 'New Message from Kalanden',
             body: `You have ${newTotal} unread message${newTotal > 1 ? 's' : ''}`,
           });
         }
@@ -531,7 +531,7 @@ export default function AdminScreen() {
             <View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Messages</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 1 }}>
-                Participant conversations
+                Kalanden conversations
               </Text>
             </View>
           </View>
@@ -543,9 +543,9 @@ export default function AdminScreen() {
               <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.neutral[100], alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                 <User size={40} color={colors.neutral[300]} />
               </View>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 17 }}>No participants yet</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 17 }}>No Kalandenw yet</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 6, textAlign: 'center' }}>
-                Participants will appear once they join
+                Kalandenw will appear once they join
               </Text>
             </Animated.View>
           ) : (
@@ -557,7 +557,7 @@ export default function AdminScreen() {
                     onPress={async () => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       setSelectedCode(p.code);
-                      setSelectedName(p.userName ?? 'Participant');
+                      setSelectedName(p.userName ?? 'Kalanden');
                       setIsLoadingMessages(true);
                       setAdminView('conversation');
                       await fetchConvMessages(p.code);
@@ -641,7 +641,7 @@ export default function AdminScreen() {
               moduleId={selectedDiscussionLesson.moduleId}
               lessonIndex={selectedDiscussionLesson.lessonIndex}
               participantCode="admin"
-              participantName="Instructor"
+              participantName="Jeli"
               isAdmin={true}
             />
           </ScrollView>
@@ -716,9 +716,9 @@ export default function AdminScreen() {
               <ArrowLeft size={24} color="white" />
             </Pressable>
             <View>
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Participant Progress</Text>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Kalanden Progress</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 1 }}>
-                {progressList.length} participant{progressList.length !== 1 ? 's' : ''} tracked
+                {progressList.length} Kalanden{progressList.length !== 1 ? 'w' : ''} tracked
               </Text>
             </View>
           </View>
@@ -736,7 +736,7 @@ export default function AdminScreen() {
               </View>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 17 }}>No progress synced yet</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 6, textAlign: 'center', lineHeight: 20 }}>
-                Progress will appear here once participants complete their first lesson
+                Progress will appear here once Kalandenw complete their first lesson
               </Text>
             </Animated.View>
           ) : (
@@ -917,7 +917,7 @@ export default function AdminScreen() {
 
           {/* Feedback Section */}
           <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 8, marginBottom: 12 }}>
-            Instructor Feedback
+            Jeli Feedback
           </Text>
 
           {/* Compose feedback */}
@@ -1042,7 +1042,7 @@ export default function AdminScreen() {
               </View>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 17 }}>No submissions yet</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 6, textAlign: 'center', paddingHorizontal: 24 }}>
-                Participant submissions will appear here once they complete assignments
+                Kalanden submissions will appear here once they complete assignments
               </Text>
             </Animated.View>
           ) : (
@@ -1135,7 +1135,7 @@ export default function AdminScreen() {
             </View>
             <View>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 17 }}>{selectedName}</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Participant</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Kalanden</Text>
             </View>
           </View>
         </View>
@@ -1338,7 +1338,7 @@ export default function AdminScreen() {
           const videoHrs = (totalVideoMs / 3600000).toFixed(1);
           return (
             <Animated.View entering={FadeInDown.duration(400).delay(40)} style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 12 }}>Study Time — All Participants</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 12 }}>Study Time — All Kalandenw</Text>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <View style={{ flex: 1, backgroundColor: colors.gold[50], borderRadius: 12, padding: 14, alignItems: 'center' }}>
                   <FileText size={18} color={colors.gold[600]} />
@@ -1353,7 +1353,7 @@ export default function AdminScreen() {
                 <View style={{ flex: 1, backgroundColor: colors.neutral[50], borderRadius: 12, padding: 14, alignItems: 'center' }}>
                   <Users size={18} color={colors.neutral[500]} />
                   <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 22, marginTop: 6 }}>{progressList.length}</Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginTop: 2 }}>Participants</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginTop: 2 }}>Kalandenw</Text>
                 </View>
               </View>
             </Animated.View>
@@ -1390,7 +1390,7 @@ export default function AdminScreen() {
                 Messages
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: totalUnread > 0 ? 'rgba(255,255,255,0.8)' : colors.neutral[500], fontSize: 13, marginTop: 2 }}>
-                {totalUnread > 0 ? `${totalUnread} unread message${totalUnread > 1 ? 's' : ''}` : 'View participant messages'}
+                {totalUnread > 0 ? `${totalUnread} unread message${totalUnread > 1 ? 's' : ''}` : 'View Kalanden messages'}
               </Text>
             </View>
             {totalUnread > 0 && (
@@ -1429,7 +1429,7 @@ export default function AdminScreen() {
               <BarChart2 size={24} color="white" />
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>Participant Progress</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>Kalanden Progress</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>
                 Track modules, time & offer feedback
               </Text>
@@ -1450,7 +1450,7 @@ export default function AdminScreen() {
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Discussion Forums</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>
-                View & reply to participant questions
+                View & reply to Kalanden questions
               </Text>
             </View>
             <ChevronRight size={20} color={colors.neutral[300]} />
@@ -1580,8 +1580,8 @@ export default function AdminScreen() {
               <FileText size={22} color={colors.gold[600]} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Participant Agreement</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>View the participant consent form</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Kalanden Agreement</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>View the Kalanden consent form</Text>
             </View>
             <ChevronRight size={18} color={colors.neutral[400]} />
           </Pressable>
@@ -1654,7 +1654,7 @@ export default function AdminScreen() {
         {usedCodes.length > 0 && (
           <Animated.View entering={FadeInDown.duration(400).delay(300)}>
             <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12, marginTop: 8 }}>
-              Enrolled Participants
+              Enrolled Kalandenw
             </Text>
             {usedCodes.map(item => (
               <View

@@ -60,7 +60,7 @@ export default function ModuleDetailScreen() {
   const saveNote = useUserStore(s => s.saveNote);
   const addLessonStudyTime = useUserStore(s => s.addLessonStudyTime);
   const participantCode = useUserStore(s => s.accessCode) ?? 'guest';
-  const participantName = useUserStore(s => s.name) ?? 'Participant';
+  const participantName = useUserStore(s => s.name) ?? 'Kalanden';
 
   const historyPdfUrl = useResourcesStore(s => s.historyPdfUrl);
   const loadResources = useResourcesStore(s => s.loadResources);

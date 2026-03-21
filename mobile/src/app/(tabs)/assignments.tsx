@@ -86,7 +86,7 @@ export default function AssignmentsScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           participantCode: accessCode,
-          participantName: userName || 'Participant',
+          participantName: userName || 'Kalanden',
           assignmentTitle: selectedAssignment.title,
           type,
           fileUrl,
@@ -490,7 +490,7 @@ export default function AssignmentsScreen() {
                     style={{ backgroundColor: colors.success + '15', borderWidth: 1, borderColor: colors.success + '30' }}
                   >
                     <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.success }} className="text-sm mb-2">
-                      Instructor Feedback
+                      Jeli Feedback
                     </Text>
                     <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700] }} className="text-base leading-6">
                       {selectedAssignment.feedback}
@@ -747,7 +747,7 @@ export default function AssignmentsScreen() {
               Submitted!
             </Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginTop: 8, textAlign: 'center' }}>
-              Your instructor will review it shortly.
+              Your Jeli will review it shortly.
             </Text>
           </View>
         </Animated.View>

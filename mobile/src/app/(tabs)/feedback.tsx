@@ -150,7 +150,7 @@ export default function FeedbackScreen() {
         setToast({
           id: `unread-${Date.now()}`,
           title: 'New Message',
-          body: `You have ${newTotal} unread message${newTotal > 1 ? 's' : ''} from participants`,
+          body: `You have ${newTotal} unread message${newTotal > 1 ? 's' : ''} from Kalandenw`,
         });
       }
       prevUnreadTotalRef.current = newTotal;
@@ -235,7 +235,7 @@ export default function FeedbackScreen() {
     const isInstructorReplying = !!selectedParticipant;
     const conversationCode = selectedParticipant?.id ?? accessCode ?? '';
     const senderRole = isInstructorReplying ? 'admin' : 'participant';
-    const senderName = isInstructorReplying ? 'BaKari Lindsay' : (userName ?? 'Participant');
+    const senderName = isInstructorReplying ? 'BaKari Lindsay' : (userName ?? 'Kalanden');
     try {
       const res = await fetch(`${BACKEND_URL}/api/messages/${conversationCode}`, {
         method: 'POST',
@@ -304,7 +304,7 @@ export default function FeedbackScreen() {
     const isInstructorReplying = !!selectedParticipant;
     const conversationCode = selectedParticipant?.id ?? accessCode ?? '';
     const senderRole = isInstructorReplying ? 'admin' : 'participant';
-    const senderName = isInstructorReplying ? 'BaKari Lindsay' : (userName ?? 'Participant');
+    const senderName = isInstructorReplying ? 'BaKari Lindsay' : (userName ?? 'Kalanden');
 
     try {
       const res = await fetch(`${BACKEND_URL}/api/messages/${conversationCode}`, {
@@ -515,7 +515,7 @@ export default function FeedbackScreen() {
                 </View>
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 17 }}>No submissions yet</Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 6, textAlign: 'center', paddingHorizontal: 24 }}>
-                  Submissions appear here once participants complete their assignments
+                  Submissions appear here once Kalandenw complete their assignments
                 </Text>
               </Animated.View>
             ) : (
@@ -578,7 +578,7 @@ export default function FeedbackScreen() {
                     Feedback
                   </Text>
                   <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginTop: 2 }}>
-                    Instructor View
+                    Jeli View
                   </Text>
                 </View>
               </View>
@@ -618,7 +618,7 @@ export default function FeedbackScreen() {
             </Animated.View>
 
             <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18, marginBottom: 16 }}>
-              Participants
+              Kalandenw
             </Text>
 
             {participants.length === 0 ? (
@@ -627,10 +627,10 @@ export default function FeedbackScreen() {
                   <User size={40} color={colors.neutral[300]} />
                 </View>
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 18, textAlign: 'center' }}>
-                  No participants yet
+                  No Kalandenw yet
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, textAlign: 'center', marginTop: 8, paddingHorizontal: 32 }}>
-                  Participants will appear here once they join the program
+                  Kalandenw will appear here once they join the program
                 </Text>
               </Animated.View>
             ) : (
@@ -697,14 +697,14 @@ export default function FeedbackScreen() {
               <User size={20} color={colors.primary[500]} />
             </View>
             <View style={{ marginLeft: 12, flex: 1 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Message Your Instructor</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Message Your Jeli</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>BaKari Lindsay · AFeeree</Text>
             </View>
           </View>
         </View>
         <ParticipantConversation
           conversationCode={accessCode}
-          participantName={userName ?? 'Participant'}
+          participantName={userName ?? 'Kalanden'}
           messages={messages}
           isLoading={isLoadingMessages}
           newMessage={newMessage}
@@ -745,16 +745,16 @@ export default function FeedbackScreen() {
                 <Lock size={36} color={colors.primary[600]} />
               </View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 26, textAlign: 'center', marginBottom: 8 }}>
-                Instructor Access
+                Jeli Access
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
-                Sign in with your instructor password to view participant messages and respond
+                Sign in with your Jeli password to view Kalanden messages and respond
               </Text>
             </View>
 
             <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 13, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>
-                Instructor Password
+                Jeli Password
               </Text>
               <TextInput
                 value={instructorPassword}
@@ -796,7 +796,7 @@ export default function FeedbackScreen() {
                   <ActivityIndicator color="white" />
                 ) : (
                   <Text style={{ fontFamily: 'DMSans_600SemiBold', color: instructorPassword.trim() ? 'white' : colors.neutral[400], fontSize: 16 }}>
-                    Sign In as Instructor
+                    Sign In as Jeli
                   </Text>
                 )}
               </Pressable>
@@ -822,7 +822,7 @@ export default function FeedbackScreen() {
                   Feedback
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginTop: 2 }}>
-                  Instructor View
+                  Jeli View
                 </Text>
               </View>
             </View>
@@ -838,7 +838,7 @@ export default function FeedbackScreen() {
 
         <View style={{ paddingHorizontal: 24 }}>
           <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18, marginBottom: 16 }}>
-            Participants
+            Kalandenw
           </Text>
 
           {participants.length === 0 ? (
@@ -847,10 +847,10 @@ export default function FeedbackScreen() {
                 <User size={40} color={colors.neutral[300]} />
               </View>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 18, textAlign: 'center' }}>
-                No participants yet
+                No Kalandenw yet
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, textAlign: 'center', marginTop: 8, paddingHorizontal: 32 }}>
-                Participants will appear here once they join the program
+                Kalandenw will appear here once they join the program
               </Text>
             </Animated.View>
           ) : (
@@ -946,7 +946,7 @@ function ParticipantConversation({
             <MessageCircle size={48} color={colors.neutral[300]} />
             <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 16, marginTop: 16 }}>No messages yet</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 4, textAlign: 'center' }}>
-              Send a message to your instructor
+              Send a message to your Jeli
             </Text>
           </View>
         ) : (

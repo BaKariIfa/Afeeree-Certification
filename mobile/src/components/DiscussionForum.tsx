@@ -82,7 +82,7 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
       const res = await fetch(`${BACKEND_URL}/api/discussions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ moduleId, lessonIndex, participantCode, participantName, question: questionText.trim() }),
+        body: JSON.stringify({ moduleId, lessonIndex, participantCode, participantName: participantName, question: questionText.trim() }),
       });
       if (res.ok) {
         const post = await res.json() as DiscussionPost;
@@ -103,7 +103,7 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
       const res = await fetch(`${BACKEND_URL}/api/discussions/${postId}/reply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authorName: isAdmin ? 'Instructor' : participantName, isAdmin, text }),
+        body: JSON.stringify({ authorName: isAdmin ? 'Jeli' : participantName, isAdmin, text }),
       });
       if (res.ok) {
         const reply = await res.json() as DiscussionReply;
@@ -269,7 +269,7 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
                             <Text style={{ fontFamily: 'DMSans_600SemiBold', color: reply.isAdmin ? '#16A34A' : colors.neutral[600], fontSize: 12 }}>{reply.authorName}</Text>
                             {reply.isAdmin && (
                               <View style={{ marginLeft: 6, paddingHorizontal: 5, paddingVertical: 1, borderRadius: 4, backgroundColor: '#DCFCE7' }}>
-                                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: '#16A34A', fontSize: 10 }}>Instructor</Text>
+                                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: '#16A34A', fontSize: 10 }}>Jeli</Text>
                               </View>
                             )}
                             <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginLeft: 6 }}>{timeAgo(reply.postedAt)}</Text>
@@ -288,7 +288,7 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
                       <TextInput
                         value={replyTexts[post.id] ?? ''}
                         onChangeText={(t) => setReplyTexts((prev) => ({ ...prev, [post.id]: t }))}
-                        placeholder={isAdmin ? 'Write your reply as Instructor…' : 'Write your reply…'}
+                        placeholder={isAdmin ? 'Write your reply as Jeli…' : 'Write your reply…'}
                         placeholderTextColor={colors.neutral[400]}
                         multiline
                         autoFocus
@@ -307,7 +307,7 @@ export default function DiscussionForum({ moduleId, lessonIndex, participantCode
                     <Pressable onPress={() => setReplyingTo(post.id)} style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 10 }}>
                       <Send size={13} color={isAdmin ? '#16A34A' : colors.primary[400]} />
                       <Text style={{ fontFamily: 'DMSans_500Medium', color: isAdmin ? '#16A34A' : colors.primary[500], fontSize: 13, marginLeft: 6 }}>
-                        {isAdmin ? 'Reply as Instructor' : 'Reply'}
+                        {isAdmin ? 'Reply as Jeli' : 'Reply'}
                       </Text>
                     </Pressable>
                   )}
