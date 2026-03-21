@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -15,6 +15,7 @@ import { mockModules } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
 import { useResourcesStore } from '@/lib/resourcesStore';
 import ConfettiCelebration from '@/components/ConfettiCelebration';
+import DiscussionForum from '@/components/DiscussionForum';
 
 // Minimum session length to be recorded toward participation
 const MIN_STUDY_MS = 15 * 60 * 1000;
@@ -58,6 +59,8 @@ export default function ModuleDetailScreen() {
   const markLessonComplete = useUserStore(s => s.markLessonComplete);
   const saveNote = useUserStore(s => s.saveNote);
   const addLessonStudyTime = useUserStore(s => s.addLessonStudyTime);
+  const participantCode = useUserStore(s => s.accessCode) ?? 'guest';
+  const participantName = useUserStore(s => s.name) ?? 'Participant';
 
   const historyPdfUrl = useResourcesStore(s => s.historyPdfUrl);
   const loadResources = useResourcesStore(s => s.loadResources);
@@ -412,150 +415,169 @@ export default function ModuleDetailScreen() {
 
       {/* Lesson Detail Sheet */}
       {selectedLesson !== null && (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
-          <Pressable style={{ flex: 1 }} onPress={handleCloseSheet} />
-          <Animated.View entering={FadeInUp.duration(300)}
-            style={{ backgroundColor: 'white', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 24, paddingTop: 16, paddingBottom: insets.bottom + 24 }}>
-            {/* Header row: drag indicator + close button */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <Pressable onPress={handleCloseSheet} hitSlop={12}
-                style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, backgroundColor: '#1C1917' }}>
-                <X size={14} color="white" />
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13, marginLeft: 4 }}>Close</Text>
-              </Pressable>
-              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.neutral[300] }} />
-              <View style={{ width: 70 }} />
-            </View>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        >
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
+            <Pressable style={{ flex: 1 }} onPress={handleCloseSheet} />
+            <Animated.View entering={FadeInUp.duration(300)}
+              style={{ backgroundColor: 'white', borderTopLeftRadius: 28, borderTopRightRadius: 28, maxHeight: '92%' }}>
 
-            {isLessonComplete(selectedLesson) ? (
-              <View style={{ alignItems: 'center', paddingVertical: 16 }}>
-                <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: colors.success + '20', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-                  <Check size={30} color={colors.success} />
-                </View>
-                <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 20, marginBottom: 4 }}>
-                  Lesson {selectedLesson + 1} Complete
-                </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, textAlign: 'center', marginBottom: 8 }}>
-                  {formatStudyTime(getTotalStudyMs(selectedLesson))} of documented participation recorded.
-                </Text>
-                {(module.pdfLink || (module.isHistoryModule && historyPdfUrl)) && (
-                  <Pressable onPress={() => handleViewNotation(selectedLesson)}
-                    style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 14, borderWidth: 1.5, borderColor: colors.primary[300], backgroundColor: colors.primary[50] }}>
-                    <ExternalLink size={18} color={colors.primary[500]} />
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600], fontSize: 15, marginLeft: 10 }}>
-                      {module.isHistoryModule ? 'Review History & Context' : 'Review Notation PDF'}
-                    </Text>
-                  </Pressable>
-                )}
+              {/* Header row */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingTop: 16, paddingBottom: 4 }}>
+                <Pressable onPress={handleCloseSheet} hitSlop={12}
+                  style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, backgroundColor: '#1C1917' }}>
+                  <X size={14} color="white" />
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13, marginLeft: 4 }}>Close</Text>
+                </Pressable>
+                <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.neutral[300] }} />
+                <View style={{ width: 70 }} />
               </View>
-            ) : (
-              <>
-                <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 22, marginBottom: 4 }}>
-                  {module.lessonPages?.[selectedLesson]?.title ?? `Lesson ${selectedLesson + 1}`}
-                </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginBottom: 24, lineHeight: 20 }}>
-                  {module.isHistoryModule
-                    ? 'Open the readings to study. A minimum of 15 minutes is required before marking complete — take as long as you need.'
-                    : 'Open the notation PDF to study. A minimum of 15 minutes is required before marking complete — take as long as you need.'}
-                </Text>
 
-                {/* Step 1 — Open Notation */}
-                <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20 }}>
-                  <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: pdfViewed ? colors.success : colors.primary[500], alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 12 }}>
-                    {pdfViewed
-                      ? <Check size={14} color="white" />
-                      : <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>1</Text>
-                    }
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 15, marginBottom: 8 }}>
-                      {module.isHistoryModule ? 'Study the readings' : 'Study the notation'}
-                    </Text>
-                    {(module.pdfLink || (module.isHistoryModule && historyPdfUrl)) ? (
-                      <Pressable onPress={() => handleViewNotation(selectedLesson)}
-                        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: pdfViewed ? colors.primary[50] : colors.primary[500], borderWidth: pdfViewed ? 1 : 0, borderColor: colors.primary[200], marginBottom: module.videoUrl ? 10 : 0 }}>
-                        <FileText size={18} color={pdfViewed ? colors.primary[500] : 'white'} />
-                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: pdfViewed ? colors.primary[600] : 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
-                          {pdfViewed
-                            ? (module.isHistoryModule ? 'Reopen History & Context' : 'Reopen Notation PDF')
-                            : (module.isHistoryModule ? 'Open History & Context' : 'Open Notation PDF')}
-                        </Text>
-                        <ExternalLink size={14} color={pdfViewed ? colors.primary[400] : 'rgba(255,255,255,0.7)'} />
-                      </Pressable>
-                    ) : (
-                      <View style={{ paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: colors.neutral[100], marginBottom: module.videoUrl ? 10 : 0 }}>
-                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14 }}>No notation file attached</Text>
-                      </View>
-                    )}
-                    {/* Video option inside lesson sheet */}
-                    {module.videoUrl && (
-                      <Pressable
-                        onPress={handleWatchModuleVideo}
-                        disabled={videoWatching}
-                        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: '#0D1117' }}
-                      >
-                        {videoWatching
-                          ? <ActivityIndicator size="small" color="white" />
-                          : <Play size={16} color="white" fill="white" />
-                        }
-                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
-                          {videoWatching ? 'Opening…' : 'Watch Video Lesson'}
-                        </Text>
-                        <Video size={14} color="rgba(255,255,255,0.6)" />
-                      </Pressable>
-                    )}
-                  </View>
-                </View>
-
-                {/* Study time tracker — always visible once lesson is open */}
-                <View style={{ marginBottom: 20, padding: 16, borderRadius: 16, backgroundColor: timerReached ? colors.success + '10' : colors.gold[50], borderWidth: 1, borderColor: timerReached ? colors.success + '40' : colors.gold[200] }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Timer size={15} color={timerReached ? colors.success : colors.gold[600]} />
-                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerReached ? colors.success : colors.gold[700], fontSize: 14, marginLeft: 8 }}>
-                        {timerReached ? 'Participation documented' : 'Documenting participation'}
-                      </Text>
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: insets.bottom + 32 }}
+              >
+                {isLessonComplete(selectedLesson) ? (
+                  <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+                    <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: colors.success + '20', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                      <Check size={30} color={colors.success} />
                     </View>
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerReached ? colors.success : colors.gold[700], fontSize: 15 }}>
-                      {formatStudyTime(studyMs)}
+                    <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 20, marginBottom: 4 }}>
+                      Lesson {selectedLesson + 1} Complete
                     </Text>
-                  </View>
-                  {/* Progress bar toward 15 min */}
-                  <View style={{ height: 6, borderRadius: 3, backgroundColor: timerReached ? colors.success + '30' : colors.gold[200], overflow: 'hidden' }}>
-                    <View style={{ height: '100%', borderRadius: 3, backgroundColor: timerReached ? colors.success : colors.gold[500], width: `${studyProgress * 100}%` }} />
-                  </View>
-                  {!timerReached && (
-                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[600], fontSize: 12, marginTop: 8 }}>
-                      {formatStudyTime(MIN_STUDY_MS - studyMs)} more to unlock completion
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, textAlign: 'center', marginBottom: 8 }}>
+                      {formatStudyTime(getTotalStudyMs(selectedLesson))} of documented participation recorded.
                     </Text>
-                  )}
-                </View>
+                    {(module.pdfLink || (module.isHistoryModule && historyPdfUrl)) && (
+                      <Pressable onPress={() => handleViewNotation(selectedLesson)}
+                        style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 14, borderWidth: 1.5, borderColor: colors.primary[300], backgroundColor: colors.primary[50] }}>
+                        <ExternalLink size={18} color={colors.primary[500]} />
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600], fontSize: 15, marginLeft: 10 }}>
+                          {module.isHistoryModule ? 'Review History & Context' : 'Review Notation PDF'}
+                        </Text>
+                      </Pressable>
+                    )}
+                  </View>
+                ) : (
+                  <>
+                    <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 22, marginBottom: 4 }}>
+                      {module.lessonPages?.[selectedLesson]?.title ?? `Lesson ${selectedLesson + 1}`}
+                    </Text>
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginBottom: 24, lineHeight: 20 }}>
+                      {module.isHistoryModule
+                        ? 'Open the readings to study. A minimum of 15 minutes is required before marking complete — take as long as you need.'
+                        : 'Open the notation PDF to study. A minimum of 15 minutes is required before marking complete — take as long as you need.'}
+                    </Text>
 
-                {/* Step 2 — Mark Complete */}
-                <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                  <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: canMarkComplete ? colors.primary[500] : colors.neutral[200], alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 12 }}>
-                    {canMarkComplete
-                      ? <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>2</Text>
-                      : <Lock size={12} color={colors.neutral[400]} />
-                    }
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: canMarkComplete ? colors.neutral[700] : colors.neutral[400], fontSize: 15, marginBottom: 8 }}>
-                      Record lesson completion
-                    </Text>
-                    <Pressable
-                      onPress={canMarkComplete ? handleMarkComplete : undefined}
-                      style={{ paddingVertical: 15, borderRadius: 12, alignItems: 'center', backgroundColor: canMarkComplete ? colors.success : colors.neutral[100] }}>
-                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: canMarkComplete ? 'white' : colors.neutral[400], fontSize: 16 }}>
-                        {canMarkComplete ? 'Mark Lesson Complete ✓' : `${formatStudyTime(MIN_STUDY_MS - studyMs)} remaining`}
-                      </Text>
-                    </Pressable>
-                  </View>
-                </View>
-              </>
-            )}
-          </Animated.View>
-        </View>
+                    {/* Step 1 — Open PDF */}
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20 }}>
+                      <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: pdfViewed ? colors.success : colors.primary[500], alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 12 }}>
+                        {pdfViewed
+                          ? <Check size={14} color="white" />
+                          : <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>1</Text>
+                        }
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 15, marginBottom: 8 }}>
+                          {module.isHistoryModule ? 'Study the readings' : 'Study the notation'}
+                        </Text>
+                        {(module.pdfLink || (module.isHistoryModule && historyPdfUrl)) ? (
+                          <Pressable onPress={() => handleViewNotation(selectedLesson)}
+                            style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: pdfViewed ? colors.primary[50] : colors.primary[500], borderWidth: pdfViewed ? 1 : 0, borderColor: colors.primary[200], marginBottom: module.videoUrl ? 10 : 0 }}>
+                            <FileText size={18} color={pdfViewed ? colors.primary[500] : 'white'} />
+                            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: pdfViewed ? colors.primary[600] : 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
+                              {pdfViewed
+                                ? (module.isHistoryModule ? 'Reopen History & Context' : 'Reopen Notation PDF')
+                                : (module.isHistoryModule ? 'Open History & Context' : 'Open Notation PDF')}
+                            </Text>
+                            <ExternalLink size={14} color={pdfViewed ? colors.primary[400] : 'rgba(255,255,255,0.7)'} />
+                          </Pressable>
+                        ) : (
+                          <View style={{ paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: colors.neutral[100], marginBottom: module.videoUrl ? 10 : 0 }}>
+                            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14 }}>No notation file attached</Text>
+                          </View>
+                        )}
+                        {/* Video option inside lesson sheet */}
+                        {module.videoUrl && (
+                          <Pressable
+                            onPress={handleWatchModuleVideo}
+                            disabled={videoWatching}
+                            style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: '#0D1117' }}
+                          >
+                            {videoWatching
+                              ? <ActivityIndicator size="small" color="white" />
+                              : <Play size={16} color="white" fill="white" />
+                            }
+                            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
+                              {videoWatching ? 'Opening…' : 'Watch Video Lesson'}
+                            </Text>
+                            <Video size={14} color="rgba(255,255,255,0.6)" />
+                          </Pressable>
+                        )}
+                      </View>
+                    </View>
+
+                    {/* Study time tracker */}
+                    <View style={{ marginBottom: 20, padding: 16, borderRadius: 16, backgroundColor: timerReached ? colors.success + '10' : colors.gold[50], borderWidth: 1, borderColor: timerReached ? colors.success + '40' : colors.gold[200] }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Timer size={15} color={timerReached ? colors.success : colors.gold[600]} />
+                          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerReached ? colors.success : colors.gold[700], fontSize: 14, marginLeft: 8 }}>
+                            {timerReached ? 'Participation documented' : 'Documenting participation'}
+                          </Text>
+                        </View>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerReached ? colors.success : colors.gold[700], fontSize: 15 }}>
+                          {formatStudyTime(studyMs)}
+                        </Text>
+                      </View>
+                      <View style={{ height: 6, borderRadius: 3, backgroundColor: timerReached ? colors.success + '30' : colors.gold[200], overflow: 'hidden' }}>
+                        <View style={{ height: '100%', borderRadius: 3, backgroundColor: timerReached ? colors.success : colors.gold[500], width: `${studyProgress * 100}%` }} />
+                      </View>
+                      {!timerReached && (
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[600], fontSize: 12, marginTop: 8 }}>
+                          {formatStudyTime(MIN_STUDY_MS - studyMs)} more to unlock completion
+                        </Text>
+                      )}
+                    </View>
+
+                    {/* Step 2 — Mark Complete */}
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                      <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: canMarkComplete ? colors.primary[500] : colors.neutral[200], alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 12 }}>
+                        {canMarkComplete
+                          ? <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>2</Text>
+                          : <Lock size={12} color={colors.neutral[400]} />
+                        }
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: canMarkComplete ? colors.neutral[700] : colors.neutral[400], fontSize: 15, marginBottom: 8 }}>
+                          Record lesson completion
+                        </Text>
+                        <Pressable
+                          onPress={canMarkComplete ? handleMarkComplete : undefined}
+                          style={{ paddingVertical: 15, borderRadius: 12, alignItems: 'center', backgroundColor: canMarkComplete ? colors.success : colors.neutral[100] }}>
+                          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: canMarkComplete ? 'white' : colors.neutral[400], fontSize: 16 }}>
+                            {canMarkComplete ? 'Mark Lesson Complete ✓' : `${formatStudyTime(MIN_STUDY_MS - studyMs)} remaining`}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  </>
+                )}
+
+                {/* Discussion Forum — always visible */}
+                <DiscussionForum
+                  moduleId={module.id}
+                  lessonIndex={selectedLesson}
+                  participantCode={participantCode}
+                  participantName={participantName}
+                />
+              </ScrollView>
+            </Animated.View>
+          </View>
+        </KeyboardAvoidingView>
       )}
 
       {/* Notes Modal */}

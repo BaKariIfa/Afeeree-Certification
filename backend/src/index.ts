@@ -12,6 +12,7 @@ import { messagesRouter } from "./routes/messages";
 import { submissionsRouter } from "./routes/submissions";
 import { progressRouter } from "./routes/progress";
 import { resourcesRouter } from "./routes/resources";
+import { discussionsRouter } from "./routes/discussions";
 import { logger } from "hono/logger";
 
 const app = new Hono();
@@ -52,6 +53,7 @@ app.route("/api/messages", messagesRouter);
 app.route("/api/submissions", submissionsRouter);
 app.route("/api/progress", progressRouter);
 app.route("/api/resources", resourcesRouter);
+app.route("/api/discussions", discussionsRouter);
 
 const port = Number(process.env.PORT) || 3000;
 

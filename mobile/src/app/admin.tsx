@@ -36,6 +36,7 @@ import { NotificationToast, type ToastData } from '@/components/NotificationToas
 import { VoiceNoteRecorder } from '@/components/VoiceNoteRecorder';
 import { AudioMessage } from '@/components/AudioMessage';
 import { VideoMessage } from '@/components/VideoMessage';
+import DiscussionForum from '@/components/DiscussionForum';
 import * as ImagePicker from 'expo-image-picker';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
@@ -52,7 +53,7 @@ interface BackendMessage {
   mediaType?: 'audio' | 'video';
 }
 
-type AdminView = 'dashboard' | 'messages' | 'conversation' | 'submissions' | 'participants' | 'participant-detail';
+type AdminView = 'dashboard' | 'messages' | 'conversation' | 'submissions' | 'participants' | 'participant-detail' | 'discussions';
 
 interface ParticipantProgress {
   code: string;
@@ -124,6 +125,7 @@ export default function AdminScreen() {
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackModuleId, setFeedbackModuleId] = useState<string | undefined>(undefined);
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
+  const [selectedDiscussionLesson, setSelectedDiscussionLesson] = useState<{ moduleId: string; moduleTitle: string; lessonIndex: number; lessonTitle: string } | null>(null);
 
   const { codes, loadCodes, generateCode, deleteCode, isAdmin, setAdmin } = useAccessCodeStore();
   const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
@@ -617,6 +619,95 @@ export default function AdminScreen() {
   }
 
   // ── Participants List ──
+  if (adminView === 'discussions') {
+    // Group all modules+lessons into a flat list for the forum
+    const allLessons: { moduleId: string; moduleTitle: string; lessonIndex: number; lessonTitle: string }[] = [];
+    mockModules.forEach((mod) => {
+      for (let i = 0; i < mod.lessons; i++) {
+        allLessons.push({
+          moduleId: mod.id,
+          moduleTitle: mod.title,
+          lessonIndex: i,
+          lessonTitle: mod.lessonPages?.[i]?.title ?? `Lesson ${i + 1}`,
+        });
+      }
+    });
+
+    if (selectedDiscussionLesson) {
+      return (
+        <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+          <View style={{ paddingTop: insets.top + 16, paddingBottom: 20, paddingHorizontal: 24, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: colors.neutral[200] }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Pressable onPress={() => setSelectedDiscussionLesson(null)} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
+                <ArrowLeft size={24} color={colors.neutral[800]} />
+              </Pressable>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>{selectedDiscussionLesson.lessonTitle}</Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginTop: 2 }} numberOfLines={1}>{selectedDiscussionLesson.moduleTitle}</Text>
+              </View>
+            </View>
+          </View>
+          <ScrollView contentContainerStyle={{ padding: 20 }}>
+            <DiscussionForum
+              moduleId={selectedDiscussionLesson.moduleId}
+              lessonIndex={selectedDiscussionLesson.lessonIndex}
+              participantCode="admin"
+              participantName="Instructor"
+              isAdmin={true}
+            />
+          </ScrollView>
+        </View>
+      );
+    }
+
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <View style={{ paddingTop: insets.top + 16, paddingBottom: 20, paddingHorizontal: 24, backgroundColor: colors.primary[500] }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={() => setAdminView('dashboard')} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
+              <ArrowLeft size={24} color="white" />
+            </Pressable>
+            <View>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22 }}>Discussion Forums</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>
+                Select a lesson to view & reply
+              </Text>
+            </View>
+          </View>
+        </View>
+        <ScrollView contentContainerStyle={{ padding: 16 }}>
+          {mockModules.map((mod) => (
+            <View key={mod.id} style={{ marginBottom: 20 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, paddingHorizontal: 4 }}>
+                {mod.title}
+              </Text>
+              {Array.from({ length: mod.lessons }, (_, i) => {
+                const title = mod.lessonPages?.[i]?.title ?? `Lesson ${i + 1}`;
+                const pageRange = mod.lessonPages?.[i] ? ` · pp. ${mod.lessonPages[i].startPage}–${mod.lessonPages[i].endPage}` : '';
+                return (
+                  <Pressable
+                    key={i}
+                    onPress={() => setSelectedDiscussionLesson({ moduleId: mod.id, moduleTitle: mod.title, lessonIndex: i, lessonTitle: title })}
+                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: colors.neutral[200] }}
+                  >
+                    <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                      <MessageCircle size={16} color={colors.primary[500]} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 14 }}>{title}</Text>
+                      {pageRange ? <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>{pageRange}</Text> : null}
+                    </View>
+                    <ChevronRight size={16} color={colors.neutral[300]} />
+                  </Pressable>
+                );
+              })}
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  }
+
   if (adminView === 'participants') {
     const totalModuleLessons = mockModules.reduce((s, m) => s + m.lessons, 0);
     return (
@@ -1346,6 +1437,25 @@ export default function AdminScreen() {
               </Text>
             </View>
             <ChevronRight size={20} color="rgba(255,255,255,0.6)" />
+          </Pressable>
+        </Animated.View>
+
+        {/* Discussion Forum Card */}
+        <Animated.View entering={FadeInDown.duration(400).delay(115)}>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setAdminView('discussions'); }}
+            style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: colors.primary[200] }}
+          >
+            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center' }}>
+              <MessageCircle size={24} color={colors.primary[500]} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 14 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Discussion Forums</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>
+                View & reply to participant questions
+              </Text>
+            </View>
+            <ChevronRight size={20} color={colors.neutral[300]} />
           </Pressable>
         </Animated.View>
 
