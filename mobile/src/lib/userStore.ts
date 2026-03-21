@@ -220,6 +220,10 @@ export const useUserStore = create<UserState>((set, get) => ({
         completedTasks: completedTasks ? parseInt(completedTasks, 10) : 0,
         lessonStudyTime: lessonStudyTime ? JSON.parse(lessonStudyTime) : {},
       });
+      // Sync progress on every app load so admin sees all enrolled participants
+      if (accessCode) {
+        get().syncProgress();
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
     }
