@@ -65,7 +65,7 @@ export default function OnboardingScreen() {
         await markCodeUsed(accessCode, email, name);
       }
 
-      router.replace('/(tabs)/');
+      router.replace('/agreement');
     }
   };
 
