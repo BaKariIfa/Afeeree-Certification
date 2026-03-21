@@ -408,7 +408,7 @@ export default function HomeScreen() {
                         style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
                         className="text-sm mt-0.5"
                       >
-                        Due: {new Date(assignment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {assignment.moduleName}
                       </Text>
                     </View>
                     <ChevronRight size={20} color={colors.neutral[400]} />
@@ -510,30 +510,6 @@ export default function HomeScreen() {
           </View>
         </Animated.View>
 
-        {/* Due Soon Widget */}
-        <Animated.View
-          entering={FadeInDown.duration(600).delay(500)}
-          className="px-6 mt-6 mb-4"
-        >
-          <View
-            className="p-4 rounded-2xl"
-            style={{ backgroundColor: 'white', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}
-          >
-            <View className="flex-row items-center">
-              <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: colors.gold[100] }}>
-                <Clock size={20} color={colors.gold[600]} />
-              </View>
-              <View className="ml-3">
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-xl">
-                  {pendingAssignments}
-                </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-xs">
-                  Due Soon
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Animated.View>
       </ScrollView>
 
       {/* Bottom Navigation Bar */}
