@@ -293,7 +293,7 @@ export default function AccessCodeScreen() {
                       style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }}
                       className="text-sm ml-2"
                     >
-                      Enroll Now — $600
+                      Enrol now for the introductory course towards certification
                     </Text>
                   </Pressable>
                 </View>

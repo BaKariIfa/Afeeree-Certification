@@ -229,7 +229,7 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle,
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>Preview ending soon</Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 2 }}>Enroll to watch the full video</Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 2 }}>Enrol now for the introductory course towards certification</Text>
               </View>
             </Animated.View>
           )}
@@ -263,7 +263,7 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle,
                 onPress={onClose}
                 style={{ backgroundColor: colors.gold[500], borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 }}
               >
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>Enroll Now</Text>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 14 }}>Enrol now for the introductory course towards certification</Text>
               </Pressable>
               <Pressable onPress={onClose} style={{ marginTop: 14 }}>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>Close</Text>
