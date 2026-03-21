@@ -9,6 +9,7 @@ import {
   Award,
   BookOpen,
   FileCheck,
+  FileText,
   Settings,
   HelpCircle,
   LogOut,
@@ -294,6 +295,11 @@ export default function ProfileScreen() {
         toggleDarkMode();
       },
       isToggle: true
+    },
+    {
+      icon: <FileText size={22} color={colors.neutral[600]} />,
+      label: 'Participant Agreement',
+      onPress: () => { triggerHaptic(); router.push('/agreement'); }
     },
     {
       icon: <Settings size={22} color={colors.neutral[600]} />,
