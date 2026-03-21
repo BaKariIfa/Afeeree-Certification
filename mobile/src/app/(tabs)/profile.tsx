@@ -637,11 +637,11 @@ export default function ProfileScreen() {
               <FileText size={20} color="white" />
             </View>
             <View className="flex-1 ml-4">
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
-                Kalanden Agreement
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>
+                Kalanden — Carrier of Tradition
               </Text>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15, marginTop: 2 }}>
-                Carrier of Tradition
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>
+                Agreement
               </Text>
             </View>
             <ChevronRight size={20} color="rgba(255,255,255,0.6)" />
