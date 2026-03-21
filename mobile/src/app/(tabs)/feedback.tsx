@@ -9,7 +9,8 @@ import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-g
 import * as Haptics from 'expo-haptics';
 
 import { colors } from '@/lib/theme';
-import { mockParticipants, mockFeedbackMessages, mockUser } from '@/lib/mockData';
+import { mockFeedbackMessages, mockUser } from '@/lib/mockData';
+import { useAccessCodeStore } from '@/lib/accessCodeStore';
 import type { Participant, FeedbackMessage } from '@/lib/types';
 
 const triggerHaptic = () => {
@@ -21,6 +22,20 @@ export default function FeedbackScreen() {
   const router = useRouter();
   const scrollViewRef = useRef<ScrollView>(null);
 
+  const codes = useAccessCodeStore(s => s.codes);
+  const loadCodes = useAccessCodeStore(s => s.loadCodes);
+
+  const participants: Participant[] = codes
+    .filter(c => c.userName)
+    .map(c => ({
+      id: c.code,
+      name: c.userName!,
+      email: c.userEmail ?? '',
+      certificationLevel: 'Foundation' as const,
+      progress: 0,
+      lastActive: c.usedAt ?? c.createdAt ?? new Date().toISOString(),
+    }));
+
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
   const [messages, setMessages] = useState<FeedbackMessage[]>(mockFeedbackMessages);
   const [newMessage, setNewMessage] = useState('');
@@ -31,6 +46,10 @@ export default function FeedbackScreen() {
     DMSans_500Medium,
     DMSans_600SemiBold,
   });
+
+  useEffect(() => {
+    loadCodes();
+  }, []);
 
   useEffect(() => {
     if (selectedParticipant && scrollViewRef.current) {
@@ -305,7 +324,7 @@ export default function FeedbackScreen() {
             Participants
           </Text>
 
-          {mockParticipants.length === 0 ? (
+          {participants.length === 0 ? (
             <Animated.View
               entering={FadeInUp.duration(500)}
               className="items-center justify-center py-16"
@@ -330,7 +349,7 @@ export default function FeedbackScreen() {
               </Text>
             </Animated.View>
           ) : (
-            mockParticipants.map((participant, index) => {
+            participants.map((participant, index) => {
               const lastMessage = getLastMessage(participant.id);
 
               return (
