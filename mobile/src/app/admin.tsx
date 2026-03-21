@@ -21,6 +21,7 @@ import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated'
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Clipboard from 'expo-clipboard';
+import * as WebBrowser from 'expo-web-browser';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Haptics from 'expo-haptics';
 import { Share } from 'react-native';
@@ -593,8 +594,7 @@ export default function AdminScreen() {
                       <Pressable
                         onPress={async () => {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          await Clipboard.setStringAsync(sub.fileUrl!);
-                          Alert.alert('Link Copied', 'The file URL has been copied to your clipboard. Paste it in a browser to view.');
+                          await WebBrowser.openBrowserAsync(sub.fileUrl!);
                         }}
                         style={{
                           flexDirection: 'row', alignItems: 'center',
