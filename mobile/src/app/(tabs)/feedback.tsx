@@ -226,7 +226,230 @@ export default function FeedbackScreen() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  // ── Participant view: anyone with an access code sees their own conversation ──
+  // ── INSTRUCTOR VIEW (isAdmin always takes priority, even if they have an access code) ──
+  if (isAdmin) {
+    // Conversation with a selected participant
+    if (selectedParticipant) {
+      return (
+        <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+          <View style={{ paddingTop: insets.top + 12, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: colors.neutral[200], paddingHorizontal: 16, paddingBottom: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Pressable onPress={handleBack} style={{ padding: 8, marginLeft: -8, marginRight: 8 }}>
+                <ArrowLeft size={24} color={colors.neutral[800]} />
+              </Pressable>
+              <View style={{ width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary[100] }}>
+                <User size={20} color={colors.primary[500]} />
+              </View>
+              <View style={{ marginLeft: 12, flex: 1 }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
+                  {selectedParticipant.name}
+                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>
+                  {selectedParticipant.email}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+            <ScrollView
+              ref={scrollViewRef}
+              style={{ flex: 1, paddingHorizontal: 16, paddingTop: 16 }}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            >
+              {isLoadingMessages ? (
+                <View style={{ alignItems: 'center', paddingTop: 60 }}>
+                  <ActivityIndicator color={colors.primary[500]} />
+                </View>
+              ) : messages.length === 0 ? (
+                <View style={{ alignItems: 'center', paddingTop: 60 }}>
+                  <MessageCircle size={48} color={colors.neutral[300]} />
+                  <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 16, marginTop: 16 }}>No messages yet</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 4, textAlign: 'center' }}>
+                    Send a response to {selectedParticipant.name}
+                  </Text>
+                </View>
+              ) : (
+                messages.map((msg, index) => {
+                  const isFromMe = msg.senderId === 'admin';
+                  const showDate = index === 0 || formatDate(msg.timestamp) !== formatDate(messages[index - 1]!.timestamp);
+                  return (
+                    <View key={msg.id}>
+                      {showDate && (
+                        <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[400], fontSize: 12, textAlign: 'center', marginVertical: 16 }}>
+                          {formatDate(msg.timestamp)}
+                        </Text>
+                      )}
+                      <Animated.View
+                        entering={FadeInUp.duration(300)}
+                        style={{ marginBottom: 12, maxWidth: '80%', alignSelf: isFromMe ? 'flex-end' : 'flex-start' }}
+                      >
+                        {!isFromMe && (
+                          <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 11, marginBottom: 3 }}>
+                            {msg.senderName}
+                          </Text>
+                        )}
+                        <View style={{
+                          paddingHorizontal: 16, paddingVertical: 12, borderRadius: 18,
+                          backgroundColor: isFromMe ? colors.primary[500] : 'white',
+                          borderBottomRightRadius: isFromMe ? 4 : 18,
+                          borderBottomLeftRadius: isFromMe ? 18 : 4,
+                        }}>
+                          <Text style={{ fontFamily: 'DMSans_400Regular', color: isFromMe ? 'white' : colors.neutral[800], fontSize: 14, lineHeight: 20 }}>
+                            {msg.text}
+                          </Text>
+                        </View>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 3, textAlign: isFromMe ? 'right' : 'left' }}>
+                          {formatTime(msg.timestamp)}
+                        </Text>
+                      </Animated.View>
+                    </View>
+                  );
+                })
+              )}
+            </ScrollView>
+
+            <View style={{ paddingBottom: insets.bottom + 8, backgroundColor: 'white', borderTopWidth: 1, borderTopColor: colors.neutral[200], paddingHorizontal: 16, paddingTop: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                <TextInput
+                  value={newMessage}
+                  onChangeText={setNewMessage}
+                  placeholder="Type your response..."
+                  placeholderTextColor={colors.neutral[400]}
+                  multiline
+                  style={{
+                    fontFamily: 'DMSans_400Regular',
+                    color: colors.neutral[800],
+                    backgroundColor: colors.neutral[100],
+                    borderRadius: 20,
+                    paddingHorizontal: 16,
+                    paddingTop: 10,
+                    paddingBottom: 10,
+                    flex: 1,
+                    maxHeight: 100,
+                    fontSize: 15,
+                  }}
+                />
+                <Pressable
+                  onPress={handleSendMessage}
+                  disabled={!newMessage.trim() || isSending}
+                  style={{
+                    marginLeft: 8, width: 44, height: 44, borderRadius: 22,
+                    alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: newMessage.trim() ? colors.primary[500] : colors.neutral[200],
+                  }}
+                >
+                  {isSending ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <Send size={20} color={newMessage.trim() ? 'white' : colors.neutral[400]} />
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      );
+    }
+
+    // Participants list
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+          <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 24, paddingBottom: 16 }}>
+            <Animated.View entering={FadeInDown.duration(600)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Pressable onPress={handleBack} style={{ marginRight: 16, padding: 8, marginLeft: -8 }}>
+                  <ArrowLeft size={24} color={colors.neutral[800]} />
+                </Pressable>
+                <View>
+                  <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 32 }}>
+                    Feedback
+                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginTop: 2 }}>
+                    Instructor View
+                  </Text>
+                </View>
+              </View>
+              <Pressable
+                onPress={handleInstructorSignOut}
+                style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.neutral[100], borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 }}
+              >
+                <LogOut size={16} color={colors.neutral[600]} />
+                <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[600], fontSize: 13, marginLeft: 6 }}>Sign Out</Text>
+              </Pressable>
+            </Animated.View>
+          </View>
+
+          <View style={{ paddingHorizontal: 24 }}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18, marginBottom: 16 }}>
+              Participants
+            </Text>
+
+            {participants.length === 0 ? (
+              <Animated.View entering={FadeInUp.duration(500)} style={{ alignItems: 'center', paddingVertical: 64 }}>
+                <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.neutral[100], alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <User size={40} color={colors.neutral[300]} />
+                </View>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 18, textAlign: 'center' }}>
+                  No participants yet
+                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, textAlign: 'center', marginTop: 8, paddingHorizontal: 32 }}>
+                  Participants will appear here once they join the program
+                </Text>
+              </Animated.View>
+            ) : (
+              participants.map((participant, index) => {
+                const unread = unreadCounts[participant.id] ?? 0;
+                return (
+                  <Animated.View key={participant.id} entering={FadeInUp.duration(500).delay(100 + index * 100)}>
+                    <Pressable
+                      onPress={() => handleSelectParticipant(participant)}
+                      style={{
+                        marginBottom: 12, padding: 16, borderRadius: 16,
+                        flexDirection: 'row', alignItems: 'center',
+                        backgroundColor: 'white',
+                        shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
+                      }}
+                    >
+                      <View style={{ width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary[100] }}>
+                        <User size={24} color={colors.primary[500]} />
+                      </View>
+                      <View style={{ flex: 1, marginLeft: 16 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
+                            {participant.name}
+                          </Text>
+                          {unread > 0 && (
+                            <View style={{ backgroundColor: colors.primary[500], borderRadius: 10, minWidth: 20, height: 20, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' }}>
+                              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 11 }}>{unread}</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>
+                          {participant.email}
+                        </Text>
+                        {unread > 0 && (
+                          <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500], fontSize: 13, marginTop: 4 }}>
+                            {unread} new message{unread > 1 ? 's' : ''}
+                          </Text>
+                        )}
+                      </View>
+                      <ChevronRight size={20} color={colors.neutral[400]} />
+                    </Pressable>
+                  </Animated.View>
+                );
+              })
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ── PARTICIPANT VIEW: non-admin with an access code ──
   if (accessCode) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
@@ -239,8 +462,8 @@ export default function FeedbackScreen() {
               <User size={20} color={colors.primary[500]} />
             </View>
             <View style={{ marginLeft: 12, flex: 1 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>BaKari Lindsay</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>AFeeree Instructor</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Message Your Instructor</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>BaKari Lindsay · AFeeree</Text>
             </View>
           </View>
         </View>
@@ -263,133 +486,6 @@ export default function FeedbackScreen() {
       </View>
     );
   }
-
-  // ── Conversation view (admin selected a participant) ──
-  if (selectedParticipant) {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
-        <View style={{ paddingTop: insets.top + 12, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: colors.neutral[200], paddingHorizontal: 16, paddingBottom: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Pressable onPress={handleBack} style={{ padding: 8, marginLeft: -8, marginRight: 8 }}>
-              <ArrowLeft size={24} color={colors.neutral[800]} />
-            </Pressable>
-            <View style={{ width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.primary[100] }}>
-              <User size={20} color={colors.primary[500]} />
-            </View>
-            <View style={{ marginLeft: 12, flex: 1 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
-                {selectedParticipant.name}
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>
-                {selectedParticipant.email}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-          <ScrollView
-            ref={scrollViewRef}
-            style={{ flex: 1, paddingHorizontal: 16, paddingTop: 16 }}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-          >
-            {isLoadingMessages ? (
-              <View style={{ alignItems: 'center', paddingTop: 60 }}>
-                <ActivityIndicator color={colors.primary[500]} />
-              </View>
-            ) : messages.length === 0 ? (
-              <View style={{ alignItems: 'center', paddingTop: 60 }}>
-                <MessageCircle size={48} color={colors.neutral[300]} />
-                <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 16, marginTop: 16 }}>No messages yet</Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 4, textAlign: 'center' }}>
-                  Send feedback to {selectedParticipant.name}
-                </Text>
-              </View>
-            ) : (
-              messages.map((msg, index) => {
-                const isFromMe = msg.senderId === 'admin';
-                const showDate = index === 0 || formatDate(msg.timestamp) !== formatDate(messages[index - 1]!.timestamp);
-                return (
-                  <View key={msg.id}>
-                    {showDate && (
-                      <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[400], fontSize: 12, textAlign: 'center', marginVertical: 16 }}>
-                        {formatDate(msg.timestamp)}
-                      </Text>
-                    )}
-                    <Animated.View
-                      entering={FadeInUp.duration(300)}
-                      style={{ marginBottom: 12, maxWidth: '80%', alignSelf: isFromMe ? 'flex-end' : 'flex-start' }}
-                    >
-                      {!isFromMe && (
-                        <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 11, marginBottom: 3 }}>
-                          {msg.senderName}
-                        </Text>
-                      )}
-                      <View style={{
-                        paddingHorizontal: 16, paddingVertical: 12, borderRadius: 18,
-                        backgroundColor: isFromMe ? colors.primary[500] : 'white',
-                        borderBottomRightRadius: isFromMe ? 4 : 18,
-                        borderBottomLeftRadius: isFromMe ? 18 : 4,
-                      }}>
-                        <Text style={{ fontFamily: 'DMSans_400Regular', color: isFromMe ? 'white' : colors.neutral[800], fontSize: 14, lineHeight: 20 }}>
-                          {msg.text}
-                        </Text>
-                      </View>
-                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 3, textAlign: isFromMe ? 'right' : 'left' }}>
-                        {formatTime(msg.timestamp)}
-                      </Text>
-                    </Animated.View>
-                  </View>
-                );
-              })
-            )}
-          </ScrollView>
-
-          <View style={{ paddingBottom: insets.bottom + 8, backgroundColor: 'white', borderTopWidth: 1, borderTopColor: colors.neutral[200], paddingHorizontal: 16, paddingTop: 12 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-              <TextInput
-                value={newMessage}
-                onChangeText={setNewMessage}
-                placeholder="Type your feedback..."
-                placeholderTextColor={colors.neutral[400]}
-                multiline
-                style={{
-                  fontFamily: 'DMSans_400Regular',
-                  color: colors.neutral[800],
-                  backgroundColor: colors.neutral[100],
-                  borderRadius: 20,
-                  paddingHorizontal: 16,
-                  paddingTop: 10,
-                  paddingBottom: 10,
-                  flex: 1,
-                  maxHeight: 100,
-                  fontSize: 15,
-                }}
-              />
-              <Pressable
-                onPress={handleSendMessage}
-                disabled={!newMessage.trim() || isSending}
-                style={{
-                  marginLeft: 8, width: 44, height: 44, borderRadius: 22,
-                  alignItems: 'center', justifyContent: 'center',
-                  backgroundColor: newMessage.trim() ? colors.primary[500] : colors.neutral[200],
-                }}
-              >
-                {isSending ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <Send size={20} color={newMessage.trim() ? 'white' : colors.neutral[400]} />
-                )}
-              </Pressable>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </View>
-    );
-  }
-
-  // ── No access code and not admin: show instructor login ──
   if (!isAdmin && !accessCode) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
