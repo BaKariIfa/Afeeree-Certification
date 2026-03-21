@@ -529,10 +529,9 @@ export default function AdminScreen() {
               <ArrowLeft size={24} color="white" />
             </Pressable>
             <View>
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Messages</Text>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 2 }}>
-                Kalanden{' '}
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.45)', fontSize: 11 }}>— Carrier of Tradition</Text>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>
+                Kalanden Messages{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>— Carrier of Tradition</Text>
               </Text>
             </View>
           </View>
@@ -1145,9 +1144,8 @@ export default function AdminScreen() {
               <User size={20} color="white" />
             </View>
             <View>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 17 }}>{selectedName}</Text>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
-                Kalanden{' '}
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 17 }}>
+                {selectedName}{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.45)', fontSize: 10 }}>— Carrier of Tradition</Text>
               </Text>
             </View>

@@ -204,11 +204,8 @@ export default function AgreementScreen() {
             </Text>
           </View>
           <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 30 }}>
-            {'Kalanden Agreement'}
-          </Text>
-          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>
-            Kalanden{' '}
-            <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.55)', fontSize: 12 }}>— Carrier of Tradition</Text>
+            Kalanden Agreement{' '}
+            <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.55)', fontSize: 15 }}>— Carrier of Tradition</Text>
           </Text>
           <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 8 }}>
             {alreadySigned
