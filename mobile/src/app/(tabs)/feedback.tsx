@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Send, User, MessageCircle, ChevronRight } from 'lucide-react-native';
+import { ArrowLeft, Send, User, MessageCircle, ChevronRight, Lock, LogOut } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
@@ -58,6 +58,12 @@ export default function FeedbackScreen() {
   const [isSending, setIsSending] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
+  // Inline instructor login
+  const [instructorPassword, setInstructorPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const setAdmin = useAccessCodeStore(s => s.setAdmin);
+
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
     DMSans_400Regular,
@@ -104,6 +110,27 @@ export default function FeedbackScreen() {
     loadCodes();
     fetchUnreadCounts();
   }, []);
+
+  const handleInstructorLogin = async () => {
+    if (!instructorPassword.trim()) return;
+    setIsLoggingIn(true);
+    setLoginError('');
+    if (instructorPassword.trim().toUpperCase() === ADMIN_PASSWORD) {
+      await setAdmin(true);
+      await loadCodes();
+      await fetchUnreadCounts();
+      setInstructorPassword('');
+    } else {
+      setLoginError('Incorrect password. Please try again.');
+    }
+    setIsLoggingIn(false);
+  };
+
+  const handleInstructorSignOut = async () => {
+    await setAdmin(false);
+    setSelectedParticipant(null);
+    setMessages([]);
+  };
 
   // Auto-load messages for participant (non-admin) view
   useEffect(() => {
@@ -361,23 +388,118 @@ export default function FeedbackScreen() {
     );
   }
 
+  // ── No access code and not admin: show instructor login ──
+  if (!isAdmin && !accessCode) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 24, paddingBottom: 16, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: colors.neutral[100] }}>
+          <Animated.View entering={FadeInDown.duration(600)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={() => router.push('/(tabs)/')} style={{ marginRight: 16, padding: 8, marginLeft: -8 }}>
+              <ArrowLeft size={24} color={colors.neutral[800]} />
+            </Pressable>
+            <View>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 28 }}>
+                Feedback
+              </Text>
+            </View>
+          </Animated.View>
+        </View>
+
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 32, paddingVertical: 40 }}>
+          <Animated.View entering={FadeInUp.duration(600)}>
+            <View style={{ alignItems: 'center', marginBottom: 40 }}>
+              <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                <Lock size={36} color={colors.primary[600]} />
+              </View>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 26, textAlign: 'center', marginBottom: 8 }}>
+                Instructor Access
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
+                Sign in with your instructor password to view participant messages and respond
+              </Text>
+            </View>
+
+            <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 13, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>
+                Instructor Password
+              </Text>
+              <TextInput
+                value={instructorPassword}
+                onChangeText={(t) => { setInstructorPassword(t); setLoginError(''); }}
+                placeholder="Enter password..."
+                placeholderTextColor={colors.neutral[400]}
+                secureTextEntry
+                autoCapitalize="none"
+                style={{
+                  fontFamily: 'DMSans_400Regular',
+                  color: colors.neutral[800],
+                  backgroundColor: colors.neutral[50],
+                  borderWidth: 1.5,
+                  borderColor: loginError ? '#ef4444' : colors.neutral[200],
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  fontSize: 15,
+                  marginBottom: loginError ? 8 : 20,
+                }}
+              />
+              {loginError ? (
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: '#ef4444', fontSize: 13, marginBottom: 16 }}>
+                  {loginError}
+                </Text>
+              ) : null}
+
+              <Pressable
+                onPress={handleInstructorLogin}
+                disabled={!instructorPassword.trim() || isLoggingIn}
+                style={{
+                  backgroundColor: instructorPassword.trim() ? colors.primary[600] : colors.neutral[200],
+                  borderRadius: 14,
+                  paddingVertical: 16,
+                  alignItems: 'center',
+                }}
+              >
+                {isLoggingIn ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: instructorPassword.trim() ? 'white' : colors.neutral[400], fontSize: 16 }}>
+                    Sign In as Instructor
+                  </Text>
+                )}
+              </Pressable>
+            </View>
+          </Animated.View>
+        </ScrollView>
+      </View>
+    );
+  }
+
   // ── Participants list view (admin) ──
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 24, paddingBottom: 16 }}>
-          <Animated.View entering={FadeInDown.duration(600)} style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Pressable onPress={handleBack} style={{ marginRight: 16, padding: 8, marginLeft: -8 }}>
-              <ArrowLeft size={24} color={colors.neutral[800]} />
-            </Pressable>
-            <View>
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 32 }}>
-                Feedback
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 16, marginTop: 4 }}>
-                Two-way communication with participants
-              </Text>
+          <Animated.View entering={FadeInDown.duration(600)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Pressable onPress={handleBack} style={{ marginRight: 16, padding: 8, marginLeft: -8 }}>
+                <ArrowLeft size={24} color={colors.neutral[800]} />
+              </Pressable>
+              <View>
+                <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 32 }}>
+                  Feedback
+                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginTop: 2 }}>
+                  Instructor View
+                </Text>
+              </View>
             </View>
+            <Pressable
+              onPress={handleInstructorSignOut}
+              style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.neutral[100], borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 }}
+            >
+              <LogOut size={16} color={colors.neutral[600]} />
+              <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[600], fontSize: 13, marginLeft: 6 }}>Sign Out</Text>
+            </Pressable>
           </Animated.View>
         </View>
 
