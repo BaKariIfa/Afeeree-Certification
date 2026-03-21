@@ -57,12 +57,11 @@ export default function AssignmentsScreen() {
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
-  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [taskView, setTaskView] = useState<'detail' | 'submit-options' | 'reflection'>('detail');
   const [refreshing, setRefreshing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [reflectionText, setReflectionText] = useState('');
-  const [showReflectionInput, setShowReflectionInput] = useState(false);
 
   // My submissions state
   const [mySubmissions, setMySubmissions] = useState<MySubmission[]>([]);
@@ -93,10 +92,9 @@ export default function AssignmentsScreen() {
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setSubmitted(true);
-      setShowSubmitModal(false);
-      setShowReflectionInput(false);
+      setTaskView('detail');
       if (selectedAssignment) fetchMySubmissions(selectedAssignment.title);
-      setTimeout(() => { setSubmitted(false); setSelectedAssignment(null); }, 2500);
+      setTimeout(() => { setSubmitted(false); setSelectedAssignment(null); setTaskView('detail'); }, 2500);
     } catch (e) {
       console.error('[assignments submitToBackend]', e);
       Alert.alert('Submission Failed', 'Please try again.');
@@ -239,7 +237,7 @@ export default function AssignmentsScreen() {
 
   const handleSubmitPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setShowSubmitModal(true);
+    setTaskView('submit-options');
   };
 
   return (
@@ -403,7 +401,7 @@ export default function AssignmentsScreen() {
         visible={selectedAssignment !== null}
         animationType="slide"
         presentationStyle="pageSheet"
-        onRequestClose={() => setSelectedAssignment(null)}
+        onRequestClose={() => { setSelectedAssignment(null); setTaskView('detail'); setReflectionText(''); }}
       >
         {selectedAssignment && (
           <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
@@ -415,7 +413,7 @@ export default function AssignmentsScreen() {
                 Task Details
               </Text>
               <Pressable
-                onPress={() => setSelectedAssignment(null)}
+                onPress={() => { setSelectedAssignment(null); setTaskView('detail'); setReflectionText(''); }}
                 className="p-2"
               >
                 <X size={24} color={colors.neutral[600]} />
@@ -607,8 +605,8 @@ export default function AssignmentsScreen() {
               </Animated.View>
             </ScrollView>
 
-            {/* Submit Button */}
-            {selectedAssignment.status === 'pending' && (
+            {/* Bottom action area — changes based on taskView */}
+            {taskView === 'detail' && selectedAssignment.status === 'pending' && (
               <View className="px-6 pb-8 pt-4" style={{ backgroundColor: colors.cream[100] }}>
                 <Pressable
                   onPress={isDemoMode ? undefined : handleSubmitPress}
@@ -616,152 +614,111 @@ export default function AssignmentsScreen() {
                   style={{ backgroundColor: isDemoMode ? colors.neutral[300] : colors.primary[500] }}
                 >
                   <Upload size={20} color="white" />
-                  <Text
-                    style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }}
-                    className="text-base ml-2"
-                  >
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }} className="text-base ml-2">
                     {isDemoMode ? 'Enroll to Submit' : 'Submit Task'}
                   </Text>
                 </Pressable>
               </View>
             )}
+
+            {taskView === 'submit-options' && (
+              <View style={{ backgroundColor: colors.cream[100], borderTopWidth: 1, borderTopColor: colors.neutral[200] }}>
+                <View className="px-6 pt-4 pb-2 flex-row items-center justify-between">
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 17 }}>Choose Submission Type</Text>
+                  <Pressable onPress={() => setTaskView('detail')} className="p-2">
+                    <X size={22} color={colors.neutral[600]} />
+                  </Pressable>
+                </View>
+                {submitting ? (
+                  <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 32 }}>
+                    <ActivityIndicator size="large" color={colors.primary[500]} />
+                    <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[600], marginTop: 12, fontSize: 15 }}>Uploading...</Text>
+                  </View>
+                ) : (
+                  <View className="px-6 pb-8">
+                    <Pressable onPress={handleRecordVideo} className="p-4 rounded-2xl mb-3 flex-row items-center" style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}>
+                      <View className="w-12 h-12 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primary[100] }}>
+                        <Camera size={24} color={colors.primary[500]} />
+                      </View>
+                      <View className="ml-4 flex-1">
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Record Video</Text>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>Capture teaching demos or practice</Text>
+                      </View>
+                    </Pressable>
+                    <Pressable onPress={handleUploadFile} className="p-4 rounded-2xl mb-3 flex-row items-center" style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}>
+                      <View className="w-12 h-12 rounded-xl items-center justify-center" style={{ backgroundColor: colors.gold[100] }}>
+                        <File size={24} color={colors.gold[600]} />
+                      </View>
+                      <View className="ml-4 flex-1">
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Upload File</Text>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>Documents, videos, or images</Text>
+                      </View>
+                    </Pressable>
+                    <Pressable onPress={() => setTaskView('reflection')} className="p-4 rounded-2xl flex-row items-center" style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}>
+                      <View className="w-12 h-12 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primary[100] }}>
+                        <PenLine size={24} color={colors.primary[500]} />
+                      </View>
+                      <View className="ml-4 flex-1">
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Write Reflection</Text>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>Text-based response</Text>
+                      </View>
+                    </Pressable>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {taskView === 'reflection' && (
+              <View style={{ backgroundColor: colors.cream[100], borderTopWidth: 1, borderTopColor: colors.neutral[200], paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}>
+                <View className="flex-row items-center justify-between mb-4">
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 17 }}>Write Your Reflection</Text>
+                  <Pressable onPress={() => { setTaskView('submit-options'); setReflectionText(''); }} className="p-2">
+                    <X size={22} color={colors.neutral[600]} />
+                  </Pressable>
+                </View>
+                <TextInput
+                  value={reflectionText}
+                  onChangeText={setReflectionText}
+                  placeholder="Share your thoughts and insights..."
+                  placeholderTextColor={colors.neutral[400]}
+                  multiline
+                  style={{
+                    fontFamily: 'DMSans_400Regular',
+                    color: colors.neutral[800],
+                    backgroundColor: 'white',
+                    borderRadius: 14,
+                    padding: 14,
+                    fontSize: 15,
+                    lineHeight: 22,
+                    minHeight: 120,
+                    borderWidth: 1,
+                    borderColor: colors.neutral[200],
+                    textAlignVertical: 'top',
+                    marginBottom: 12,
+                  }}
+                />
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <Pressable
+                    onPress={() => { setTaskView('submit-options'); setReflectionText(''); }}
+                    style={{ flex: 1, paddingVertical: 13, borderRadius: 12, alignItems: 'center', backgroundColor: colors.neutral[100] }}
+                  >
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 15 }}>Back</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={handleSubmitReflection}
+                    disabled={!reflectionText.trim() || submitting}
+                    style={{ flex: 2, paddingVertical: 13, borderRadius: 12, alignItems: 'center', backgroundColor: reflectionText.trim() ? colors.primary[500] : colors.neutral[200] }}
+                  >
+                    {submitting
+                      ? <ActivityIndicator size="small" color="white" />
+                      : <Text style={{ fontFamily: 'DMSans_600SemiBold', color: reflectionText.trim() ? 'white' : colors.neutral[400], fontSize: 15 }}>Submit</Text>
+                    }
+                  </Pressable>
+                </View>
+              </View>
+            )}
           </View>
         )}
-      </Modal>
-
-      {/* Submit Options Modal */}
-      <Modal
-        visible={showSubmitModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => { setShowSubmitModal(false); setShowReflectionInput(false); setReflectionText(''); }}
-      >
-        <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
-          <View className="px-6 pt-4 pb-4 flex-row items-center justify-between" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[200] }}>
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-lg">
-              Submit Task
-            </Text>
-            <Pressable onPress={() => { setShowSubmitModal(false); setShowReflectionInput(false); setReflectionText(''); }} className="p-2">
-              <X size={24} color={colors.neutral[600]} />
-            </Pressable>
-          </View>
-
-          {submitting ? (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <ActivityIndicator size="large" color={colors.primary[500]} />
-              <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[600], marginTop: 16, fontSize: 15 }}>
-                Uploading submission...
-              </Text>
-            </View>
-          ) : showReflectionInput ? (
-            <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 24 }}>
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 22, marginBottom: 8 }}>
-                Write Your Reflection
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginBottom: 20 }}>
-                Share your thoughts, insights, and learnings
-              </Text>
-              <TextInput
-                value={reflectionText}
-                onChangeText={setReflectionText}
-                placeholder="Write your reflection here..."
-                placeholderTextColor={colors.neutral[400]}
-                multiline
-                style={{
-                  fontFamily: 'DMSans_400Regular',
-                  color: colors.neutral[800],
-                  backgroundColor: 'white',
-                  borderRadius: 16,
-                  padding: 16,
-                  fontSize: 15,
-                  lineHeight: 22,
-                  minHeight: 180,
-                  borderWidth: 1,
-                  borderColor: colors.neutral[200],
-                  textAlignVertical: 'top',
-                }}
-              />
-              <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
-                <Pressable
-                  onPress={() => { setShowReflectionInput(false); setReflectionText(''); }}
-                  style={{ flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: colors.neutral[100] }}
-                >
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 15 }}>Back</Text>
-                </Pressable>
-                <Pressable
-                  onPress={handleSubmitReflection}
-                  disabled={!reflectionText.trim()}
-                  style={{ flex: 2, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: reflectionText.trim() ? colors.primary[500] : colors.neutral[200] }}
-                >
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: reflectionText.trim() ? 'white' : colors.neutral[400], fontSize: 15 }}>Submit</Text>
-                </Pressable>
-              </View>
-            </View>
-          ) : (
-            <View className="flex-1 px-6 pt-8">
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }} className="text-2xl text-center">
-                Choose Submission Type
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-base text-center mt-2 mb-8">
-                Select how you want to submit your work
-              </Text>
-
-              <Pressable
-                onPress={handleRecordVideo}
-                className="p-5 rounded-2xl mb-4 flex-row items-center"
-                style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
-              >
-                <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primary[100] }}>
-                  <Camera size={28} color={colors.primary[500]} />
-                </View>
-                <View className="ml-4 flex-1">
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-base">
-                    Record Video
-                  </Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm mt-0.5">
-                    Capture teaching demos or practice
-                  </Text>
-                </View>
-              </Pressable>
-
-              <Pressable
-                onPress={handleUploadFile}
-                className="p-5 rounded-2xl mb-4 flex-row items-center"
-                style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
-              >
-                <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: colors.gold[100] }}>
-                  <File size={28} color={colors.gold[600]} />
-                </View>
-                <View className="ml-4 flex-1">
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-base">
-                    Upload File
-                  </Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm mt-0.5">
-                    Documents, videos, or images
-                  </Text>
-                </View>
-              </Pressable>
-
-              <Pressable
-                onPress={() => setShowReflectionInput(true)}
-                className="p-5 rounded-2xl flex-row items-center"
-                style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
-              >
-                <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primary[100] }}>
-                  <PenLine size={28} color={colors.primary[500]} />
-                </View>
-                <View className="ml-4 flex-1">
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-base">
-                    Write Reflection
-                  </Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm mt-0.5">
-                    Text-based assignments
-                  </Text>
-                </View>
-              </Pressable>
-            </View>
-          )}
-        </View>
       </Modal>
 
       {/* Submission Success overlay */}
