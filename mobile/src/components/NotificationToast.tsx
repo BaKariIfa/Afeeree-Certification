@@ -27,8 +27,8 @@ async function playNotificationSound() {
   try {
     await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
     const { sound } = await Audio.Sound.createAsync(
-      require('../../assets/audio/kata.m4a'),
-      { volume: 0.7 }
+      require('../../assets/audio/notification.wav'),
+      { volume: 0.8 }
     );
     await sound.playAsync();
     sound.setOnPlaybackStatusUpdate((status) => {

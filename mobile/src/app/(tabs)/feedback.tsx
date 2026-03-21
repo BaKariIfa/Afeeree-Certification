@@ -62,7 +62,7 @@ export default function FeedbackScreen() {
   // Notification toast
   const [toast, setToast] = useState<ToastData | null>(null);
   const prevMessageCountRef = useRef(0);
-  const prevUnreadTotalRef = useRef(0);
+  const prevUnreadTotalRef = useRef(-1); // -1 = not yet loaded, skip first poll
   const isInitialLoadRef = useRef(true);
 
   // Inline instructor login
@@ -120,16 +120,14 @@ export default function FeedbackScreen() {
       const newCounts = data.counts;
       const newTotal = Object.values(newCounts).reduce((s, n) => s + n, 0);
 
-      // Detect new participant messages → notify instructor
-      if (prevUnreadTotalRef.current > 0 || newTotal > 0) {
-        if (newTotal > prevUnreadTotalRef.current) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          setToast({
-            id: `unread-${Date.now()}`,
-            title: 'New Message',
-            body: `You have ${newTotal} unread message${newTotal > 1 ? 's' : ''} from participants`,
-          });
-        }
+      // Detect new participant messages → notify instructor (skip first load)
+      if (prevUnreadTotalRef.current >= 0 && newTotal > prevUnreadTotalRef.current) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setToast({
+          id: `unread-${Date.now()}`,
+          title: 'New Message',
+          body: `You have ${newTotal} unread message${newTotal > 1 ? 's' : ''} from participants`,
+        });
       }
       prevUnreadTotalRef.current = newTotal;
       setUnreadCounts(newCounts);

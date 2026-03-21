@@ -114,18 +114,14 @@ export default function AdminScreen() {
         const newCounts = data.counts;
         const newTotal = Object.values(newCounts).reduce((s, n) => s + n, 0);
 
-        // Notify instructor when new participant messages arrive
-        if (newTotal > prevUnreadTotalRef.current && prevUnreadTotalRef.current >= 0) {
-          if (prevUnreadTotalRef.current !== -1) {
-            // -1 is the initial sentinel; skip notification on first load
-            const { impactAsync, ImpactFeedbackStyle } = await import('expo-haptics');
-            impactAsync(ImpactFeedbackStyle.Medium);
-            setToast({
-              id: `admin-unread-${Date.now()}`,
-              title: 'New Message from Participant',
-              body: `You have ${newTotal} unread message${newTotal > 1 ? 's' : ''}`,
-            });
-          }
+        // Notify instructor when new participant messages arrive (skip first load)
+        if (prevUnreadTotalRef.current >= 0 && newTotal > prevUnreadTotalRef.current) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          setToast({
+            id: `admin-unread-${Date.now()}`,
+            title: 'New Message from Participant',
+            body: `You have ${newTotal} unread message${newTotal > 1 ? 's' : ''}`,
+          });
         }
         prevUnreadTotalRef.current = newTotal;
         setUnreadCounts(newCounts);
