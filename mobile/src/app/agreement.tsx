@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useNavigation } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { CheckSquare, Square, FileText, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -98,16 +98,11 @@ const CLAUSES = [
 export default function AgreementScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const navigation = useNavigation();
   const name = useUserStore(s => s.name);
   const setOnboarded = useUserStore(s => s.setOnboarded);
 
   const handleClose = () => {
-    if (navigation.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(tabs)/');
-    }
+    router.replace('/(tabs)/');
   };
 
   const [alreadySigned, setAlreadySigned] = useState(false);
