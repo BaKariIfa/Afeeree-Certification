@@ -36,6 +36,7 @@ export default function FeedbackScreen() {
 
   const codes = useAccessCodeStore(s => s.codes);
   const loadCodes = useAccessCodeStore(s => s.loadCodes);
+  const isAdmin = useAccessCodeStore(s => s.isAdmin);
   const userName = useUserStore(s => s.name);
   const accessCode = useUserStore(s => s.accessCode);
 
@@ -63,9 +64,6 @@ export default function FeedbackScreen() {
     DMSans_500Medium,
     DMSans_600SemiBold,
   });
-
-  // Determine if current user is admin (has loaded codes from admin endpoint)
-  const isAdmin = codes.length > 0 || (userName === 'Admin' || !accessCode);
 
   const fetchMessages = useCallback(async (code: string) => {
     try {

@@ -1,9 +1,11 @@
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Admin password (must match backend)
 export const ADMIN_PASSWORD = 'BAKARI2024';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
+const IS_ADMIN_KEY = 'isAdmin';
 
 export interface AccessCode {
   code: string;
@@ -23,12 +25,18 @@ interface AccessCodeStore {
   deleteCode: (code: string) => Promise<void>;
   markCodeUsed: (code: string, email: string, name?: string) => Promise<void>;
   isCodeValid: (code: string) => Promise<{ valid: boolean; userName: string | null; userEmail: string | null }>;
-  setAdmin: (isAdmin: boolean) => void;
+  setAdmin: (isAdmin: boolean) => Promise<void>;
+  loadAdminState: () => Promise<void>;
 }
 
 export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
   codes: [],
   isAdmin: false,
+
+  loadAdminState: async () => {
+    const stored = await AsyncStorage.getItem(IS_ADMIN_KEY);
+    if (stored === 'true') set({ isAdmin: true });
+  },
 
   loadCodes: async () => {
     try {
@@ -49,7 +57,6 @@ export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
       headers: { 'x-admin-password': ADMIN_PASSWORD },
     });
     const data = await res.json() as { code: string };
-    // Refresh list
     const listRes = await fetch(`${BACKEND_URL}/api/codes`, {
       headers: { 'x-admin-password': ADMIN_PASSWORD },
     });
@@ -65,7 +72,6 @@ export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
       method: 'DELETE',
       headers: { 'x-admin-password': ADMIN_PASSWORD },
     });
-    // Refresh list
     const res = await fetch(`${BACKEND_URL}/api/codes`, {
       headers: { 'x-admin-password': ADMIN_PASSWORD },
     });
@@ -98,7 +104,8 @@ export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
     }
   },
 
-  setAdmin: (isAdmin: boolean) => {
+  setAdmin: async (isAdmin: boolean) => {
     set({ isAdmin });
+    await AsyncStorage.setItem(IS_ADMIN_KEY, isAdmin ? 'true' : 'false');
   },
 }));

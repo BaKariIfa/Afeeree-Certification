@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from '@/lib/useColorScheme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useAccessCodeStore } from '@/lib/accessCodeStore';
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
@@ -39,13 +40,11 @@ function RootLayoutNav({ colorScheme }: { colorScheme: 'light' | 'dark' | null |
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const loadAdminState = useAccessCodeStore(s => s.loadAdminState);
 
-  // Ensure we never get stuck behind the native splash on routes
-  // that load fonts asynchronously (e.g. access-code, onboarding).
   useEffect(() => {
-    SplashScreen.hideAsync().catch(() => {
-      // no-op: can throw if called too early or already hidden
-    });
+    loadAdminState();
+    SplashScreen.hideAsync().catch(() => {});
   }, []);
 
   return (

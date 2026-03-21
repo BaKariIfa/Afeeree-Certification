@@ -40,6 +40,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
   const loadCodes = useAccessCodeStore(s => s.loadCodes);
   const generateCode = useAccessCodeStore(s => s.generateCode);
   const deleteCode = useAccessCodeStore(s => s.deleteCode);
+  const setAdmin = useAccessCodeStore(s => s.setAdmin);
 
   const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
   const setNotationPdfUrl = useNotationStore(s => s.setNotationPdfUrl);
@@ -83,6 +84,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setIsAuthenticated(true);
       setPasswordError('');
+      setAdmin(true);
       loadCodes();
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
