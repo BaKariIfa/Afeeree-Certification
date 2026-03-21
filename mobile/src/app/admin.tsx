@@ -658,7 +658,10 @@ export default function AdminScreen() {
               <ArrowLeft size={24} color="white" />
             </Pressable>
             <View>
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22 }}>Discussion Forums</Text>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22 }}>
+                Discussion Forums{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>— Kalanden · Carrier of Tradition</Text>
+              </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>
                 History & Context — select a lesson
               </Text>
@@ -1027,8 +1030,11 @@ export default function AdminScreen() {
               <ArrowLeft size={24} color="white" />
             </Pressable>
             <View>
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Submissions</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 1 }}>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>
+                Kalanden Submissions{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>— Carrier of Tradition</Text>
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 2 }}>
                 {submissions.length} submission{submissions.length !== 1 ? 's' : ''}
               </Text>
             </View>
@@ -1398,10 +1404,11 @@ export default function AdminScreen() {
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: totalUnread > 0 ? 'white' : colors.neutral[800], fontSize: 16 }}>
-                Messages
+                Kalanden Messages{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: totalUnread > 0 ? 'rgba(255,255,255,0.55)' : colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: totalUnread > 0 ? 'rgba(255,255,255,0.8)' : colors.neutral[500], fontSize: 13, marginTop: 2 }}>
-                {totalUnread > 0 ? `${totalUnread} unread message${totalUnread > 1 ? 's' : ''}` : 'View Kalanden messages'}
+                {totalUnread > 0 ? `${totalUnread} unread message${totalUnread > 1 ? 's' : ''}` : 'View conversations'}
               </Text>
             </View>
             {totalUnread > 0 && (
@@ -1423,7 +1430,10 @@ export default function AdminScreen() {
               <Inbox size={24} color={colors.gold[600]} />
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Submissions</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
+                Kalanden Submissions{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
+              </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>View files, videos & reflections</Text>
             </View>
             <ChevronRight size={20} color={colors.neutral[300]} />
@@ -1462,9 +1472,12 @@ export default function AdminScreen() {
               <MessageCircle size={24} color={colors.primary[500]} />
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Discussion Forums</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
+                Discussion Forums{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Kalanden · Carrier of Tradition</Text>
+              </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>
-                View & reply to Kalanden questions
+                View & reply to questions
               </Text>
             </View>
             <ChevronRight size={20} color={colors.neutral[300]} />

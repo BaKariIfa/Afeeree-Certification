@@ -848,10 +848,8 @@ export default function FeedbackScreen() {
         <View style={{ paddingHorizontal: 24 }}>
           <View style={{ marginBottom: 8 }}>
             <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18 }}>
-              Kalandenw
-            </Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 0, marginBottom: 14 }}>
-              One who studies, absorbs, and prepares to carry forward tradition
+              Kalandenw{' '}
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 13 }}>— Carriers of Tradition</Text>
             </Text>
           </View>
 
