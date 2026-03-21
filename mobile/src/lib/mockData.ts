@@ -239,11 +239,11 @@ export const mockModules: Module[] = [
     contactHours: 4,
     isHistoryModule: true,
     lessonPages: [
-      { title: 'Lesson 1', startPage: 1, endPage: 10 },
-      { title: 'Lesson 2', startPage: 11, endPage: 14 },
-      { title: 'Lesson 3', startPage: 15, endPage: 26 },
-      { title: 'Lesson 4', startPage: 27, endPage: 30 },
-      { title: 'Lesson 5', startPage: 31, endPage: 35 },
+      { title: 'Lesson 1', startPage: 8, endPage: 17 },
+      { title: 'Lesson 2', startPage: 18, endPage: 21 },
+      { title: 'Lesson 3', startPage: 22, endPage: 33 },
+      { title: 'Lesson 4', startPage: 34, endPage: 37 },
+      { title: 'Lesson 5', startPage: 38, endPage: 42 },
     ],
   },
 ];
