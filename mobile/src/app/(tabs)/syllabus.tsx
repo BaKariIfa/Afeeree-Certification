@@ -91,10 +91,16 @@ export default function SyllabusScreen() {
     return Math.round((completed / module.lessons) * 100);
   };
 
-  const openNotationPdf = (fallbackUrl: string) => {
+  const openNotationPdf = (fallbackUrl: string, startPage?: number, endPage?: number) => {
+    // If admin has uploaded a custom PDF, use it (no guaranteed page mapping)
     const pdfUrl = notationPdfUrl ?? fallbackUrl;
     const params = new URLSearchParams({ url: pdfUrl });
     if (isDemoMode) params.set('maxPages', '5');
+    // Only pass page range when using the default module PDF (not a custom upload)
+    if (!notationPdfUrl && startPage) {
+      params.set('startPage', String(startPage));
+      params.set('endPage', String(endPage ?? startPage));
+    }
     const viewerUrl = `${BACKEND_URL}/api/notation/view?${params.toString()}`;
     WebBrowser.openBrowserAsync(viewerUrl, {
       presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
@@ -158,7 +164,7 @@ export default function SyllabusScreen() {
   const handleModulePress = (module: Module, index: number) => {
     if (isDemoMode && index >= 2) return;
     triggerHaptic();
-    openNotationPdf(module.pdfLink ?? resourceLinks.syllabus);
+    openNotationPdf(module.pdfLink ?? resourceLinks.syllabus, module.pdfPage, module.pdfEndPage);
   };
 
   const handleCategoryPress = (category: string) => {

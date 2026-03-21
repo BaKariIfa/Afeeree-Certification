@@ -36,25 +36,28 @@ notationRouter.get("/view", async (c) => {
   try {
     const res = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0" },
+      redirect: "follow",
     });
+    console.log(`[notation] fetch status=${res.status} content-type=${res.headers.get("content-type")} url=${url.substring(0, 80)}`);
     if (!res.ok) throw new Error(`Failed to fetch PDF: ${res.status}`);
     pdfBytes = await res.arrayBuffer();
+    console.log(`[notation] fetched ${pdfBytes.byteLength} bytes`);
   } catch (err) {
+    console.error(`[notation] fetch error:`, err);
     return c.text("Could not load notation file", 502);
   }
 
   let srcDoc: PDFDocument;
   try {
     srcDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
-  } catch {
-    // If pdf-lib can't parse it (e.g. it's an image), just stream it back
-    return new Response(pdfBytes, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": "inline",
-        "X-Frame-Options": "SAMEORIGIN",
-      },
-    });
+    console.log(`[notation] parsed PDF, totalPages=${srcDoc.getPageCount()}`);
+  } catch (parseErr) {
+    // Google Drive returned HTML (confirmation page) instead of PDF bytes
+    console.error(`[notation] pdf-lib parse failed — likely got HTML instead of PDF:`, parseErr);
+    // Try to follow the Google Drive confirm flow
+    const html = Buffer.from(pdfBytes).toString("utf8").substring(0, 2000);
+    console.log(`[notation] response body preview:`, html.substring(0, 500));
+    return c.text("Could not parse notation file. The PDF may require authentication.", 502);
   }
 
   const totalPages = srcDoc.getPageCount();
@@ -85,6 +88,7 @@ notationRouter.get("/view", async (c) => {
   }
   const copiedPages = await outDoc.copyPages(srcDoc, pageIndices);
   copiedPages.forEach((p: import('pdf-lib').PDFPage) => outDoc.addPage(p));
+  console.log(`[notation] extracted pages ${firstPage}-${lastPage} → ${copiedPages.length} pages in output PDF`);
 
   // Add watermark to every page
   const watermarkText = "AFeeree Certification Program — Confidential";
