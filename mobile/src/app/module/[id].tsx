@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Linking, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -154,15 +154,19 @@ export default function ModuleDetailScreen() {
     setSelectedLesson(null);
   };
 
-  const handleViewNotation = () => {
+  const handleViewNotation = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const backendUrl = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
+    let pageUrl: string | null = null;
     if (module.isHistoryModule && historyPdfUrl) {
-      const pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(historyPdfUrl)}`;
-      Linking.openURL(pageUrl);
+      pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(historyPdfUrl)}`;
     } else if (module.pdfLink && module.pdfPage) {
-      const pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(module.pdfLink)}&startPage=${module.pdfPage}&endPage=${module.pdfEndPage ?? module.pdfPage}`;
-      Linking.openURL(pageUrl);
+      pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(module.pdfLink)}&startPage=${module.pdfPage}&endPage=${module.pdfEndPage ?? module.pdfPage}`;
+    }
+    if (pageUrl) {
+      await WebBrowser.openBrowserAsync(pageUrl, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+      });
     }
     setPdfViewed(true);
   };
