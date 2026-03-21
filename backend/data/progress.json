@@ -4,7 +4,9 @@
     "name": "GUEST",
     "email": "GUEST@GMAIL.COM",
     "completedLessons": [],
-    "lessonStudyTime": {},
-    "lastSyncedAt": "2026-03-21T21:30:33.535Z"
+    "lessonStudyTime": {
+      "history-1": 1581535
+    },
+    "lastSyncedAt": "2026-03-21T21:35:56.041Z"
   }
 }

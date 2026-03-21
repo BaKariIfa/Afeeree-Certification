@@ -3,7 +3,6 @@ import { View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUserStore } from '@/lib/userStore';
 import { colors } from '@/lib/theme';
 
@@ -36,13 +35,6 @@ export default function StartScreen() {
 
       if (!isOnboarded) {
         router.replace('/onboarding');
-        return;
-      }
-
-      // Check if agreement has been signed
-      const agreementSigned = await AsyncStorage.getItem('agreementSigned');
-      if (!agreementSigned) {
-        router.replace('/agreement');
         return;
       }
 
