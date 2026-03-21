@@ -954,6 +954,35 @@ export default function AdminScreen() {
           </View>
         </Animated.View>
 
+        {/* Participant Agreement Card */}
+        <Animated.View entering={FadeInDown.duration(400).delay(105)}>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/agreement'); }}
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              elevation: 2,
+            }}
+          >
+            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.gold[100], alignItems: 'center', justifyContent: 'center', marginRight: 14 }}>
+              <FileText size={22} color={colors.gold[600]} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Participant Agreement</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>View the participant consent form</Text>
+            </View>
+            <ChevronRight size={18} color={colors.neutral[400]} />
+          </Pressable>
+        </Animated.View>
+
         {/* Generate Code Button */}
         <Animated.View entering={FadeInDown.duration(400).delay(180)}>
           <Pressable

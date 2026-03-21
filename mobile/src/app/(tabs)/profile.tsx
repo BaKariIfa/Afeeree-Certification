@@ -614,6 +614,31 @@ export default function ProfileScreen() {
           </View>
         </Animated.View>
 
+        {/* Participant Agreement Card */}
+        <Animated.View
+          entering={FadeInUp.duration(600).delay(350)}
+          className="px-6 mt-6"
+        >
+          <Pressable
+            onPress={() => { triggerHaptic(); router.push('/agreement'); }}
+            className="p-4 rounded-2xl flex-row items-center"
+            style={{ backgroundColor: colors.primary[500] }}
+          >
+            <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}>
+              <FileText size={20} color="white" />
+            </View>
+            <View className="flex-1 ml-4">
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>
+                Participant Agreement
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 1 }}>
+                View your signed agreement
+              </Text>
+            </View>
+            <ChevronRight size={20} color="rgba(255,255,255,0.6)" />
+          </Pressable>
+        </Animated.View>
+
         {/* Menu Items */}
         <Animated.View
           entering={FadeInUp.duration(600).delay(400)}
