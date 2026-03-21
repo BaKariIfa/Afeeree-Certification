@@ -294,11 +294,9 @@ export default function HomeScreen() {
             >
               {userName || 'Kalanden'}
             </Text>
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 12, marginTop: 4 }}>
-              Kalanden
-            </Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 1 }}>
-              One who studies, absorbs, and prepares to carry forward tradition
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 12, marginTop: 3 }}>
+              Kalanden{' '}
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
             </Text>
           </View>
         </Animated.View>

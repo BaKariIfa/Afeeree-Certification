@@ -373,8 +373,9 @@ export default function ProfileScreen() {
             >
               {userName || 'Kalanden'}
             </Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.55)', fontSize: 12, fontStyle: 'italic', marginTop: 1, textAlign: 'center', paddingHorizontal: 16 }}>
-              One who studies, absorbs, and prepares to carry forward tradition
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2, textAlign: 'center' }}>
+              Kalanden{' '}
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>— Carrier of Tradition</Text>
             </Text>
 
             <View
@@ -536,23 +537,17 @@ export default function ProfileScreen() {
                   {achievement.icon}
                 </View>
                 <View className="flex-1 ml-3">
-                  <View className="flex-row items-center">
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-sm">
-                      {achievement.title}
-                    </Text>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-sm">
+                    {achievement.title === 'Dedicated Kalanden' ? (
+                      <>
+                        Dedicated Kalanden{' '}
+                        <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10 }}>— Carrier of Tradition</Text>
+                      </>
+                    ) : achievement.title}
                     {achievement.earned && (
-                      <View className="ml-2 px-2 py-0.5 rounded-full" style={{ backgroundColor: colors.gold[500] }}>
-                        <Text style={{ fontFamily: 'DMSans_500Medium', color: 'white' }} className="text-xs">
-                          Earned
-                        </Text>
-                      </View>
+                      <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.gold[500], fontSize: 10 }}>  ✦</Text>
                     )}
-                  </View>
-                  {achievement.title === 'Dedicated Kalanden' && (
-                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginTop: 1 }}>
-                      One who studies, absorbs, and prepares to carry forward tradition
-                    </Text>
-                  )}
+                  </Text>
                   <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-xs mt-0.5">
                     {achievement.description}
                   </Text>
@@ -639,10 +634,8 @@ export default function ProfileScreen() {
             </View>
             <View className="flex-1 ml-4">
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>
-                Kalanden Agreement
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 10, fontStyle: 'italic', marginTop: 0 }}>
-                One who studies, absorbs, and prepares to carry forward tradition
+                Kalanden Agreement{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.6)', fontSize: 11 }}>— Carrier of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 4 }}>
                 View your signed agreement
@@ -682,13 +675,11 @@ export default function ProfileScreen() {
                     }}
                     className="text-base"
                   >
-                    {item.label}
+                    {(item as any).subtitle
+                      ? <>{item.label}{' '}<Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text></>
+                      : item.label
+                    }
                   </Text>
-                  {(item as any).subtitle && (
-                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginTop: 1 }}>
-                      {(item as any).subtitle}
-                    </Text>
-                  )}
                 </View>
                 <ChevronRight size={20} color={colors.neutral[400]} />
               </Pressable>
@@ -901,11 +892,9 @@ export default function ProfileScreen() {
             </View>
 
             {/* Contact */}
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase">
-              Contact Your Jeli
-            </Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginBottom: 12 }}>
-              A respected transmitter of history, culture, and embodied wisdom
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1, marginBottom: 12 }} className="uppercase">
+              Contact Your Jeli{' '}
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>— Keeper of the Legacy</Text>
             </Text>
             <View className="rounded-2xl overflow-hidden" style={{ borderWidth: 1, borderColor: colors.neutral[200] }}>
               <View className="flex-row items-center px-4 py-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[100] }}>

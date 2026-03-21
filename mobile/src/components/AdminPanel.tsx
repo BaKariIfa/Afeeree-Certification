@@ -1019,11 +1019,9 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
                   {selectedConvName}
                 </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>
-                  Kalanden
-                </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginTop: 1 }}>
-                  One who studies, absorbs, and prepares to carry forward tradition
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 12 }}>
+                  Kalanden{' '}
+                  <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
                 </Text>
               </View>
             </View>

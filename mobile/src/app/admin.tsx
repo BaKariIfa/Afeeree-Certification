@@ -531,10 +531,8 @@ export default function AdminScreen() {
             <View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Messages</Text>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 2 }}>
-                Kalanden
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 11, fontStyle: 'italic', marginTop: 0 }}>
-                One who studies, absorbs, and prepares to carry forward tradition
+                Kalanden{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.45)', fontSize: 11 }}>— Carrier of Tradition</Text>
               </Text>
             </View>
           </View>
@@ -719,9 +717,9 @@ export default function AdminScreen() {
               <ArrowLeft size={24} color="white" />
             </Pressable>
             <View>
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Kalanden Progress</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontStyle: 'italic', marginTop: 0 }}>
-                One who studies, absorbs, and prepares to carry forward tradition
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>
+                Kalanden Progress{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>— Carrier of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>
                 {progressList.length} Kalanden{progressList.length !== 1 ? 'w' : ''} tracked
@@ -922,11 +920,9 @@ export default function AdminScreen() {
           })}
 
           {/* Feedback Section */}
-          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 8, marginBottom: 0 }}>
-            Jeli Feedback
-          </Text>
-          <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginBottom: 12 }}>
-            A respected transmitter of history, culture, and embodied wisdom
+          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 8, marginBottom: 12 }}>
+            Jeli Feedback{' '}
+            <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>— Keeper of the Legacy</Text>
           </Text>
 
           {/* Compose feedback */}
@@ -1144,8 +1140,10 @@ export default function AdminScreen() {
             </View>
             <View>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 17 }}>{selectedName}</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Kalanden</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 10, fontStyle: 'italic', marginTop: 1 }}>One who studies, absorbs, and prepares to carry forward tradition</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
+                Kalanden{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.45)', fontSize: 10 }}>— Carrier of Tradition</Text>
+              </Text>
             </View>
           </View>
         </View>
@@ -1348,9 +1346,9 @@ export default function AdminScreen() {
           const videoHrs = (totalVideoMs / 3600000).toFixed(1);
           return (
             <Animated.View entering={FadeInDown.duration(400).delay(40)} style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 0 }}>Study Time — All Kalandenw</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginBottom: 12 }}>
-                One who studies, absorbs, and prepares to carry forward tradition
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 12 }}>
+                Study Time — All Kalandenw{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>— Carriers of Tradition</Text>
               </Text>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <View style={{ flex: 1, backgroundColor: colors.gold[50], borderRadius: 12, padding: 14, alignItems: 'center' }}>
@@ -1442,9 +1440,9 @@ export default function AdminScreen() {
               <BarChart2 size={24} color="white" />
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>Kalanden Progress</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 10, fontStyle: 'italic', marginTop: 0 }}>
-                One who studies, absorbs, and prepares to carry forward tradition
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>
+                Kalanden Progress{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.55)', fontSize: 11 }}>— Carrier of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 4 }}>
                 Track modules, time & offer feedback
@@ -1596,8 +1594,10 @@ export default function AdminScreen() {
               <FileText size={22} color={colors.gold[600]} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Kalanden Agreement</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginTop: 0 }}>One who studies, absorbs, and prepares to carry forward tradition</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
+                Kalanden Agreement{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
+              </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 4 }}>View the Kalanden consent form</Text>
             </View>
             <ChevronRight size={18} color={colors.neutral[400]} />
@@ -1670,11 +1670,9 @@ export default function AdminScreen() {
         {/* Used Codes */}
         {usedCodes.length > 0 && (
           <Animated.View entering={FadeInDown.duration(400).delay(300)}>
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 0, marginTop: 8 }}>
-              Enrolled Kalandenw
-            </Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginBottom: 12 }}>
-              One who studies, absorbs, and prepares to carry forward tradition
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12, marginTop: 8 }}>
+              Enrolled Kalandenw{' '}
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11, textTransform: 'none', letterSpacing: 0 }}>— Carriers of Tradition</Text>
             </Text>
             {usedCodes.map(item => (
               <View
