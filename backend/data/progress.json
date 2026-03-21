@@ -3,13 +3,8 @@
     "code": "AF-GXWKES",
     "name": "GUEST",
     "email": "GUEST@GMAIL.COM",
-    "completedLessons": ["1-0", "1-1", "2-0"],
-    "lessonStudyTime": {
-      "1-0": 3240000,
-      "1-1": 2160000,
-      "1-video": 2700000,
-      "2-0": 1980000
-    },
-    "lastSyncedAt": "2026-03-21T14:00:00.000Z"
+    "completedLessons": [],
+    "lessonStudyTime": {},
+    "lastSyncedAt": "2026-03-21T14:41:30.257Z"
   }
 }
