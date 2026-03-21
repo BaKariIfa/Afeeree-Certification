@@ -240,7 +240,7 @@ export const mockModules: Module[] = [
     isHistoryModule: true,
     lessonPages: [
       { title: 'Introduction', startPage: 1, endPage: 9 },
-      { title: 'Lesson 1', startPage: 9, endPage: 13 },
+      { title: 'Lesson 1', startPage: 9, endPage: 17 },
       { title: 'Lesson 2', startPage: 14, endPage: 17 },
       { title: 'Lesson 3', startPage: 18, endPage: 29 },
       { title: 'Lesson 4', startPage: 30, endPage: 33 },
