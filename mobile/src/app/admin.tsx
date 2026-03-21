@@ -709,38 +709,68 @@ export default function AdminScreen() {
           {mockModules.map((mod, i) => {
             const completed = p.completedLessons.filter(l => l.startsWith(`${mod.id}-`)).length;
             const pct = Math.round((completed / mod.lessons) * 100);
-            const studyMs = Object.entries(p.lessonStudyTime)
-              .filter(([k]) => k.startsWith(`${mod.id}-`))
+            // Notation time: lesson sessions only (excludes -video key)
+            const notationMs = Object.entries(p.lessonStudyTime)
+              .filter(([k]) => k.startsWith(`${mod.id}-`) && !k.endsWith('-video'))
               .reduce((s, [, v]) => s + v, 0);
-            const studyPct = Math.min(studyMs / MODULE_REQUIRED_MS * 100, 100);
-            const studyHours = (studyMs / 3600000).toFixed(1);
+            // Video time: only the -video key
+            const videoMs = p.lessonStudyTime[`${mod.id}-video`] ?? 0;
+            const totalMs = notationMs + videoMs;
+            const notationPct = Math.min(notationMs / MODULE_REQUIRED_MS * 100, 100);
+            const videoPct = Math.min(videoMs / MODULE_REQUIRED_MS * 100, 100);
+            const totalHours = (totalMs / 3600000).toFixed(1);
+            const notationHours = (notationMs / 3600000).toFixed(1);
+            const videoHours = (videoMs / 3600000).toFixed(1);
             return (
               <Animated.View key={mod.id} entering={FadeInDown.duration(300).delay(i * 40)}>
                 <Pressable
                   onPress={() => setFeedbackModuleId(prev => prev === mod.id ? undefined : mod.id)}
                   style={{ backgroundColor: 'white', borderRadius: 14, padding: 14, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 }}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
                     <View style={{ flex: 1 }}>
                       <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 14 }} numberOfLines={1}>{mod.title}</Text>
-                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 1 }}>
-                        {completed}/{mod.lessons} lessons · {studyHours}h / 4h participation
+                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 2 }}>
+                        {completed}/{mod.lessons} lessons · {totalHours}h / 4h total
                       </Text>
                     </View>
                     <View style={{ alignItems: 'flex-end', marginLeft: 8 }}>
                       <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: pct === 100 ? colors.success : colors.neutral[600] }}>{pct}%</Text>
                     </View>
                   </View>
+
                   {/* Lesson completion bar */}
-                  <View style={{ height: 4, borderRadius: 2, backgroundColor: colors.neutral[100], overflow: 'hidden', marginBottom: 4 }}>
-                    <View style={{ height: '100%', borderRadius: 2, backgroundColor: pct === 100 ? colors.success : colors.primary[400], width: `${pct}%` }} />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                    <BookOpen size={10} color={colors.neutral[400]} style={{ marginRight: 5 }} />
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, width: 56 }}>Lessons</Text>
+                    <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.neutral[100], overflow: 'hidden', marginRight: 6 }}>
+                      <View style={{ height: '100%', borderRadius: 2, backgroundColor: pct === 100 ? colors.success : colors.primary[400], width: `${pct}%` }} />
+                    </View>
+                    <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 10, width: 36, textAlign: 'right' }}>{completed}/{mod.lessons}</Text>
                   </View>
-                  {/* Study time bar */}
-                  <View style={{ height: 4, borderRadius: 2, backgroundColor: colors.neutral[100], overflow: 'hidden' }}>
-                    <View style={{ height: '100%', borderRadius: 2, backgroundColor: studyPct >= 100 ? colors.success : colors.gold[400], width: `${studyPct}%` }} />
+
+                  {/* Notation study bar */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                    <FileText size={10} color={colors.neutral[400]} style={{ marginRight: 5 }} />
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, width: 56 }}>Notation</Text>
+                    <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.neutral[100], overflow: 'hidden', marginRight: 6 }}>
+                      <View style={{ height: '100%', borderRadius: 2, backgroundColor: notationPct >= 100 ? colors.success : colors.gold[400], width: `${notationPct}%` }} />
+                    </View>
+                    <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 10, width: 36, textAlign: 'right' }}>{notationHours}h</Text>
                   </View>
+
+                  {/* Video watch bar */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <MessageSquare size={10} color={colors.neutral[400]} style={{ marginRight: 5 }} />
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, width: 56 }}>Video</Text>
+                    <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.neutral[100], overflow: 'hidden', marginRight: 6 }}>
+                      <View style={{ height: '100%', borderRadius: 2, backgroundColor: videoPct >= 100 ? colors.success : '#6366F1', width: `${videoPct}%` }} />
+                    </View>
+                    <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 10, width: 36, textAlign: 'right' }}>{videoHours}h</Text>
+                  </View>
+
                   {feedbackModuleId === mod.id && (
-                    <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.neutral[100] }}>
+                    <View style={{ marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.neutral[100] }}>
                       <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500], fontSize: 12 }}>
                         Feedback will be tagged to this module
                       </Text>
