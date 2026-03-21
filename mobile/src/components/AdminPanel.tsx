@@ -1022,6 +1022,9 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>
                   Kalanden
                 </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginTop: 1 }}>
+                  One who studies, absorbs, and prepares to carry forward tradition
+                </Text>
               </View>
             </View>
 

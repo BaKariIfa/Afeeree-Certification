@@ -1145,6 +1145,7 @@ export default function AdminScreen() {
             <View>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 17 }}>{selectedName}</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Kalanden</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 10, fontStyle: 'italic', marginTop: 1 }}>One who studies, absorbs, and prepares to carry forward tradition</Text>
             </View>
           </View>
         </View>

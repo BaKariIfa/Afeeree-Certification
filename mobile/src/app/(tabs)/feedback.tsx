@@ -706,7 +706,8 @@ export default function FeedbackScreen() {
             </View>
             <View style={{ marginLeft: 12, flex: 1 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Message Your Jeli</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>BaKari Lindsay · AFeeree</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginTop: 1 }}>A respected transmitter of history, culture, and embodied wisdom</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginTop: 2 }}>BaKari Lindsay · AFeeree</Text>
             </View>
           </View>
         </View>
