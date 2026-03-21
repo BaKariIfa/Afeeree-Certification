@@ -1,14 +1,15 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, Linking, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Pressable, Linking, RefreshControl, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BookOpen, Clock, ChevronRight, Play, FileText, ArrowLeft, Video, Timer, BookOpenText, Lock } from 'lucide-react-native';
+import { BookOpen, Clock, ChevronRight, Play, FileText, ArrowLeft, Video, Timer, BookOpenText, Lock, Upload, Globe, CheckCircle, Link } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
+import * as DocumentPicker from 'expo-document-picker';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
@@ -16,6 +17,8 @@ import { colors } from '@/lib/theme';
 import { mockModules, resourceLinks, videoLinks } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
 import { useNotationStore } from '@/lib/notationStore';
+import { useResourcesStore } from '@/lib/resourcesStore';
+import { uploadFile } from '@/lib/upload';
 import type { Module } from '@/lib/types';
 import PracticeTimer from '@/components/PracticeTimer';
 import MandinkaTerms from '@/components/MandinkaTerms';
@@ -42,8 +45,20 @@ export default function SyllabusScreen() {
   const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
   const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
 
+  const researchDocUrl = useResourcesStore(s => s.researchDocUrl);
+  const researchVideoId = useResourcesStore(s => s.researchVideoId);
+  const setResearchDocUrl = useResourcesStore(s => s.setResearchDocUrl);
+  const setResearchVideoId = useResourcesStore(s => s.setResearchVideoId);
+  const loadResources = useResourcesStore(s => s.loadResources);
+
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [docUploadSuccess, setDocUploadSuccess] = useState(false);
+  const [showVideoInput, setShowVideoInput] = useState(false);
+  const [videoIdInput, setVideoIdInput] = useState('');
+  const [videoIdSaved, setVideoIdSaved] = useState(false);
+
   // Load uploaded notation URL on mount
-  React.useEffect(() => { loadNotationPdfUrl(); }, []);
+  React.useEffect(() => { loadNotationPdfUrl(); loadResources(); }, []);
 
   const onRefresh = useCallback(() => {
     triggerHaptic();
@@ -96,6 +111,38 @@ export default function SyllabusScreen() {
   const openVideo = (vimeoId: string, title: string, subtitle: string) => {
     triggerHaptic();
     setVideoModal({ vimeoId, title, subtitle });
+  };
+
+  const handleUploadResearchDoc = async () => {
+    triggerHaptic();
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+      const asset = result.assets[0];
+      setIsUploadingDoc(true);
+      const uploaded = await uploadFile(asset.uri, asset.name, asset.mimeType ?? 'application/octet-stream');
+      await setResearchDocUrl(uploaded.url);
+      setDocUploadSuccess(true);
+      setTimeout(() => setDocUploadSuccess(false), 3000);
+    } catch (e) {
+      console.error('[ResearchUpload]', e);
+    } finally {
+      setIsUploadingDoc(false);
+    }
+  };
+
+  const handleSaveVideoId = async () => {
+    if (!videoIdInput.trim()) return;
+    triggerHaptic();
+    await setResearchVideoId(videoIdInput.trim());
+    setVideoIdSaved(true);
+    setShowVideoInput(false);
+    setVideoIdInput('');
+    setTimeout(() => setVideoIdSaved(false), 3000);
   };
 
   const handleModulePress = (module: Module, index: number) => {
@@ -276,37 +323,257 @@ export default function SyllabusScreen() {
         </Animated.View>
 
         {/* Mandinka Terms Button */}
-        <Animated.View entering={FadeInDown.duration(600).delay(85)} className="px-6 mb-4">
+        <Animated.View entering={FadeInDown.duration(600).delay(85)} style={{ paddingHorizontal: 24, marginBottom: 16 }}>
           <Pressable
             onPress={() => {
               triggerHaptic();
               setShowTerms(true);
             }}
-            className="flex-row items-center p-4 rounded-2xl"
-            style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              padding: 16,
+              borderRadius: 16,
+              backgroundColor: 'white',
+              borderWidth: 1,
+              borderColor: colors.neutral[200],
+            }}
           >
             <View
-              className="w-10 h-10 rounded-full items-center justify-center"
-              style={{ backgroundColor: colors.gold[100] }}
+              style={{
+                width: 40, height: 40, borderRadius: 20,
+                alignItems: 'center', justifyContent: 'center',
+                backgroundColor: colors.gold[100],
+              }}
             >
               <BookOpenText size={20} color={colors.gold[600]} />
             </View>
-            <View className="flex-1 ml-3">
-              <Text
-                style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }}
-                className="text-base"
-              >
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
                 Mandinka Terms
               </Text>
-              <Text
-                style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
-                className="text-sm"
-              >
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14 }}>
                 Key vocabulary with pronunciation
               </Text>
             </View>
             <ChevronRight size={20} color={colors.neutral[400]} />
           </Pressable>
+        </Animated.View>
+
+        {/* Research Materials Section */}
+        <Animated.View entering={FadeInDown.duration(600).delay(95)} style={{ paddingHorizontal: 24, marginBottom: 16 }}>
+          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18, marginBottom: 12 }}>
+            Research Materials
+          </Text>
+
+          <View
+            style={{
+              backgroundColor: 'white',
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: colors.neutral[200],
+              overflow: 'hidden',
+            }}
+          >
+            {/* Research Document Row */}
+            <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: colors.neutral[100] }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                <View
+                  style={{
+                    width: 40, height: 40, borderRadius: 20,
+                    alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: colors.primary[100],
+                  }}
+                >
+                  <Globe size={20} color={colors.primary[500]} />
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                    Cultural Research Document
+                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>
+                    {researchDocUrl ? 'Uploaded document available' : 'No document uploaded yet'}
+                  </Text>
+                </View>
+                {researchDocUrl && (
+                  <Pressable
+                    onPress={() => {
+                      triggerHaptic();
+                      const params = new URLSearchParams({ url: researchDocUrl });
+                      WebBrowser.openBrowserAsync(`${BACKEND_URL}/api/notation/view?${params.toString()}`, {
+                        presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+                      });
+                    }}
+                    style={{
+                      backgroundColor: colors.primary[500],
+                      borderRadius: 10,
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                    }}
+                  >
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>Open</Text>
+                  </Pressable>
+                )}
+              </View>
+              <Pressable
+                onPress={handleUploadResearchDoc}
+                disabled={isUploadingDoc}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: docUploadSuccess ? colors.success : colors.primary[300],
+                  borderStyle: 'dashed',
+                  backgroundColor: docUploadSuccess ? 'rgba(34,197,94,0.06)' : colors.primary[50] ?? 'rgba(107,70,193,0.04)',
+                }}
+              >
+                {isUploadingDoc ? (
+                  <ActivityIndicator size="small" color={colors.primary[500]} />
+                ) : docUploadSuccess ? (
+                  <>
+                    <CheckCircle size={16} color={colors.success} />
+                    <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.success, fontSize: 14, marginLeft: 6 }}>
+                      Uploaded!
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={16} color={colors.primary[500]} />
+                    <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500], fontSize: 14, marginLeft: 6 }}>
+                      {researchDocUrl ? 'Replace Document' : 'Upload Document'}
+                    </Text>
+                  </>
+                )}
+              </Pressable>
+            </View>
+
+            {/* Research Video Row */}
+            <View style={{ padding: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                <View
+                  style={{
+                    width: 40, height: 40, borderRadius: 20,
+                    alignItems: 'center', justifyContent: 'center',
+                    backgroundColor: colors.gold[100],
+                  }}
+                >
+                  <Video size={20} color={colors.gold[600]} />
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                    Research Video
+                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>
+                    {researchVideoId ? `Vimeo: ${researchVideoId}` : 'No video linked yet'}
+                  </Text>
+                </View>
+                {researchVideoId && (
+                  <Pressable
+                    onPress={() => openVideo(researchVideoId, 'Cultural Research', 'Seven Foundational Principles')}
+                    style={{
+                      backgroundColor: colors.gold[500],
+                      borderRadius: 10,
+                      paddingHorizontal: 12,
+                      paddingVertical: 6,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Play size={12} color="white" fill="white" />
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13, marginLeft: 4 }}>Play</Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {videoIdSaved && !showVideoInput && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6 }}>
+                  <CheckCircle size={16} color={colors.success} />
+                  <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.success, fontSize: 14, marginLeft: 6 }}>
+                    Video link saved!
+                  </Text>
+                </View>
+              )}
+
+              {showVideoInput ? (
+                <View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: colors.neutral[100],
+                      borderRadius: 12,
+                      paddingHorizontal: 12,
+                      paddingVertical: 10,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Link size={16} color={colors.neutral[400]} />
+                    <TextInput
+                      value={videoIdInput}
+                      onChangeText={setVideoIdInput}
+                      placeholder="Vimeo ID (e.g. 123456789)"
+                      placeholderTextColor={colors.neutral[400]}
+                      style={{
+                        fontFamily: 'DMSans_400Regular',
+                        color: colors.neutral[800],
+                        flex: 1,
+                        marginLeft: 8,
+                        fontSize: 15,
+                      }}
+                      autoFocus
+                      keyboardType="numeric"
+                    />
+                  </View>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <Pressable
+                      onPress={() => { setShowVideoInput(false); setVideoIdInput(''); }}
+                      style={{
+                        flex: 1, paddingVertical: 10, borderRadius: 12,
+                        borderWidth: 1, borderColor: colors.neutral[300],
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[600], fontSize: 14 }}>Cancel</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={handleSaveVideoId}
+                      disabled={!videoIdInput.trim()}
+                      style={{
+                        flex: 2, paddingVertical: 10, borderRadius: 12,
+                        backgroundColor: videoIdInput.trim() ? colors.primary[500] : colors.neutral[300],
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 14 }}>Save Video Link</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : (
+                <Pressable
+                  onPress={() => { triggerHaptic(); setShowVideoInput(true); }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 10,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: colors.gold[400],
+                    borderStyle: 'dashed',
+                    backgroundColor: 'rgba(245,158,11,0.04)',
+                  }}
+                >
+                  <Link size={16} color={colors.gold[600]} />
+                  <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.gold[600], fontSize: 14, marginLeft: 6 }}>
+                    {researchVideoId ? 'Update Video Link' : 'Add Video Link'}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
         </Animated.View>
 
         {/* Category Filter */}
