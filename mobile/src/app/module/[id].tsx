@@ -154,12 +154,15 @@ export default function ModuleDetailScreen() {
     setSelectedLesson(null);
   };
 
-  const handleViewNotation = async () => {
+  const handleViewNotation = async (lessonIndex?: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const backendUrl = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
     let pageUrl: string | null = null;
     if (module.isHistoryModule && historyPdfUrl) {
-      pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(historyPdfUrl)}`;
+      const lessonPage = lessonIndex !== undefined ? module.lessonPages?.[lessonIndex] : null;
+      const start = lessonPage?.startPage ?? 1;
+      const end = lessonPage?.endPage ?? 999;
+      pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(historyPdfUrl)}&startPage=${start}&endPage=${end}`;
     } else if (module.pdfLink && module.pdfPage) {
       pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(module.pdfLink)}&startPage=${module.pdfPage}&endPage=${module.pdfEndPage ?? module.pdfPage}`;
     }
@@ -358,6 +361,8 @@ export default function ModuleDetailScreen() {
               const studiedMs = getTotalStudyMs(i);
               const hasStudied = studiedMs > 0;
               const lessonDone = studiedMs >= MIN_STUDY_MS;
+              const lessonTitle = module.lessonPages?.[i]?.title ?? `Lesson ${i + 1}`;
+              const pageRange = module.lessonPages?.[i] ? `pp. ${module.lessonPages[i].startPage}–${module.lessonPages[i].endPage}` : null;
               return (
                 <Pressable
                   key={i}
@@ -373,13 +378,20 @@ export default function ModuleDetailScreen() {
                     }
                   </View>
                   <View className="flex-1 ml-3">
-                    <Text style={{ fontFamily: 'DMSans_500Medium', color: complete ? colors.success : colors.neutral[700] }} className="text-base">
-                      Lesson {i + 1}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontFamily: 'DMSans_500Medium', color: complete ? colors.success : colors.neutral[700] }} className="text-base">
+                        {lessonTitle}
+                      </Text>
+                      {pageRange && !complete && (
+                        <View style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, backgroundColor: colors.neutral[100] }}>
+                          <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: colors.neutral[400] }}>{pageRange}</Text>
+                        </View>
+                      )}
+                    </View>
                     <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: complete ? colors.success : hasStudied ? colors.gold[700] : colors.neutral[400] }}>
                       {complete ? 'Completed' : hasStudied
                         ? `${formatStudyTime(studiedMs)} studied${lessonDone ? ' — ready to complete' : ''}`
-                        : 'Tap to open notation & begin study'}
+                        : 'Tap to open readings & begin study'}
                     </Text>
                   </View>
                   <ChevronRight size={18} color={complete ? colors.success : colors.neutral[300]} />
@@ -426,8 +438,8 @@ export default function ModuleDetailScreen() {
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, textAlign: 'center', marginBottom: 8 }}>
                   {formatStudyTime(getTotalStudyMs(selectedLesson))} of documented participation recorded.
                 </Text>
-                {module.pdfLink && (
-                  <Pressable onPress={handleViewNotation}
+                {(module.pdfLink || (module.isHistoryModule && historyPdfUrl)) && (
+                  <Pressable onPress={() => handleViewNotation(selectedLesson)}
                     style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 14, borderWidth: 1.5, borderColor: colors.primary[300], backgroundColor: colors.primary[50] }}>
                     <ExternalLink size={18} color={colors.primary[500]} />
                     <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600], fontSize: 15, marginLeft: 10 }}>Review Notation PDF</Text>
@@ -437,7 +449,7 @@ export default function ModuleDetailScreen() {
             ) : (
               <>
                 <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 22, marginBottom: 4 }}>
-                  Lesson {selectedLesson + 1}
+                  {module.lessonPages?.[selectedLesson]?.title ?? `Lesson ${selectedLesson + 1}`}
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginBottom: 24, lineHeight: 20 }}>
                   Open the notation PDF to study. A minimum of 15 minutes is required before marking complete — take as long as you need.
@@ -455,8 +467,8 @@ export default function ModuleDetailScreen() {
                     <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 15, marginBottom: 8 }}>
                       Study the notation
                     </Text>
-                    {module.pdfLink ? (
-                      <Pressable onPress={handleViewNotation}
+                    {(module.pdfLink || (module.isHistoryModule && historyPdfUrl)) ? (
+                      <Pressable onPress={() => handleViewNotation(selectedLesson)}
                         style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: pdfViewed ? colors.primary[50] : colors.primary[500], borderWidth: pdfViewed ? 1 : 0, borderColor: colors.primary[200], marginBottom: module.videoUrl ? 10 : 0 }}>
                         <FileText size={18} color={pdfViewed ? colors.primary[500] : 'white'} />
                         <Text style={{ fontFamily: 'DMSans_600SemiBold', color: pdfViewed ? colors.primary[600] : 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>

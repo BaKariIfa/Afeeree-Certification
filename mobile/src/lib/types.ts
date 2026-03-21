@@ -45,6 +45,7 @@ export interface Module {
   pdfLink?: string;
   videoUrl?: string;
   isHistoryModule?: boolean;
+  lessonPages?: { title: string; startPage: number; endPage: number }[];
   contactHours: number;
   duration: string;
   lessons: number;
