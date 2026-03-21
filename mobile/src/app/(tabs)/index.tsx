@@ -265,7 +265,7 @@ export default function HomeScreen() {
                   Enroll Now — $600 CAD
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 }}>
-                  AFeeree Certification Program
+                  AFeeree Certification
                 </Text>
               </View>
               <ArrowRight size={20} color="white" />

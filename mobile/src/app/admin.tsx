@@ -240,7 +240,7 @@ export default function AdminScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await Share.share({
-        message: `Your AFeeree Certification Program access code is: ${code}\n\nDownload the app and enter this code to get started.`,
+        message: `Your AFeeree Certification access code is: ${code}\n\nDownload the app and enter this code to get started.`,
       });
     } catch {}
   };

@@ -257,7 +257,7 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle,
                 Preview Ended
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.65)', fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 28 }}>
-                Your 1-minute preview has ended. Enroll in the full AFeeree Certification Program to watch all video content.
+                Your 1-minute preview has ended. Enroll in the full AFeeree Certification to watch all video content.
               </Text>
               <Pressable
                 onPress={onClose}
@@ -282,7 +282,7 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle,
               textAlign: 'center',
             }}
           >
-            AFeeree Certification Program · Confidential
+            AFeeree Certification · Confidential
           </Text>
         </View>
       </View>

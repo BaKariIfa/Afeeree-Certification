@@ -1,4 +1,4 @@
-// AFeeree Certification Program Theme
+// AFeeree Certification Theme
 // Warm earthy colors inspired by the AFeeree logo
 
 export const colors = {

@@ -227,7 +227,7 @@ export default function OnboardingScreen() {
                 style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
                 className="text-sm text-center"
               >
-                By continuing, you agree to participate in the{'\n'}AFeeree Certification Program
+                By continuing, you agree to participate in the{'\n'}AFeeree Certification
               </Text>
             </Animated.View>
           </View>

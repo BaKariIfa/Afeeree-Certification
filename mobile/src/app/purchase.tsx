@@ -35,7 +35,7 @@ export default function PurchaseScreen() {
   // Program price
   const PROGRAM_PRICE = 600;
   const PROGRAM_CURRENCY = 'CAD';
-  const PROGRAM_NAME = 'AFeeree Certification Program';
+  const PROGRAM_NAME = 'AFeeree Certification';
 
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,

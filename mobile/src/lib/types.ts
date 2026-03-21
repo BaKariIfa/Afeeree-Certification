@@ -1,4 +1,4 @@
-// AFeeree Certification Program Types
+// AFeeree Certification Types
 
 export interface User {
   id: string;

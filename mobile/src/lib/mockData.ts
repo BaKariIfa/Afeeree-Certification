@@ -1,4 +1,4 @@
-// AFeeree Certification Program - Real Course Data
+// AFeeree Certification - Real Course Data
 // Based on "A-Feeree: The Physical Language" by BaKari Ifasegun Lindsay
 
 import type { User, Module, Assignment, Notification, Participant, FeedbackMessage } from './types';
