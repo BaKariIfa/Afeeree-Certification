@@ -82,6 +82,7 @@ export const mockModules: Module[] = [
     isLocked: false,
     category: 'Technique',
     contactHours: 4,
+    videoUrl: 'https://vimeo.com/455075353',
   },
   {
     id: '2',
@@ -98,6 +99,7 @@ export const mockModules: Module[] = [
     isLocked: false,
     category: 'Technique',
     contactHours: 4,
+    videoUrl: 'https://vimeo.com/455075353',
   },
   {
     id: '3',
@@ -114,6 +116,7 @@ export const mockModules: Module[] = [
     isLocked: false,
     category: 'Technique',
     contactHours: 4,
+    videoUrl: 'https://vimeo.com/455075353',
   },
   {
     id: '4',
@@ -130,6 +133,7 @@ export const mockModules: Module[] = [
     isLocked: false,
     category: 'Technique',
     contactHours: 4,
+    videoUrl: 'https://vimeo.com/455075798',
   },
   {
     id: '5',
@@ -146,6 +150,7 @@ export const mockModules: Module[] = [
     isLocked: false,
     category: 'Technique',
     contactHours: 4,
+    videoUrl: 'https://vimeo.com/455075798',
   },
   {
     id: '6',
@@ -162,6 +167,7 @@ export const mockModules: Module[] = [
     isLocked: false,
     category: 'Technique',
     contactHours: 4,
+    videoUrl: 'https://vimeo.com/455075798',
   },
   {
     id: '7',
@@ -178,6 +184,7 @@ export const mockModules: Module[] = [
     isLocked: false,
     category: 'Technique',
     contactHours: 4,
+    videoUrl: 'https://vimeo.com/771232190',
   },
   {
     id: '8',
@@ -194,6 +201,7 @@ export const mockModules: Module[] = [
     isLocked: false,
     category: 'Technique',
     contactHours: 4,
+    videoUrl: 'https://vimeo.com/771232190',
   },
   {
     id: '9',
@@ -210,6 +218,7 @@ export const mockModules: Module[] = [
     isLocked: false,
     category: 'Theory',
     contactHours: 4,
+    videoUrl: 'https://vimeo.com/771232190',
   },
 ];
 

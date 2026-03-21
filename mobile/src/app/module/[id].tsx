@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Linking, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, BookOpen, Clock, Check, FileText, StickyNote, ExternalLink, Lock, ChevronRight, Timer, X } from 'lucide-react-native';
+import { ArrowLeft, BookOpen, Clock, Check, FileText, StickyNote, ExternalLink, Lock, ChevronRight, Timer, X, Play, Video } from 'lucide-react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
+import * as WebBrowser from 'expo-web-browser';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
@@ -40,6 +41,7 @@ export default function ModuleDetailScreen() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<number | null>(null);
   const [pdfViewed, setPdfViewed] = useState(false);
+  const [videoWatching, setVideoWatching] = useState(false);
 
   // In-memory session start times: lessonIndex → timestamp when current session started
   // Using a ref so unmount cleanup can access the latest value without stale closure
@@ -102,6 +104,9 @@ export default function ModuleDetailScreen() {
 
   const isLessonComplete = (i: number) => completedLessons.includes(`${module.id}-${i}`);
 
+  // Video time already logged for this module
+  const videoTimeMs = lessonStudyTime[`${module.id}-video`] ?? 0;
+
   // Total study time for a lesson = persisted + current session elapsed
   const getTotalStudyMs = (lessonIndex: number): number => {
     const key = `${module.id}-${lessonIndex}`;
@@ -151,6 +156,23 @@ export default function ModuleDetailScreen() {
       Linking.openURL(pageUrl);
     }
     setPdfViewed(true);
+  };
+
+  // Track how long the video browser was open and record as participation
+  const handleWatchModuleVideo = async () => {
+    if (!module.videoUrl || videoWatching) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const start = Date.now();
+    setVideoWatching(true);
+    try {
+      await WebBrowser.openBrowserAsync(module.videoUrl, { presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN });
+    } catch {}
+    setVideoWatching(false);
+    const elapsed = Date.now() - start;
+    // Record any video session ≥ 15 minutes toward module participation
+    if (elapsed >= MIN_STUDY_MS) {
+      addLessonStudyTime(`${module.id}-video`, elapsed);
+    }
   };
 
   const handleMarkComplete = () => {
@@ -253,6 +275,63 @@ export default function ModuleDetailScreen() {
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }} className="text-base ml-2">Notes</Text>
             </Pressable>
           </Animated.View>
+
+          {/* Video Resource Card */}
+          {module.videoUrl && (
+            <Animated.View entering={FadeInUp.duration(500).delay(150)} className="mt-4">
+              <Pressable
+                onPress={handleWatchModuleVideo}
+                disabled={videoWatching}
+                style={{
+                  borderRadius: 16,
+                  overflow: 'hidden',
+                  backgroundColor: '#0D1117',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 10,
+                  elevation: 4,
+                }}
+              >
+                {/* Dark cinematic header */}
+                <View style={{ paddingHorizontal: 18, paddingVertical: 16, flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', marginRight: 14 }}>
+                    {videoWatching
+                      ? <ActivityIndicator size="small" color="white" />
+                      : <Play size={22} color="white" fill="white" />
+                    }
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>
+                      Video Lesson
+                    </Text>
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.55)', fontSize: 13, marginTop: 2 }}>
+                      {videoWatching ? 'Opening video…' : videoTimeMs > 0
+                        ? `${formatStudyTime(videoTimeMs)} watched — counts toward participation`
+                        : 'Watch to earn documented participation time'}
+                    </Text>
+                  </View>
+                  {!videoWatching && (
+                    <View style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.12)' }}>
+                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 12 }}>Watch</Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Progress bar if time has been logged */}
+                {videoTimeMs > 0 && (
+                  <View style={{ paddingHorizontal: 18, paddingBottom: 14 }}>
+                    <View style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+                      <View style={{ height: '100%', borderRadius: 2, backgroundColor: videoTimeMs >= MODULE_REQUIRED_MS ? '#10B981' : colors.gold[400], width: `${Math.min(videoTimeMs / MODULE_REQUIRED_MS * 100, 100)}%` }} />
+                    </View>
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.4)', fontSize: 11, marginTop: 6 }}>
+                      {formatStudyTime(videoTimeMs)} / 4:00:00 module target
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+            </Animated.View>
+          )}
 
           {/* Lessons List */}
           <Animated.View entering={FadeInUp.duration(500).delay(200)} className="mt-6">
@@ -361,11 +440,11 @@ export default function ModuleDetailScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 15, marginBottom: 8 }}>
-                      Open &amp; study the notation
+                      Study the notation
                     </Text>
                     {module.pdfLink ? (
                       <Pressable onPress={handleViewNotation}
-                        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: pdfViewed ? colors.primary[50] : colors.primary[500], borderWidth: pdfViewed ? 1 : 0, borderColor: colors.primary[200] }}>
+                        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: pdfViewed ? colors.primary[50] : colors.primary[500], borderWidth: pdfViewed ? 1 : 0, borderColor: colors.primary[200], marginBottom: module.videoUrl ? 10 : 0 }}>
                         <FileText size={18} color={pdfViewed ? colors.primary[500] : 'white'} />
                         <Text style={{ fontFamily: 'DMSans_600SemiBold', color: pdfViewed ? colors.primary[600] : 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
                           {pdfViewed ? 'Reopen Notation PDF' : 'Open Notation PDF'}
@@ -373,9 +452,26 @@ export default function ModuleDetailScreen() {
                         <ExternalLink size={14} color={pdfViewed ? colors.primary[400] : 'rgba(255,255,255,0.7)'} />
                       </Pressable>
                     ) : (
-                      <View style={{ paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: colors.neutral[100] }}>
+                      <View style={{ paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: colors.neutral[100], marginBottom: module.videoUrl ? 10 : 0 }}>
                         <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14 }}>No notation file attached</Text>
                       </View>
+                    )}
+                    {/* Video option inside lesson sheet */}
+                    {module.videoUrl && (
+                      <Pressable
+                        onPress={handleWatchModuleVideo}
+                        disabled={videoWatching}
+                        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: '#0D1117' }}
+                      >
+                        {videoWatching
+                          ? <ActivityIndicator size="small" color="white" />
+                          : <Play size={16} color="white" fill="white" />
+                        }
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
+                          {videoWatching ? 'Opening…' : 'Watch Video Lesson'}
+                        </Text>
+                        <Video size={14} color="rgba(255,255,255,0.6)" />
+                      </Pressable>
                     )}
                   </View>
                 </View>
