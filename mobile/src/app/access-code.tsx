@@ -116,7 +116,7 @@ export default function AccessCodeScreen() {
     setAccess(true, 'DEMO');
     setUser('Preview User', '');
     setOnboarded(true);
-    router.replace('/(tabs)');
+    router.replace('/agreement');
   };
 
   return (

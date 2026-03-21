@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { CheckSquare, Square, FileText, AlertCircle } from 'lucide-react-native';
+import { CheckSquare, Square, FileText, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
@@ -96,11 +96,27 @@ export default function AgreementScreen() {
   const name = useUserStore(s => s.name);
   const setOnboarded = useUserStore(s => s.setOnboarded);
 
+  const [alreadySigned, setAlreadySigned] = useState(false);
+  const [signedAt, setSignedAt] = useState('');
+  const [signedName, setSignedName] = useState('');
   const [checkedClauses, setCheckedClauses] = useState<Record<string, boolean>>({});
   const [signatureName, setSignatureName] = useState('');
   const [allChecked, setAllChecked] = useState(false);
   const [error, setError] = useState('');
   const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    AsyncStorage.multiGet(['agreementSigned', 'agreementSignedAt', 'agreementSignatureName']).then(pairs => {
+      const signed = pairs[0][1];
+      const at = pairs[1][1];
+      const sigName = pairs[2][1];
+      if (signed === 'true') {
+        setAlreadySigned(true);
+        setSignedAt(at ? new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '');
+        setSignedName(sigName || '');
+      }
+    });
+  }, []);
 
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
@@ -172,6 +188,15 @@ export default function AgreementScreen() {
         }}
       >
         <Animated.View entering={FadeInDown.duration(600)}>
+          {/* Back button when viewing from profile */}
+          {alreadySigned && (
+            <Pressable
+              onPress={() => router.back()}
+              style={{ marginTop: 12, marginBottom: 4, alignSelf: 'flex-start', padding: 4 }}
+            >
+              <ArrowLeft size={22} color="white" />
+            </Pressable>
+          )}
           <View className="flex-row items-center mt-4 mb-1">
             <FileText size={18} color={colors.gold[300]} />
             <Text
@@ -191,7 +216,9 @@ export default function AgreementScreen() {
             style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)' }}
             className="text-sm mt-2"
           >
-            Please read each clause carefully and tick to confirm your acceptance before signing.
+            {alreadySigned
+              ? 'You have already signed this agreement. Your copy is shown below.'
+              : 'Please read each clause carefully and tick to confirm your acceptance before signing.'}
           </Text>
         </Animated.View>
       </LinearGradient>
@@ -206,6 +233,25 @@ export default function AgreementScreen() {
           contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
           showsVerticalScrollIndicator={false}
         >
+          {/* Already signed confirmation */}
+          {alreadySigned && (
+            <Animated.View
+              entering={FadeInUp.duration(500).delay(200)}
+              className="mx-5 mt-5 p-4 rounded-2xl flex-row items-center"
+              style={{ backgroundColor: '#F0FDF4', borderWidth: 1, borderColor: '#86EFAC' }}
+            >
+              <CheckCircle2 size={22} color="#22C55E" />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: '#15803D', fontSize: 14 }}>
+                  Agreement Signed
+                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: '#166534', fontSize: 13, marginTop: 2 }}>
+                  Signed by {signedName}{signedAt ? ` on ${signedAt}` : ''}
+                </Text>
+              </View>
+            </Animated.View>
+          )}
+
           {/* Date & Parties */}
           <Animated.View
             entering={FadeInUp.duration(500).delay(200)}
@@ -229,29 +275,31 @@ export default function AgreementScreen() {
             </Text>
           </Animated.View>
 
-          {/* Accept All */}
-          <Animated.View entering={FadeInUp.duration(500).delay(300)} className="mx-5 mt-4">
-            <Pressable
-              onPress={toggleAll}
-              className="flex-row items-center p-4 rounded-2xl"
-              style={{ backgroundColor: allChecked ? colors.primary[500] : 'white', borderWidth: 1, borderColor: allChecked ? colors.primary[500] : colors.neutral[200] }}
-            >
-              {allChecked
-                ? <CheckSquare size={22} color="white" />
-                : <Square size={22} color={colors.neutral[400]} />
-              }
-              <Text
-                style={{ fontFamily: 'DMSans_600SemiBold', color: allChecked ? 'white' : colors.neutral[700], marginLeft: 12 }}
-                className="text-sm"
+          {/* Accept All — only shown when not yet signed */}
+          {!alreadySigned && (
+            <Animated.View entering={FadeInUp.duration(500).delay(300)} className="mx-5 mt-4">
+              <Pressable
+                onPress={toggleAll}
+                className="flex-row items-center p-4 rounded-2xl"
+                style={{ backgroundColor: allChecked ? colors.primary[500] : 'white', borderWidth: 1, borderColor: allChecked ? colors.primary[500] : colors.neutral[200] }}
               >
-                Accept all clauses
-              </Text>
-            </Pressable>
-          </Animated.View>
+                {allChecked
+                  ? <CheckSquare size={22} color="white" />
+                  : <Square size={22} color={colors.neutral[400]} />
+                }
+                <Text
+                  style={{ fontFamily: 'DMSans_600SemiBold', color: allChecked ? 'white' : colors.neutral[700], marginLeft: 12 }}
+                  className="text-sm"
+                >
+                  Accept all clauses
+                </Text>
+              </Pressable>
+            </Animated.View>
+          )}
 
           {/* Clauses */}
           {CLAUSES.map((clause, index) => {
-            const checked = !!checkedClauses[clause.id];
+            const checked = !alreadySigned ? !!checkedClauses[clause.id] : true;
             return (
               <Animated.View
                 key={clause.id}
@@ -268,7 +316,7 @@ export default function AgreementScreen() {
                 >
                   {/* Clause title + checkbox */}
                   <Pressable
-                    onPress={() => toggleClause(clause.id)}
+                    onPress={() => !alreadySigned && toggleClause(clause.id)}
                     className="flex-row items-start p-4"
                   >
                     <View style={{ marginTop: 2 }}>
@@ -299,127 +347,129 @@ export default function AgreementScreen() {
             );
           })}
 
-          {/* Signature */}
-          <Animated.View
-            entering={FadeInUp.duration(500).delay(800)}
-            className="mx-5 mt-6"
-          >
-            <View
-              className="p-5 rounded-2xl"
-              style={{
-                backgroundColor: 'white',
-                borderWidth: 1.5,
-                borderColor: colors.gold[300],
-                shadowColor: colors.gold[500],
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.12,
-                shadowRadius: 12,
-                elevation: 4,
-              }}
-            >
-              <Text
-                style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.primary[700] }}
-                className="text-lg mb-1"
+          {/* Signature + Sign button — only shown when not yet signed */}
+          {!alreadySigned && (
+            <>
+              <Animated.View
+                entering={FadeInUp.duration(500).delay(800)}
+                className="mx-5 mt-6"
               >
-                Digital Signature
-              </Text>
-              <Text
-                style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
-                className="text-sm mb-4"
-              >
-                By typing your full name below you confirm that you have read and understood this Agreement in its entirety and agree to be bound by its terms.
-              </Text>
-
-              <Text
-                style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600] }}
-                className="text-xs uppercase tracking-widest mb-2"
-              >
-                Full Name (as signature)
-              </Text>
-              <View
-                className="flex-row items-center px-4 py-3 rounded-xl"
-                style={{ backgroundColor: colors.neutral[50], borderWidth: 1, borderColor: colors.neutral[200] }}
-              >
-                <TextInput
-                  value={signatureName}
-                  onChangeText={(t) => { setSignatureName(t); setError(''); }}
-                  placeholder={name || 'Your full name'}
-                  placeholderTextColor={colors.neutral[400]}
+                <View
+                  className="p-5 rounded-2xl"
                   style={{
-                    fontFamily: 'DMSans_400Regular',
-                    color: colors.neutral[800],
-                    flex: 1,
-                    fontSize: 16,
-                    fontStyle: signatureName ? 'italic' : 'normal',
+                    backgroundColor: 'white',
+                    borderWidth: 1.5,
+                    borderColor: colors.gold[300],
+                    shadowColor: colors.gold[500],
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.12,
+                    shadowRadius: 12,
+                    elevation: 4,
                   }}
-                  autoCapitalize="words"
-                />
-              </View>
+                >
+                  <Text
+                    style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.primary[700] }}
+                    className="text-lg mb-1"
+                  >
+                    Digital Signature
+                  </Text>
+                  <Text
+                    style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
+                    className="text-sm mb-4"
+                  >
+                    By typing your full name below you confirm that you have read and understood this Agreement in its entirety and agree to be bound by its terms.
+                  </Text>
 
-              <Text
-                style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400] }}
-                className="text-xs mt-3"
-              >
-                Signed on: {TODAY}
-              </Text>
-            </View>
-          </Animated.View>
+                  <Text
+                    style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600] }}
+                    className="text-xs uppercase tracking-widest mb-2"
+                  >
+                    Full Name (as signature)
+                  </Text>
+                  <View
+                    className="flex-row items-center px-4 py-3 rounded-xl"
+                    style={{ backgroundColor: colors.neutral[50], borderWidth: 1, borderColor: colors.neutral[200] }}
+                  >
+                    <TextInput
+                      value={signatureName}
+                      onChangeText={(t) => { setSignatureName(t); setError(''); }}
+                      placeholder={name || 'Your full name'}
+                      placeholderTextColor={colors.neutral[400]}
+                      style={{
+                        fontFamily: 'DMSans_400Regular',
+                        color: colors.neutral[800],
+                        flex: 1,
+                        fontSize: 16,
+                        fontStyle: signatureName ? 'italic' : 'normal',
+                      }}
+                      autoCapitalize="words"
+                    />
+                  </View>
 
-          {/* Error message */}
-          {error ? (
-            <Animated.View
-              entering={FadeInDown.duration(300)}
-              className="mx-5 mt-4 flex-row items-center p-3 rounded-xl"
-              style={{ backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FCA5A5' }}
-            >
-              <AlertCircle size={16} color={colors.error} />
-              <Text
-                style={{ fontFamily: 'DMSans_400Regular', color: colors.error, marginLeft: 8, flex: 1 }}
-                className="text-sm"
-              >
-                {error}
-              </Text>
-            </Animated.View>
-          ) : null}
+                  <Text
+                    style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400] }}
+                    className="text-xs mt-3"
+                  >
+                    Signed on: {TODAY}
+                  </Text>
+                </View>
+              </Animated.View>
 
-          {/* Sign Button */}
-          <Animated.View
-            entering={FadeInUp.duration(500).delay(900)}
-            className="mx-5 mt-5"
-          >
-            <Pressable
-              onPress={handleSign}
-              className="py-4 rounded-2xl items-center justify-center"
-              style={{ backgroundColor: isValid ? colors.primary[500] : colors.neutral[200] }}
-            >
-              <Text
-                style={{
-                  fontFamily: 'DMSans_600SemiBold',
-                  color: isValid ? 'white' : colors.neutral[400],
-                  fontSize: 16,
-                }}
-              >
-                I Agree & Sign
-              </Text>
-              <Text
-                style={{
-                  fontFamily: 'DMSans_400Regular',
-                  color: isValid ? 'rgba(255,255,255,0.75)' : colors.neutral[400],
-                  fontSize: 12,
-                  marginTop: 2,
-                }}
-              >
-                Begin the Programme
-              </Text>
-            </Pressable>
+              {error ? (
+                <Animated.View
+                  entering={FadeInDown.duration(300)}
+                  className="mx-5 mt-4 flex-row items-center p-3 rounded-xl"
+                  style={{ backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FCA5A5' }}
+                >
+                  <AlertCircle size={16} color={colors.error} />
+                  <Text
+                    style={{ fontFamily: 'DMSans_400Regular', color: colors.error, marginLeft: 8, flex: 1 }}
+                    className="text-sm"
+                  >
+                    {error}
+                  </Text>
+                </Animated.View>
+              ) : null}
 
-            <Text
-              style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400] }}
-              className="text-xs text-center mt-4"
-            >
-              This agreement is legally binding. A record of your acceptance will be stored securely within the app for your records.
-            </Text>
-          </Animated.View>
+              <Animated.View
+                entering={FadeInUp.duration(500).delay(900)}
+                className="mx-5 mt-5"
+              >
+                <Pressable
+                  onPress={handleSign}
+                  className="py-4 rounded-2xl items-center justify-center"
+                  style={{ backgroundColor: isValid ? colors.primary[500] : colors.neutral[200] }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: 'DMSans_600SemiBold',
+                      color: isValid ? 'white' : colors.neutral[400],
+                      fontSize: 16,
+                    }}
+                  >
+                    I Agree & Sign
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: 'DMSans_400Regular',
+                      color: isValid ? 'rgba(255,255,255,0.75)' : colors.neutral[400],
+                      fontSize: 12,
+                      marginTop: 2,
+                    }}
+                  >
+                    Begin the Programme
+                  </Text>
+                </Pressable>
+
+                <Text
+                  style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400] }}
+                  className="text-xs text-center mt-4"
+                >
+                  This agreement is legally binding. A record of your acceptance will be stored securely within the app for your records.
+                </Text>
+              </Animated.View>
+            </>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
