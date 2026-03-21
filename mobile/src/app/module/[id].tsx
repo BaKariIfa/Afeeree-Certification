@@ -39,6 +39,7 @@ export default function ModuleDetailScreen() {
   const [noteText, setNoteText] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<number | null>(null);
+  const [pdfViewed, setPdfViewed] = useState(false);
 
   // In-memory session start times: lessonIndex → timestamp when current session started
   // Using a ref so unmount cleanup can access the latest value without stale closure
@@ -127,7 +128,14 @@ export default function ModuleDetailScreen() {
 
   const handleLessonPress = (lessonIndex: number) => {
     triggerHaptic();
+    setPdfViewed(false);
     setSelectedLesson(lessonIndex);
+    // Auto-start session timer as soon as the lesson opens
+    if (!sessionStartRef.current.has(lessonIndex)) {
+      const now = Date.now();
+      sessionStartRef.current.set(lessonIndex, now);
+      setSessionStart(prev => new Map([...prev, [lessonIndex, now]]));
+    }
   };
 
   const handleCloseSheet = () => {
@@ -142,12 +150,7 @@ export default function ModuleDetailScreen() {
       const pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(module.pdfLink)}&startPage=${module.pdfPage}&endPage=${module.pdfEndPage ?? module.pdfPage}`;
       Linking.openURL(pageUrl);
     }
-    // Start session timer if not already running for this lesson
-    if (selectedLesson !== null && !sessionStartRef.current.has(selectedLesson)) {
-      const now = Date.now();
-      sessionStartRef.current.set(selectedLesson, now);
-      setSessionStart(prev => new Map([...prev, [selectedLesson, now]]));
-    }
+    setPdfViewed(true);
   };
 
   const handleMarkComplete = () => {
@@ -166,8 +169,7 @@ export default function ModuleDetailScreen() {
   const studyMs = selectedLesson !== null ? getTotalStudyMs(selectedLesson) : 0;
   const studyProgress = Math.min(studyMs / MIN_STUDY_MS, 1);
   const timerReached = studyMs >= MIN_STUDY_MS;
-  const sessionActive = selectedLesson !== null && sessionStart.has(selectedLesson);
-  const canMarkComplete = timerReached && sessionActive !== false;
+  const canMarkComplete = timerReached;
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
@@ -341,8 +343,8 @@ export default function ModuleDetailScreen() {
 
                 {/* Step 1 — Open Notation */}
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20 }}>
-                  <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: sessionActive ? colors.success : colors.primary[500], alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 12 }}>
-                    {sessionActive
+                  <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: pdfViewed ? colors.success : colors.primary[500], alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 12 }}>
+                    {pdfViewed
                       ? <Check size={14} color="white" />
                       : <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>1</Text>
                     }
@@ -353,12 +355,12 @@ export default function ModuleDetailScreen() {
                     </Text>
                     {module.pdfLink ? (
                       <Pressable onPress={handleViewNotation}
-                        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: sessionActive ? colors.primary[50] : colors.primary[500], borderWidth: sessionActive ? 1 : 0, borderColor: colors.primary[200] }}>
-                        <FileText size={18} color={sessionActive ? colors.primary[500] : 'white'} />
-                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: sessionActive ? colors.primary[600] : 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
-                          {sessionActive ? 'Reopen Notation PDF' : 'Open Notation PDF'}
+                        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: pdfViewed ? colors.primary[50] : colors.primary[500], borderWidth: pdfViewed ? 1 : 0, borderColor: colors.primary[200] }}>
+                        <FileText size={18} color={pdfViewed ? colors.primary[500] : 'white'} />
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: pdfViewed ? colors.primary[600] : 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
+                          {pdfViewed ? 'Reopen Notation PDF' : 'Open Notation PDF'}
                         </Text>
-                        <ExternalLink size={14} color={sessionActive ? colors.primary[400] : 'rgba(255,255,255,0.7)'} />
+                        <ExternalLink size={14} color={pdfViewed ? colors.primary[400] : 'rgba(255,255,255,0.7)'} />
                       </Pressable>
                     ) : (
                       <View style={{ paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: colors.neutral[100] }}>
@@ -368,31 +370,29 @@ export default function ModuleDetailScreen() {
                   </View>
                 </View>
 
-                {/* Study time tracker (shown once PDF opened) */}
-                {sessionActive && (
-                  <View style={{ marginBottom: 20, padding: 16, borderRadius: 16, backgroundColor: timerReached ? colors.success + '10' : colors.gold[50], borderWidth: 1, borderColor: timerReached ? colors.success + '40' : colors.gold[200] }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Timer size={15} color={timerReached ? colors.success : colors.gold[600]} />
-                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerReached ? colors.success : colors.gold[700], fontSize: 14, marginLeft: 8 }}>
-                          {timerReached ? 'Participation documented' : 'Documenting participation'}
-                        </Text>
-                      </View>
-                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerReached ? colors.success : colors.gold[700], fontSize: 15 }}>
-                        {formatStudyTime(studyMs)}
+                {/* Study time tracker — always visible once lesson is open */}
+                <View style={{ marginBottom: 20, padding: 16, borderRadius: 16, backgroundColor: timerReached ? colors.success + '10' : colors.gold[50], borderWidth: 1, borderColor: timerReached ? colors.success + '40' : colors.gold[200] }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Timer size={15} color={timerReached ? colors.success : colors.gold[600]} />
+                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerReached ? colors.success : colors.gold[700], fontSize: 14, marginLeft: 8 }}>
+                        {timerReached ? 'Participation documented' : 'Documenting participation'}
                       </Text>
                     </View>
-                    {/* Progress bar toward 15 min */}
-                    <View style={{ height: 6, borderRadius: 3, backgroundColor: timerReached ? colors.success + '30' : colors.gold[200], overflow: 'hidden' }}>
-                      <View style={{ height: '100%', borderRadius: 3, backgroundColor: timerReached ? colors.success : colors.gold[500], width: `${studyProgress * 100}%` }} />
-                    </View>
-                    {!timerReached && (
-                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[600], fontSize: 12, marginTop: 8 }}>
-                        {formatStudyTime(MIN_STUDY_MS - studyMs)} more to unlock completion
-                      </Text>
-                    )}
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerReached ? colors.success : colors.gold[700], fontSize: 15 }}>
+                      {formatStudyTime(studyMs)}
+                    </Text>
                   </View>
-                )}
+                  {/* Progress bar toward 15 min */}
+                  <View style={{ height: 6, borderRadius: 3, backgroundColor: timerReached ? colors.success + '30' : colors.gold[200], overflow: 'hidden' }}>
+                    <View style={{ height: '100%', borderRadius: 3, backgroundColor: timerReached ? colors.success : colors.gold[500], width: `${studyProgress * 100}%` }} />
+                  </View>
+                  {!timerReached && (
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[600], fontSize: 12, marginTop: 8 }}>
+                      {formatStudyTime(MIN_STUDY_MS - studyMs)} more to unlock completion
+                    </Text>
+                  )}
+                </View>
 
                 {/* Step 2 — Mark Complete */}
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
@@ -410,7 +410,7 @@ export default function ModuleDetailScreen() {
                       onPress={canMarkComplete ? handleMarkComplete : undefined}
                       style={{ paddingVertical: 15, borderRadius: 12, alignItems: 'center', backgroundColor: canMarkComplete ? colors.success : colors.neutral[100] }}>
                       <Text style={{ fontFamily: 'DMSans_600SemiBold', color: canMarkComplete ? 'white' : colors.neutral[400], fontSize: 16 }}>
-                        {canMarkComplete ? 'Mark Lesson Complete ✓' : sessionActive ? `${formatStudyTime(MIN_STUDY_MS - studyMs)} remaining` : 'Open notation to begin'}
+                        {canMarkComplete ? 'Mark Lesson Complete ✓' : `${formatStudyTime(MIN_STUDY_MS - studyMs)} remaining`}
                       </Text>
                     </Pressable>
                   </View>
