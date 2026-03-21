@@ -635,11 +635,11 @@ export default function ProfileScreen() {
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>
                 Kalanden Agreement
               </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 1 }}>
-                View your signed agreement
-              </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 10, fontStyle: 'italic', marginTop: 2 }}>
                 One who studies, absorbs, and prepares to carry forward tradition
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 3 }}>
+                View your signed agreement
               </Text>
             </View>
             <ChevronRight size={20} color="rgba(255,255,255,0.6)" />

@@ -720,11 +720,11 @@ export default function AdminScreen() {
             </Pressable>
             <View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Kalanden Progress</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 1 }}>
-                {progressList.length} Kalanden{progressList.length !== 1 ? 'w' : ''} tracked
-              </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontStyle: 'italic', marginTop: 2 }}>
                 One who studies, absorbs, and prepares to carry forward tradition
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>
+                {progressList.length} Kalanden{progressList.length !== 1 ? 'w' : ''} tracked
               </Text>
             </View>
           </View>
@@ -1442,11 +1442,11 @@ export default function AdminScreen() {
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>Kalanden Progress</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>
-                Track modules, time & offer feedback
-              </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 10, fontStyle: 'italic', marginTop: 2 }}>
                 One who studies, absorbs, and prepares to carry forward tradition
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 4 }}>
+                Track modules, time & offer feedback
               </Text>
             </View>
             <ChevronRight size={20} color="rgba(255,255,255,0.6)" />
@@ -1596,8 +1596,8 @@ export default function AdminScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Kalanden Agreement</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>View the Kalanden consent form</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginTop: 2 }}>One who studies, absorbs, and prepares to carry forward tradition</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 4 }}>View the Kalanden consent form</Text>
             </View>
             <ChevronRight size={18} color={colors.neutral[400]} />
           </Pressable>
