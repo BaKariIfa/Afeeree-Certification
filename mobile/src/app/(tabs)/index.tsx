@@ -163,8 +163,13 @@ export default function HomeScreen() {
                 contentFit="cover"
               />
               <Text
-                style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.8)' }}
-                className="text-sm mt-3 text-center"
+                style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.gold[300], fontSize: 22, marginTop: 12, textAlign: 'center' }}
+              >
+                AFeeree Certification
+              </Text>
+              <Text
+                style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)' }}
+                className="text-sm mt-1 text-center"
               >
                 The Physical Language
               </Text>
