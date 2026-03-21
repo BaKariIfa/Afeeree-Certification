@@ -8,6 +8,15 @@
       "timestamp": "2026-03-21T01:09:11.773Z",
       "readByAdmin": true,
       "readByParticipant": false
+    },
+    {
+      "id": "1774056102106-eg94q5wlnjb",
+      "senderId": "admin",
+      "senderName": "Admin",
+      "text": "MESSAGE NUMBER 2",
+      "timestamp": "2026-03-21T01:21:42.106Z",
+      "readByAdmin": true,
+      "readByParticipant": false
     }
   ]
 }

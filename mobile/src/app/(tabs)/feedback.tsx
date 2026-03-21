@@ -105,18 +105,27 @@ export default function FeedbackScreen() {
     fetchUnreadCounts();
   }, []);
 
-  // Poll for new messages every 10 seconds
+  // Auto-load messages for participant (non-admin) view
   useEffect(() => {
+    if (!isAdmin && accessCode) {
+      setIsLoadingMessages(true);
+      fetchMessages(accessCode).then(() => setIsLoadingMessages(false));
+      const interval = setInterval(() => fetchMessages(accessCode), 10000);
+      return () => clearInterval(interval);
+    }
+  }, [isAdmin, accessCode]);
+
+  // Poll for new messages every 10 seconds (admin view)
+  useEffect(() => {
+    if (!isAdmin) return;
     if (!selectedParticipant) {
-      // Poll unread counts on list view
       const interval = setInterval(fetchUnreadCounts, 10000);
       return () => clearInterval(interval);
     } else {
-      // Poll conversation messages when open
       const interval = setInterval(() => fetchMessages(selectedParticipant.id), 10000);
       return () => clearInterval(interval);
     }
-  }, [selectedParticipant, fetchMessages, fetchUnreadCounts]);
+  }, [isAdmin, selectedParticipant, fetchMessages, fetchUnreadCounts]);
 
   if (!fontsLoaded) return null;
 
@@ -142,14 +151,14 @@ export default function FeedbackScreen() {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
-    if (!selectedParticipant && !accessCode) return;
 
     triggerHaptic();
     setIsSending(true);
 
+    // Admin replying to a selected participant, or participant messaging instructor
     const conversationCode = selectedParticipant?.id ?? accessCode ?? '';
-    const senderRole = selectedParticipant ? 'admin' : 'participant';
-    const senderName = selectedParticipant ? 'Admin' : (userName ?? 'Participant');
+    const senderRole = isAdmin ? 'admin' : 'participant';
+    const senderName = isAdmin ? 'BaKari Lindsay' : (userName ?? 'Participant');
 
     try {
       const res = await fetch(`${BACKEND_URL}/api/messages/${conversationCode}`, {
@@ -189,9 +198,8 @@ export default function FeedbackScreen() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  // ── Participant view: participant sending a message to admin ──
-  if (!selectedParticipant && accessCode && !codes.find(c => c.code === accessCode && c.userName)) {
-    // Participant-only view (not admin): show their own conversation with admin
+  // ── Participant view: participant sending a message to the instructor ──
+  if (!isAdmin && accessCode) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
         <View style={{ paddingTop: insets.top + 12, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: colors.neutral[200], paddingHorizontal: 16, paddingBottom: 16 }}>
@@ -222,10 +230,7 @@ export default function FeedbackScreen() {
           formatDate={formatDate}
           insets={insets}
           fontsLoaded={fontsLoaded}
-          onMount={() => {
-            setIsLoadingMessages(true);
-            fetchMessages(accessCode).then(() => setIsLoadingMessages(false));
-          }}
+          onMount={() => {}}
         />
       </View>
     );
