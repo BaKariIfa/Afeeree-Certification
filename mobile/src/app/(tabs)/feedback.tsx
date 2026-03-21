@@ -532,9 +532,6 @@ export default function FeedbackScreen() {
                           <Text style={{ fontFamily: 'DMSans_600SemiBold', color: badge.color, fontSize: 11 }}>{badge.label}</Text>
                         </View>
                       </View>
-                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginBottom: 8 }}>
-                        {new Date(sub.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                      </Text>
                       {sub.reflection ? (
                         <View style={{ backgroundColor: colors.neutral[50], borderRadius: 10, padding: 12, marginBottom: 8 }}>
                           <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700], fontSize: 14, lineHeight: 20 }}>{sub.reflection}</Text>

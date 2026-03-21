@@ -361,7 +361,7 @@ export default function HomeScreen() {
                 style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }}
                 className="text-xl"
               >
-                Upcoming Assignments
+                Upcoming Tasks
               </Text>
               <Pressable
                 className="flex-row items-center"
@@ -579,7 +579,7 @@ export default function HomeScreen() {
             )}
           </View>
           <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[400] }} className="text-xs mt-1">
-            Assignments
+            Tasks
           </Text>
         </Pressable>
 

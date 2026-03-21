@@ -219,7 +219,7 @@ export default function AssignmentsScreen() {
                 style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }}
                 className="text-3xl"
               >
-                Assignments
+                Tasks
               </Text>
               <Text
                 style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
@@ -369,7 +369,7 @@ export default function AssignmentsScreen() {
                 style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }}
                 className="text-lg"
               >
-                Assignment Details
+                Task Details
               </Text>
               <Pressable
                 onPress={() => setSelectedAssignment(null)}
@@ -484,7 +484,7 @@ export default function AssignmentsScreen() {
                     style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }}
                     className="text-base ml-2"
                   >
-                    {isDemoMode ? 'Enroll to Submit' : 'Submit Assignment'}
+                    {isDemoMode ? 'Enroll to Submit' : 'Submit Task'}
                   </Text>
                 </Pressable>
               </View>
@@ -503,7 +503,7 @@ export default function AssignmentsScreen() {
         <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
           <View className="px-6 pt-4 pb-4 flex-row items-center justify-between" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[200] }}>
             <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-lg">
-              Submit Assignment
+              Submit Task
             </Text>
             <Pressable onPress={() => { setShowSubmitModal(false); setShowReflectionInput(false); setReflectionText(''); }} className="p-2">
               <X size={24} color={colors.neutral[600]} />
@@ -557,7 +557,7 @@ export default function AssignmentsScreen() {
                   disabled={!reflectionText.trim()}
                   style={{ flex: 2, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: reflectionText.trim() ? colors.primary[500] : colors.neutral[200] }}
                 >
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: reflectionText.trim() ? 'white' : colors.neutral[400], fontSize: 15 }}>Submit Reflection</Text>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: reflectionText.trim() ? 'white' : colors.neutral[400], fontSize: 15 }}>Submit</Text>
                 </Pressable>
               </View>
             </View>
