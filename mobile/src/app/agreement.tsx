@@ -189,14 +189,12 @@ export default function AgreementScreen() {
         style={{ paddingTop: insets.top, paddingBottom: 20, paddingHorizontal: 24 }}
       >
         <Animated.View entering={FadeInDown.duration(600)}>
-          {alreadySigned && (
-            <Pressable
-              onPress={() => router.back()}
-              style={{ marginTop: 12, marginBottom: 4, alignSelf: 'flex-start', padding: 4 }}
-            >
-              <ArrowLeft size={22} color="white" />
-            </Pressable>
-          )}
+          <Pressable
+            onPress={() => router.back()}
+            style={{ marginTop: 12, marginBottom: 4, alignSelf: 'flex-start', padding: 4 }}
+          >
+            <ArrowLeft size={22} color="white" />
+          </Pressable>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 16, marginBottom: 4 }}>
             <FileText size={18} color={colors.gold[300]} />
             <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.gold[300], marginLeft: 8, fontSize: 12, letterSpacing: 2, textTransform: 'uppercase' }}>
