@@ -213,7 +213,10 @@ export const mockModules: Module[] = [
     pdfLink: 'https://drive.google.com/file/d/1KmXAtqxPeYkKLJiTN4Z3t-f-X4QZQ2Kv/view?usp=drivesdk',
     localImage: danceClassImage,
     duration: '4 weeks',
-    lessons: 7,
+    lessons: 1,
+    lessonPages: [
+      { title: 'Seven Foundational Principles', startPage: 5, endPage: 5 },
+    ],
     completedLessons: 0,
     isLocked: false,
     category: 'Theory',
