@@ -28,6 +28,7 @@ import { useAccessCodeStore, ADMIN_PASSWORD } from '@/lib/accessCodeStore';
 import { useNotationStore } from '@/lib/notationStore';
 import { uploadFile } from '@/lib/upload';
 import { colors } from '@/lib/theme';
+import { NotificationToast, type ToastData } from '@/components/NotificationToast';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
@@ -65,6 +66,10 @@ export default function AdminScreen() {
   const [isSending, setIsSending] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+
+  // Notification toast
+  const [toast, setToast] = useState<ToastData | null>(null);
+  const prevUnreadTotalRef = useRef(-1); // -1 = not yet loaded
 
   const { codes, loadCodes, generateCode, deleteCode, isAdmin, setAdmin } = useAccessCodeStore();
   const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
@@ -106,7 +111,24 @@ export default function AdminScreen() {
       });
       if (res.ok) {
         const data = await res.json() as { counts: Record<string, number> };
-        setUnreadCounts(data.counts);
+        const newCounts = data.counts;
+        const newTotal = Object.values(newCounts).reduce((s, n) => s + n, 0);
+
+        // Notify instructor when new participant messages arrive
+        if (newTotal > prevUnreadTotalRef.current && prevUnreadTotalRef.current >= 0) {
+          if (prevUnreadTotalRef.current !== -1) {
+            // -1 is the initial sentinel; skip notification on first load
+            const { impactAsync, ImpactFeedbackStyle } = await import('expo-haptics');
+            impactAsync(ImpactFeedbackStyle.Medium);
+            setToast({
+              id: `admin-unread-${Date.now()}`,
+              title: 'New Message from Participant',
+              body: `You have ${newTotal} unread message${newTotal > 1 ? 's' : ''}`,
+            });
+          }
+        }
+        prevUnreadTotalRef.current = newTotal;
+        setUnreadCounts(newCounts);
       }
     } catch {}
   }, []);
@@ -348,6 +370,7 @@ export default function AdminScreen() {
   if (adminView === 'messages') {
     return (
       <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <NotificationToast toast={toast} onDismiss={() => setToast(null)} />
         <View style={{
           paddingTop: insets.top + 16,
           paddingBottom: 20,
@@ -452,6 +475,7 @@ export default function AdminScreen() {
   if (adminView === 'conversation') {
     return (
       <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <NotificationToast toast={toast} onDismiss={() => setToast(null)} />
         <View style={{
           paddingTop: insets.top + 16,
           paddingBottom: 16,
@@ -575,6 +599,7 @@ export default function AdminScreen() {
   // ── Dashboard ──
   return (
     <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+      <NotificationToast toast={toast} onDismiss={() => setToast(null)} />
       {/* Header */}
       <View style={{
         paddingTop: insets.top + 16,

@@ -64,6 +64,24 @@
       "timestamp": "2026-03-21T02:19:44.336Z",
       "readByAdmin": true,
       "readByParticipant": false
+    },
+    {
+      "id": "1774060072264-lu500o66o1k",
+      "senderId": "participant",
+      "senderName": "GUEST",
+      "text": "Another test message to BaKari",
+      "timestamp": "2026-03-21T02:27:52.264Z",
+      "readByAdmin": true,
+      "readByParticipant": true
+    },
+    {
+      "id": "1774060104711-xx7pdbpymvd",
+      "senderId": "admin",
+      "senderName": "BaKari Lindsay",
+      "text": "Great got it",
+      "timestamp": "2026-03-21T02:28:24.711Z",
+      "readByAdmin": true,
+      "readByParticipant": false
     }
   ]
 }

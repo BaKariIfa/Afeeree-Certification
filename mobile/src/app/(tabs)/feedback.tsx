@@ -12,6 +12,7 @@ import { colors } from '@/lib/theme';
 import { useAccessCodeStore, ADMIN_PASSWORD } from '@/lib/accessCodeStore';
 import { useUserStore } from '@/lib/userStore';
 import type { Participant } from '@/lib/types';
+import { NotificationToast, type ToastData } from '@/components/NotificationToast';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
@@ -58,6 +59,12 @@ export default function FeedbackScreen() {
   const [isSending, setIsSending] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
+  // Notification toast
+  const [toast, setToast] = useState<ToastData | null>(null);
+  const prevMessageCountRef = useRef(0);
+  const prevUnreadTotalRef = useRef(0);
+  const isInitialLoadRef = useRef(true);
+
   // Inline instructor login
   const [instructorPassword, setInstructorPassword] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -76,7 +83,27 @@ export default function FeedbackScreen() {
       const res = await fetch(`${BACKEND_URL}/api/messages/${code}`);
       if (!res.ok) return;
       const data = await res.json() as { messages: BackendMessage[] };
-      setMessages(data.messages);
+      const newMsgs = data.messages;
+
+      // Detect new message from admin → notify participant
+      if (!isInitialLoadRef.current) {
+        const newAdminMsgs = newMsgs.filter(m => m.senderId === 'admin');
+        if (newAdminMsgs.length > prevMessageCountRef.current) {
+          const latest = newAdminMsgs[newAdminMsgs.length - 1]!;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          setToast({
+            id: latest.id,
+            title: 'BaKari Lindsay',
+            body: latest.text,
+          });
+        }
+        prevMessageCountRef.current = newAdminMsgs.length;
+      } else {
+        prevMessageCountRef.current = newMsgs.filter(m => m.senderId === 'admin').length;
+        isInitialLoadRef.current = false;
+      }
+
+      setMessages(newMsgs);
       setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (e) {
       console.error('[fetchMessages]', e);
@@ -90,7 +117,22 @@ export default function FeedbackScreen() {
       });
       if (!res.ok) return;
       const data = await res.json() as { counts: Record<string, number> };
-      setUnreadCounts(data.counts);
+      const newCounts = data.counts;
+      const newTotal = Object.values(newCounts).reduce((s, n) => s + n, 0);
+
+      // Detect new participant messages → notify instructor
+      if (prevUnreadTotalRef.current > 0 || newTotal > 0) {
+        if (newTotal > prevUnreadTotalRef.current) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          setToast({
+            id: `unread-${Date.now()}`,
+            title: 'New Message',
+            body: `You have ${newTotal} unread message${newTotal > 1 ? 's' : ''} from participants`,
+          });
+        }
+      }
+      prevUnreadTotalRef.current = newTotal;
+      setUnreadCounts(newCounts);
     } catch (e) {
       console.error('[fetchUnreadCounts]', e);
     }
@@ -232,6 +274,7 @@ export default function FeedbackScreen() {
     if (selectedParticipant) {
       return (
         <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+          <NotificationToast toast={toast} onDismiss={() => setToast(null)} />
           <View style={{ paddingTop: insets.top + 12, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: colors.neutral[200], paddingHorizontal: 16, paddingBottom: 16 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Pressable onPress={handleBack} style={{ padding: 8, marginLeft: -8, marginRight: 8 }}>
@@ -356,6 +399,7 @@ export default function FeedbackScreen() {
     // Participants list
     return (
       <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <NotificationToast toast={toast} onDismiss={() => setToast(null)} />
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
           <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 24, paddingBottom: 16 }}>
             <Animated.View entering={FadeInDown.duration(600)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -453,6 +497,7 @@ export default function FeedbackScreen() {
   if (accessCode) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <NotificationToast toast={toast} onDismiss={() => setToast(null)} />
         <View style={{ paddingTop: insets.top + 12, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: colors.neutral[200], paddingHorizontal: 16, paddingBottom: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Pressable onPress={() => router.push('/(tabs)/')} style={{ padding: 8, marginLeft: -8, marginRight: 8 }}>
