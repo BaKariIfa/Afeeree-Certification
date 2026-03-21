@@ -1,18 +1,23 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Send, User, MessageCircle, ChevronRight, Lock, LogOut } from 'lucide-react-native';
+import { ArrowLeft, Send, User, MessageCircle, ChevronRight, Lock, LogOut, Video } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 
 import { colors } from '@/lib/theme';
 import { useAccessCodeStore, ADMIN_PASSWORD } from '@/lib/accessCodeStore';
 import { useUserStore } from '@/lib/userStore';
 import type { Participant } from '@/lib/types';
 import { NotificationToast, type ToastData } from '@/components/NotificationToast';
+import { VoiceNoteRecorder } from '@/components/VoiceNoteRecorder';
+import { AudioMessage } from '@/components/AudioMessage';
+import { VideoMessage } from '@/components/VideoMessage';
+import { uploadFile } from '@/lib/upload';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
@@ -28,6 +33,8 @@ interface BackendMessage {
   timestamp: string;
   readByAdmin: boolean;
   readByParticipant: boolean;
+  mediaUrl?: string;
+  mediaType?: 'audio' | 'video';
 }
 
 export default function FeedbackScreen() {
@@ -194,6 +201,47 @@ export default function FeedbackScreen() {
     }
   }, [isAdmin, selectedParticipant, fetchMessages, fetchUnreadCounts]);
 
+  const handleSendMedia = useCallback(async (mediaUrl: string, mediaType: 'audio' | 'video') => {
+    const isInstructorReplying = !!selectedParticipant;
+    const conversationCode = selectedParticipant?.id ?? accessCode ?? '';
+    const senderRole = isInstructorReplying ? 'admin' : 'participant';
+    const senderName = isInstructorReplying ? 'BaKari Lindsay' : (userName ?? 'Participant');
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/messages/${conversationCode}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senderId: senderRole, senderName, text: '', mediaUrl, mediaType }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { message: BackendMessage };
+        setMessages(prev => [...prev, data.message]);
+        setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 100);
+      }
+    } catch (e) {
+      console.error('[sendMedia]', e);
+    }
+  }, [selectedParticipant, accessCode, userName]);
+
+  const handleSendVideo = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') return;
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['videos'],
+      videoMaxDuration: 60,
+      quality: 0.7,
+    });
+    if (result.canceled || !result.assets[0]) return;
+    const asset = result.assets[0];
+    try {
+      const filename = `video-${Date.now()}.mp4`;
+      const uploaded = await uploadFile(asset.uri, filename, 'video/mp4');
+      await handleSendMedia(uploaded.url, 'video');
+    } catch (e) {
+      console.error('[sendVideo]', e);
+    }
+  }, [handleSendMedia]);
+
   if (!fontsLoaded) return null;
 
   const handleSelectParticipant = async (participant: Participant) => {
@@ -332,14 +380,17 @@ export default function FeedbackScreen() {
                           </Text>
                         )}
                         <View style={{
-                          paddingHorizontal: 16, paddingVertical: 12, borderRadius: 18,
+                          paddingHorizontal: msg.mediaType ? 12 : 16, paddingVertical: msg.mediaType ? 10 : 12, borderRadius: 18,
                           backgroundColor: isFromMe ? colors.primary[500] : 'white',
                           borderBottomRightRadius: isFromMe ? 4 : 18,
                           borderBottomLeftRadius: isFromMe ? 18 : 4,
                         }}>
-                          <Text style={{ fontFamily: 'DMSans_400Regular', color: isFromMe ? 'white' : colors.neutral[800], fontSize: 14, lineHeight: 20 }}>
-                            {msg.text}
-                          </Text>
+                          {msg.mediaType === 'audio' && msg.mediaUrl
+                            ? <AudioMessage uri={msg.mediaUrl} isFromMe={isFromMe} />
+                            : msg.mediaType === 'video' && msg.mediaUrl
+                            ? <VideoMessage uri={msg.mediaUrl} isFromMe={isFromMe} />
+                            : <Text style={{ fontFamily: 'DMSans_400Regular', color: isFromMe ? 'white' : colors.neutral[800], fontSize: 14, lineHeight: 20 }}>{msg.text}</Text>
+                          }
                         </View>
                         <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 3, textAlign: isFromMe ? 'right' : 'left' }}>
                           {formatTime(msg.timestamp)}
@@ -352,7 +403,8 @@ export default function FeedbackScreen() {
             </ScrollView>
 
             <View style={{ paddingBottom: insets.bottom + 8, backgroundColor: 'white', borderTopWidth: 1, borderTopColor: colors.neutral[200], paddingHorizontal: 16, paddingTop: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+                <VoiceNoteRecorder onSend={handleSendMedia} isFromMe={true} />
                 <TextInput
                   value={newMessage}
                   onChangeText={setNewMessage}
@@ -372,11 +424,14 @@ export default function FeedbackScreen() {
                     fontSize: 15,
                   }}
                 />
+                <Pressable onPress={handleSendVideo} style={{ width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.neutral[200] }}>
+                  <Video size={20} color={colors.neutral[600]} />
+                </Pressable>
                 <Pressable
                   onPress={handleSendMessage}
                   disabled={!newMessage.trim() || isSending}
                   style={{
-                    marginLeft: 8, width: 44, height: 44, borderRadius: 22,
+                    width: 44, height: 44, borderRadius: 22,
                     alignItems: 'center', justifyContent: 'center',
                     backgroundColor: newMessage.trim() ? colors.primary[500] : colors.neutral[200],
                   }}
@@ -520,6 +575,7 @@ export default function FeedbackScreen() {
           scrollViewRef={scrollViewRef}
           onChangeText={setNewMessage}
           onSend={handleSendMessage}
+          onSendMedia={handleSendMedia}
           formatTime={formatTime}
           formatDate={formatDate}
           insets={insets}
@@ -715,7 +771,7 @@ export default function FeedbackScreen() {
 // ── Participant conversation sub-component ──
 function ParticipantConversation({
   conversationCode, participantName, messages, isLoading,
-  newMessage, isSending, scrollViewRef, onChangeText, onSend,
+  newMessage, isSending, scrollViewRef, onChangeText, onSend, onSendMedia,
   formatTime, formatDate, insets, fontsLoaded, onMount,
 }: {
   conversationCode: string;
@@ -727,6 +783,7 @@ function ParticipantConversation({
   scrollViewRef: React.RefObject<ScrollView | null>;
   onChangeText: (t: string) => void;
   onSend: () => void;
+  onSendMedia: (url: string, type: 'audio' | 'video') => Promise<void>;
   formatTime: (t: string) => string;
   formatDate: (t: string) => string;
   insets: { bottom: number };
@@ -773,14 +830,17 @@ function ParticipantConversation({
                     </Text>
                   )}
                   <View style={{
-                    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 18,
+                    paddingHorizontal: msg.mediaType ? 12 : 16, paddingVertical: msg.mediaType ? 10 : 12, borderRadius: 18,
                     backgroundColor: isFromMe ? colors.primary[500] : 'white',
                     borderBottomRightRadius: isFromMe ? 4 : 18,
                     borderBottomLeftRadius: isFromMe ? 18 : 4,
                   }}>
-                    <Text style={{ fontFamily: 'DMSans_400Regular', color: isFromMe ? 'white' : colors.neutral[800], fontSize: 14, lineHeight: 20 }}>
-                      {msg.text}
-                    </Text>
+                    {msg.mediaType === 'audio' && msg.mediaUrl
+                      ? <AudioMessage uri={msg.mediaUrl} isFromMe={isFromMe} />
+                      : msg.mediaType === 'video' && msg.mediaUrl
+                      ? <VideoMessage uri={msg.mediaUrl} isFromMe={isFromMe} />
+                      : <Text style={{ fontFamily: 'DMSans_400Regular', color: isFromMe ? 'white' : colors.neutral[800], fontSize: 14, lineHeight: 20 }}>{msg.text}</Text>
+                    }
                   </View>
                   <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 3, textAlign: isFromMe ? 'right' : 'left' }}>
                     {formatTime(msg.timestamp)}
@@ -793,7 +853,8 @@ function ParticipantConversation({
       </ScrollView>
 
       <View style={{ paddingBottom: insets.bottom + 8, backgroundColor: 'white', borderTopWidth: 1, borderTopColor: colors.neutral[200], paddingHorizontal: 16, paddingTop: 12 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+          <VoiceNoteRecorder onSend={onSendMedia} isFromMe={false} />
           <TextInput
             value={newMessage}
             onChangeText={onChangeText}
@@ -814,10 +875,26 @@ function ParticipantConversation({
             }}
           />
           <Pressable
+            onPress={async () => {
+              const { status } = await ImagePicker.requestCameraPermissionsAsync();
+              if (status !== 'granted') return;
+              const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'], videoMaxDuration: 60, quality: 0.7 });
+              if (result.canceled || !result.assets[0]) return;
+              const asset = result.assets[0];
+              try {
+                const uploaded = await uploadFile(asset.uri, `video-${Date.now()}.mp4`, 'video/mp4');
+                await onSendMedia(uploaded.url, 'video');
+              } catch {}
+            }}
+            style={{ width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.neutral[200] }}
+          >
+            <Video size={20} color={colors.neutral[600]} />
+          </Pressable>
+          <Pressable
             onPress={onSend}
             disabled={!newMessage.trim() || isSending}
             style={{
-              marginLeft: 8, width: 44, height: 44, borderRadius: 22,
+              width: 44, height: 44, borderRadius: 22,
               alignItems: 'center', justifyContent: 'center',
               backgroundColor: newMessage.trim() ? colors.primary[500] : colors.neutral[200],
             }}

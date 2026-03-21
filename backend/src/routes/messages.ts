@@ -16,6 +16,8 @@ interface Message {
   timestamp: string;
   readByAdmin: boolean;
   readByParticipant: boolean;
+  mediaUrl?: string;
+  mediaType?: "audio" | "video";
 }
 
 type MessagesStore = Record<string, Message[]>;
@@ -75,10 +77,14 @@ messagesRouter.post("/:code", async (c) => {
   const body = await c.req.json<{
     senderId: "participant" | "admin";
     senderName: string;
-    text: string;
+    text?: string;
+    mediaUrl?: string;
+    mediaType?: "audio" | "video";
   }>();
 
-  if (!body.text?.trim()) return c.json({ error: "Empty message" }, 400);
+  const hasText = body.text?.trim();
+  const hasMedia = body.mediaUrl && body.mediaType;
+  if (!hasText && !hasMedia) return c.json({ error: "Empty message" }, 400);
 
   const store = readMessages();
   if (!store[code]) store[code] = [];
@@ -87,10 +93,12 @@ messagesRouter.post("/:code", async (c) => {
     id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     senderId: body.senderId,
     senderName: body.senderName ?? (body.senderId === "admin" ? "Admin" : "Participant"),
-    text: body.text.trim(),
+    text: body.text?.trim() ?? "",
     timestamp: new Date().toISOString(),
     readByAdmin: body.senderId === "admin",
     readByParticipant: body.senderId === "participant",
+    ...(body.mediaUrl && { mediaUrl: body.mediaUrl }),
+    ...(body.mediaType && { mediaType: body.mediaType }),
   };
 
   store[code].push(message);

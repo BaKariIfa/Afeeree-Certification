@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router';
 import {
   Lock, Plus, Trash2, Copy, Check, ArrowLeft, FileText,
   Upload, CheckCircle, MessageCircle, Send, User, ChevronRight,
-  ShieldCheck, Key, Users, Share2,
+  ShieldCheck, Key, Users, Share2, Video,
 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -29,6 +29,10 @@ import { useNotationStore } from '@/lib/notationStore';
 import { uploadFile } from '@/lib/upload';
 import { colors } from '@/lib/theme';
 import { NotificationToast, type ToastData } from '@/components/NotificationToast';
+import { VoiceNoteRecorder } from '@/components/VoiceNoteRecorder';
+import { AudioMessage } from '@/components/AudioMessage';
+import { VideoMessage } from '@/components/VideoMessage';
+import * as ImagePicker from 'expo-image-picker';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
@@ -40,6 +44,8 @@ interface BackendMessage {
   timestamp: string;
   readByAdmin: boolean;
   readByParticipant: boolean;
+  mediaUrl?: string;
+  mediaType?: 'audio' | 'video';
 }
 
 type AdminView = 'dashboard' | 'messages' | 'conversation';
@@ -524,7 +530,7 @@ export default function AdminScreen() {
                         </Text>
                       )}
                       <View style={{
-                        paddingHorizontal: 16, paddingVertical: 11, borderRadius: 18,
+                        paddingHorizontal: msg.mediaType ? 12 : 16, paddingVertical: msg.mediaType ? 10 : 11, borderRadius: 18,
                         backgroundColor: isFromMe ? colors.primary[500] : 'white',
                         borderBottomRightRadius: isFromMe ? 4 : 18,
                         borderBottomLeftRadius: isFromMe ? 18 : 4,
@@ -533,9 +539,12 @@ export default function AdminScreen() {
                         shadowOpacity: isFromMe ? 0 : 0.05,
                         shadowRadius: 4,
                       }}>
-                        <Text style={{ fontFamily: 'DMSans_400Regular', color: isFromMe ? 'white' : colors.neutral[800], fontSize: 15, lineHeight: 21 }}>
-                          {msg.text}
-                        </Text>
+                        {msg.mediaType === 'audio' && msg.mediaUrl
+                          ? <AudioMessage uri={msg.mediaUrl} isFromMe={isFromMe} />
+                          : msg.mediaType === 'video' && msg.mediaUrl
+                          ? <VideoMessage uri={msg.mediaUrl} isFromMe={isFromMe} />
+                          : <Text style={{ fontFamily: 'DMSans_400Regular', color: isFromMe ? 'white' : colors.neutral[800], fontSize: 15, lineHeight: 21 }}>{msg.text}</Text>
+                        }
                       </View>
                       <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 3, textAlign: isFromMe ? 'right' : 'left' }}>
                         {formatTime(msg.timestamp)}
@@ -548,11 +557,27 @@ export default function AdminScreen() {
           </ScrollView>
 
           <View style={{
-            flexDirection: 'row', alignItems: 'flex-end',
+            flexDirection: 'row', alignItems: 'flex-end', gap: 8,
             paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 8,
             backgroundColor: 'white',
             borderTopWidth: 1, borderTopColor: colors.neutral[100],
           }}>
+            <VoiceNoteRecorder
+              onSend={async (url, type) => {
+                if (!selectedCode) return;
+                const res = await fetch(`${BACKEND_URL}/api/messages/${selectedCode}`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ senderId: 'admin', senderName: 'BaKari Lindsay', text: '', mediaUrl: url, mediaType: type }),
+                });
+                if (res.ok) {
+                  const data = await res.json() as { message: BackendMessage };
+                  setConvMessages(prev => [...prev, data.message]);
+                  setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+                }
+              }}
+              isFromMe={true}
+            />
             <TextInput
               value={newMessage}
               onChangeText={setNewMessage}
@@ -573,10 +598,35 @@ export default function AdminScreen() {
               }}
             />
             <Pressable
+              onPress={async () => {
+                if (!selectedCode) return;
+                const { status } = await ImagePicker.requestCameraPermissionsAsync();
+                if (status !== 'granted') return;
+                const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'], videoMaxDuration: 60, quality: 0.7 });
+                if (result.canceled || !result.assets[0]) return;
+                try {
+                  const uploaded = await uploadFile(result.assets[0].uri, `video-${Date.now()}.mp4`, 'video/mp4');
+                  const res = await fetch(`${BACKEND_URL}/api/messages/${selectedCode}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senderId: 'admin', senderName: 'BaKari Lindsay', text: '', mediaUrl: uploaded.url, mediaType: 'video' }),
+                  });
+                  if (res.ok) {
+                    const data = await res.json() as { message: BackendMessage };
+                    setConvMessages(prev => [...prev, data.message]);
+                    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+                  }
+                } catch {}
+              }}
+              style={{ width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.neutral[200] }}
+            >
+              <Video size={20} color={colors.neutral[600]} />
+            </Pressable>
+            <Pressable
               onPress={handleSend}
               disabled={!newMessage.trim() || isSending}
               style={{
-                marginLeft: 10, width: 46, height: 46, borderRadius: 23,
+                width: 46, height: 46, borderRadius: 23,
                 alignItems: 'center', justifyContent: 'center',
                 backgroundColor: newMessage.trim() ? colors.primary[500] : colors.neutral[200],
               }}
