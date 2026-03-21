@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, Modal, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Pressable, Modal, RefreshControl, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -10,23 +10,28 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  XCircle,
   X,
   Upload,
   Camera,
   File,
-  ArrowLeft
+  ArrowLeft,
+  CheckCircle
 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 
 import { colors } from '@/lib/theme';
 import { mockAssignments } from '@/lib/mockData';
 import type { Assignment } from '@/lib/types';
 import DemoBanner from '@/components/DemoBanner';
 import { useUserStore } from '@/lib/userStore';
+import { uploadFile } from '@/lib/upload';
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
 const triggerHaptic = () => {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -41,8 +46,76 @@ export default function AssignmentsScreen() {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [reflectionText, setReflectionText] = useState('');
+  const [showReflectionInput, setShowReflectionInput] = useState(false);
 
   const isDemoMode = useUserStore(s => s.isDemoMode);
+  const accessCode = useUserStore(s => s.accessCode);
+  const userName = useUserStore(s => s.name);
+
+  const submitToBackend = async (type: 'video' | 'file' | 'reflection', fileUrl?: string, fileName?: string, reflection?: string) => {
+    if (!selectedAssignment) return;
+    setSubmitting(true);
+    try {
+      await fetch(`${BACKEND_URL}/api/submissions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          participantCode: accessCode,
+          participantName: userName || 'Participant',
+          assignmentTitle: selectedAssignment.title,
+          type,
+          fileUrl,
+          fileName,
+          reflection,
+        }),
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSubmitted(true);
+      setShowSubmitModal(false);
+      setShowReflectionInput(false);
+      setTimeout(() => { setSubmitted(false); setSelectedAssignment(null); }, 2500);
+    } catch (e) {
+      console.error('[assignments submitToBackend]', e);
+      Alert.alert('Submission Failed', 'Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleRecordVideo = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') { Alert.alert('Camera permission required'); return; }
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'], videoMaxDuration: 120, quality: 0.7 });
+    if (result.canceled || !result.assets[0]) return;
+    const asset = result.assets[0];
+    try {
+      const uploaded = await uploadFile(asset.uri, `submission-${Date.now()}.mp4`, 'video/mp4');
+      await submitToBackend('video', uploaded.url, `video-${Date.now()}.mp4`);
+    } catch {
+      Alert.alert('Upload Failed', 'Please try again.');
+    }
+  };
+
+  const handleUploadFile = async () => {
+    const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
+    if (result.canceled || !result.assets[0]) return;
+    const asset = result.assets[0];
+    try {
+      const uploaded = await uploadFile(asset.uri, asset.name, asset.mimeType ?? 'application/octet-stream');
+      await submitToBackend('file', uploaded.url, asset.name);
+    } catch {
+      Alert.alert('Upload Failed', 'Please try again.');
+    }
+  };
+
+  const handleSubmitReflection = async () => {
+    if (!reflectionText.trim()) return;
+    await submitToBackend('reflection', undefined, undefined, reflectionText.trim());
+    setReflectionText('');
+  };
 
   const onRefresh = useCallback(() => {
     triggerHaptic();
@@ -425,91 +498,157 @@ export default function AssignmentsScreen() {
         visible={showSubmitModal}
         animationType="slide"
         presentationStyle="pageSheet"
-        onRequestClose={() => setShowSubmitModal(false)}
+        onRequestClose={() => { setShowSubmitModal(false); setShowReflectionInput(false); setReflectionText(''); }}
       >
         <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
           <View className="px-6 pt-4 pb-4 flex-row items-center justify-between" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[200] }}>
-            <Text
-              style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }}
-              className="text-lg"
-            >
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-lg">
               Submit Assignment
             </Text>
-            <Pressable
-              onPress={() => setShowSubmitModal(false)}
-              className="p-2"
-            >
+            <Pressable onPress={() => { setShowSubmitModal(false); setShowReflectionInput(false); setReflectionText(''); }} className="p-2">
               <X size={24} color={colors.neutral[600]} />
             </Pressable>
           </View>
 
-          <View className="flex-1 px-6 pt-8">
-            <Text
-              style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }}
-              className="text-2xl text-center"
-            >
-              Choose Submission Type
-            </Text>
-            <Text
-              style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
-              className="text-base text-center mt-2 mb-8"
-            >
-              Select how you want to submit your work
-            </Text>
+          {submitting ? (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <ActivityIndicator size="large" color={colors.primary[500]} />
+              <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[600], marginTop: 16, fontSize: 15 }}>
+                Uploading submission...
+              </Text>
+            </View>
+          ) : showReflectionInput ? (
+            <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 24 }}>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 22, marginBottom: 8 }}>
+                Write Your Reflection
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginBottom: 20 }}>
+                Share your thoughts, insights, and learnings
+              </Text>
+              <TextInput
+                value={reflectionText}
+                onChangeText={setReflectionText}
+                placeholder="Write your reflection here..."
+                placeholderTextColor={colors.neutral[400]}
+                multiline
+                style={{
+                  fontFamily: 'DMSans_400Regular',
+                  color: colors.neutral[800],
+                  backgroundColor: 'white',
+                  borderRadius: 16,
+                  padding: 16,
+                  fontSize: 15,
+                  lineHeight: 22,
+                  minHeight: 180,
+                  borderWidth: 1,
+                  borderColor: colors.neutral[200],
+                  textAlignVertical: 'top',
+                }}
+              />
+              <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
+                <Pressable
+                  onPress={() => { setShowReflectionInput(false); setReflectionText(''); }}
+                  style={{ flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: colors.neutral[100] }}
+                >
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 15 }}>Back</Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleSubmitReflection}
+                  disabled={!reflectionText.trim()}
+                  style={{ flex: 2, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: reflectionText.trim() ? colors.primary[500] : colors.neutral[200] }}
+                >
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: reflectionText.trim() ? 'white' : colors.neutral[400], fontSize: 15 }}>Submit Reflection</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <View className="flex-1 px-6 pt-8">
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }} className="text-2xl text-center">
+                Choose Submission Type
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-base text-center mt-2 mb-8">
+                Select how you want to submit your work
+              </Text>
 
-            <Pressable
-              className="p-5 rounded-2xl mb-4 flex-row items-center"
-              style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
-            >
-              <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primary[100] }}>
-                <Camera size={28} color={colors.primary[500]} />
-              </View>
-              <View className="ml-4 flex-1">
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-base">
-                  Record Video
-                </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm mt-0.5">
-                  Capture teaching demos or practice
-                </Text>
-              </View>
-            </Pressable>
+              <Pressable
+                onPress={handleRecordVideo}
+                className="p-5 rounded-2xl mb-4 flex-row items-center"
+                style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
+              >
+                <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primary[100] }}>
+                  <Camera size={28} color={colors.primary[500]} />
+                </View>
+                <View className="ml-4 flex-1">
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-base">
+                    Record Video
+                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm mt-0.5">
+                    Capture teaching demos or practice
+                  </Text>
+                </View>
+              </Pressable>
 
-            <Pressable
-              className="p-5 rounded-2xl mb-4 flex-row items-center"
-              style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
-            >
-              <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: colors.gold[100] }}>
-                <File size={28} color={colors.gold[600]} />
-              </View>
-              <View className="ml-4 flex-1">
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-base">
-                  Upload File
-                </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm mt-0.5">
-                  Documents, videos, or images
-                </Text>
-              </View>
-            </Pressable>
+              <Pressable
+                onPress={handleUploadFile}
+                className="p-5 rounded-2xl mb-4 flex-row items-center"
+                style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
+              >
+                <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: colors.gold[100] }}>
+                  <File size={28} color={colors.gold[600]} />
+                </View>
+                <View className="ml-4 flex-1">
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-base">
+                    Upload File
+                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm mt-0.5">
+                    Documents, videos, or images
+                  </Text>
+                </View>
+              </Pressable>
 
-            <Pressable
-              className="p-5 rounded-2xl flex-row items-center"
-              style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
-            >
-              <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primary[100] }}>
-                <PenLine size={28} color={colors.primary[500]} />
-              </View>
-              <View className="ml-4 flex-1">
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-base">
-                  Write Reflection
-                </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm mt-0.5">
-                  Text-based assignments
-                </Text>
-              </View>
-            </Pressable>
-          </View>
+              <Pressable
+                onPress={() => setShowReflectionInput(true)}
+                className="p-5 rounded-2xl flex-row items-center"
+                style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
+              >
+                <View className="w-14 h-14 rounded-xl items-center justify-center" style={{ backgroundColor: colors.primary[100] }}>
+                  <PenLine size={28} color={colors.primary[500]} />
+                </View>
+                <View className="ml-4 flex-1">
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-base">
+                    Write Reflection
+                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm mt-0.5">
+                    Text-based assignments
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+          )}
         </View>
       </Modal>
+
+      {/* Submission Success overlay */}
+      {submitted && (
+        <Animated.View
+          entering={FadeIn.duration(300)}
+          style={{
+            position: 'absolute', inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <View style={{ backgroundColor: 'white', borderRadius: 24, padding: 32, alignItems: 'center', width: 260 }}>
+            <CheckCircle size={56} color={colors.success} />
+            <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 20, marginTop: 16, textAlign: 'center' }}>
+              Submitted!
+            </Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginTop: 8, textAlign: 'center' }}>
+              Your instructor will review it shortly.
+            </Text>
+          </View>
+        </Animated.View>
+      )}
     </View>
   );
 }
