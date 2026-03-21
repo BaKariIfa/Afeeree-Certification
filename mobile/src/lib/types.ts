@@ -43,6 +43,7 @@ export interface Module {
   pdfPage?: number;
   pdfEndPage?: number;
   pdfLink?: string;
+  contactHours: number;
   duration: string;
   lessons: number;
   completedLessons: number;

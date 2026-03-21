@@ -16,6 +16,8 @@ interface UserState {
   practiceTime: number;
   darkMode: boolean;
   completedTasks: number;
+  // Accumulated study time per lesson key "moduleId-lessonIndex" in ms
+  lessonStudyTime: Record<string, number>;
 
   // Actions
   setUser: (name: string, email: string) => void;
@@ -27,6 +29,7 @@ interface UserState {
   addPracticeTime: (seconds: number) => void;
   toggleDarkMode: () => void;
   incrementCompletedTasks: () => void;
+  addLessonStudyTime: (key: string, ms: number) => void;
   loadUserData: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -45,6 +48,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   practiceTime: 0,
   darkMode: false,
   completedTasks: 0,
+  lessonStudyTime: {},
 
   setUser: (name, email) => {
     set({ name, email });
@@ -61,7 +65,6 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ hasAccess, accessCode: code });
     AsyncStorage.setItem('hasAccess', hasAccess ? 'true' : 'false');
     AsyncStorage.setItem('accessCode', code);
-    // Entering as a participant always clears instructor/admin mode
     if (code) {
       useAccessCodeStore.getState().setAdmin(false);
     }
@@ -86,6 +89,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       'darkMode',
       'isAdmin',
       'completedTasks',
+      'lessonStudyTime',
     ]);
     useAccessCodeStore.getState().setAdmin(false);
     set({
@@ -102,6 +106,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       practiceTime: 0,
       darkMode: false,
       completedTasks: 0,
+      lessonStudyTime: {},
     });
   },
 
@@ -113,7 +118,6 @@ export const useUserStore = create<UserState>((set, get) => ({
       set({ completedLessons: updated });
       AsyncStorage.setItem('completedLessons', JSON.stringify(updated));
 
-      // Update module progress
       const moduleProgress = { ...get().moduleProgress };
       const moduleLessons = current.filter(l => l.startsWith(`${moduleId}-`)).length + 1;
       moduleProgress[moduleId] = moduleLessons;
@@ -146,6 +150,13 @@ export const useUserStore = create<UserState>((set, get) => ({
     AsyncStorage.setItem('completedTasks', newCount.toString());
   },
 
+  addLessonStudyTime: (key, ms) => {
+    const current = get().lessonStudyTime;
+    const updated = { ...current, [key]: (current[key] ?? 0) + ms };
+    set({ lessonStudyTime: updated });
+    AsyncStorage.setItem('lessonStudyTime', JSON.stringify(updated));
+  },
+
   loadUserData: async () => {
     try {
       const [
@@ -161,6 +172,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         practiceTime,
         darkMode,
         completedTasks,
+        lessonStudyTime,
       ] = await Promise.all([
         AsyncStorage.getItem('userName'),
         AsyncStorage.getItem('userEmail'),
@@ -174,6 +186,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         AsyncStorage.getItem('practiceTime'),
         AsyncStorage.getItem('darkMode'),
         AsyncStorage.getItem('completedTasks'),
+        AsyncStorage.getItem('lessonStudyTime'),
       ]);
 
       set({
@@ -189,6 +202,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         practiceTime: practiceTime ? parseInt(practiceTime, 10) : 0,
         darkMode: darkMode === 'true',
         completedTasks: completedTasks ? parseInt(completedTasks, 10) : 0,
+        lessonStudyTime: lessonStudyTime ? JSON.parse(lessonStudyTime) : {},
       });
     } catch (error) {
       console.error('Error loading user data:', error);

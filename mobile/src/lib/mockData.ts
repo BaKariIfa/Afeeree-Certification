@@ -81,6 +81,7 @@ export const mockModules: Module[] = [
     completedLessons: 0,
     isLocked: false,
     category: 'Technique',
+    contactHours: 2,
   },
   {
     id: '2',
@@ -96,6 +97,7 @@ export const mockModules: Module[] = [
     completedLessons: 0,
     isLocked: false,
     category: 'Technique',
+    contactHours: 1.5,
   },
   {
     id: '3',
@@ -111,6 +113,7 @@ export const mockModules: Module[] = [
     completedLessons: 0,
     isLocked: false,
     category: 'Technique',
+    contactHours: 1.75,
   },
   {
     id: '4',
@@ -126,6 +129,7 @@ export const mockModules: Module[] = [
     completedLessons: 0,
     isLocked: false,
     category: 'Technique',
+    contactHours: 1.25,
   },
   {
     id: '5',
@@ -141,6 +145,7 @@ export const mockModules: Module[] = [
     completedLessons: 0,
     isLocked: false,
     category: 'Technique',
+    contactHours: 3,
   },
   {
     id: '6',
@@ -156,6 +161,7 @@ export const mockModules: Module[] = [
     completedLessons: 0,
     isLocked: false,
     category: 'Technique',
+    contactHours: 2.5,
   },
   {
     id: '7',
@@ -171,6 +177,7 @@ export const mockModules: Module[] = [
     completedLessons: 0,
     isLocked: false,
     category: 'Technique',
+    contactHours: 1.5,
   },
   {
     id: '8',
@@ -186,6 +193,7 @@ export const mockModules: Module[] = [
     completedLessons: 0,
     isLocked: false,
     category: 'Technique',
+    contactHours: 3.75,
   },
   {
     id: '9',
@@ -201,6 +209,7 @@ export const mockModules: Module[] = [
     completedLessons: 0,
     isLocked: false,
     category: 'Theory',
+    contactHours: 1.75,
   },
 ];
 

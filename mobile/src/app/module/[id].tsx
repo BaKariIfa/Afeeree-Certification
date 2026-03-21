@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Linking } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, BookOpen, Clock, Check, FileText, StickyNote, ExternalLink, Lock, ChevronRight, Timer } from 'lucide-react-native';
-import Animated, { FadeInUp, useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
@@ -14,14 +14,13 @@ import { mockModules } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
 import ConfettiCelebration from '@/components/ConfettiCelebration';
 
-const MIN_STUDY_MS = 15 * 60 * 1000; // 15 minutes
+// Minimum study time per lesson before it can be marked complete
+const MIN_STUDY_MS = 15 * 60 * 1000;
 
-const triggerHaptic = () => {
-  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-};
+const triggerHaptic = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-function formatCountdown(ms: number): string {
-  const totalSec = Math.ceil(ms / 1000);
+function formatStudyTime(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
   return `${m}:${s.toString().padStart(2, '0')}`;
@@ -35,24 +34,22 @@ export default function ModuleDetailScreen() {
   const [showNotes, setShowNotes] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [showConfetti, setShowConfetti] = useState(false);
-
-  // Lesson detail sheet
   const [selectedLesson, setSelectedLesson] = useState<number | null>(null);
-  // Tracks which lessons had their notation opened (stores start timestamp)
-  const [lessonTimerStart, setLessonTimerStart] = useState<Map<number, number>>(new Map());
-  // Live tick to force re-render every second while sheet is open
-  const [, setTick] = useState(0);
 
-  // Animated progress bar value (0→1)
-  const timerProgress = useSharedValue(0);
-  const progressStyle = useAnimatedStyle(() => ({
-    width: `${timerProgress.value * 100}%` as `${number}%`,
-  }));
+  // In-memory session start times: lessonIndex → timestamp when current session started
+  // Using a ref so unmount cleanup can access the latest value without stale closure
+  const sessionStartRef = useRef<Map<number, number>>(new Map());
+  const [sessionStart, setSessionStart] = useState<Map<number, number>>(new Map());
+
+  // Tick every second while sheet is open to update the displayed time
+  const [, setTick] = useState(0);
 
   const completedLessons = useUserStore(s => s.completedLessons);
   const notes = useUserStore(s => s.notes);
+  const lessonStudyTime = useUserStore(s => s.lessonStudyTime);
   const markLessonComplete = useUserStore(s => s.markLessonComplete);
   const saveNote = useUserStore(s => s.saveNote);
+  const addLessonStudyTime = useUserStore(s => s.addLessonStudyTime);
 
   const module = mockModules.find(m => m.id === id);
 
@@ -64,63 +61,72 @@ export default function ModuleDetailScreen() {
   });
 
   useEffect(() => {
-    if (module && notes[module.id]) {
-      setNoteText(notes[module.id]);
-    }
+    if (module && notes[module.id]) setNoteText(notes[module.id]);
   }, [module, notes]);
 
-  // Tick every second while the sheet is open and a timer is running
+  // Tick every second while a lesson sheet is open
   useEffect(() => {
     if (selectedLesson === null) return;
-    const startTime = lessonTimerStart.get(selectedLesson);
-    if (!startTime) return;
-
-    const interval = setInterval(() => {
-      setTick(t => t + 1);
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / MIN_STUDY_MS, 1);
-      timerProgress.value = progress;
-      if (elapsed >= MIN_STUDY_MS) {
-        clearInterval(interval);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-    }, 1000);
-
+    const interval = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(interval);
-  }, [selectedLesson, lessonTimerStart]);
-
-  // Sync progress bar when sheet opens with existing timer
-  useEffect(() => {
-    if (selectedLesson === null) return;
-    const startTime = lessonTimerStart.get(selectedLesson);
-    if (!startTime) {
-      timerProgress.value = 0;
-      return;
-    }
-    const elapsed = Date.now() - startTime;
-    timerProgress.value = Math.min(elapsed / MIN_STUDY_MS, 1);
   }, [selectedLesson]);
 
-  if (!fontsLoaded || !module) {
-    return null;
-  }
+  // Save all active session times on unmount
+  useEffect(() => {
+    return () => {
+      const mod = mockModules.find(m => m.id === id);
+      if (!mod) return;
+      sessionStartRef.current.forEach((startTime, lessonIndex) => {
+        const elapsed = Date.now() - startTime;
+        if (elapsed > 0) {
+          addLessonStudyTime(`${mod.id}-${lessonIndex}`, elapsed);
+        }
+      });
+    };
+  }, [id]);
+
+  if (!fontsLoaded || !module) return null;
 
   const lessonCount = module.lessons;
   const completedCount = completedLessons.filter(l => l.startsWith(`${module.id}-`)).length;
   const progressPercent = Math.round((completedCount / lessonCount) * 100);
+  const totalContactHoursLogged = Object.entries(lessonStudyTime)
+    .filter(([k]) => k.startsWith(`${module.id}-`))
+    .reduce((sum, [, ms]) => sum + ms, 0);
 
-  const isLessonComplete = (lessonIndex: number) =>
-    completedLessons.includes(`${module.id}-${lessonIndex}`);
+  const isLessonComplete = (i: number) => completedLessons.includes(`${module.id}-${i}`);
 
-  const getTimeRemaining = (lessonIndex: number): number => {
-    const startTime = lessonTimerStart.get(lessonIndex);
-    if (!startTime) return MIN_STUDY_MS;
-    return Math.max(0, MIN_STUDY_MS - (Date.now() - startTime));
+  // Total study time for a lesson = persisted + current session elapsed
+  const getTotalStudyMs = (lessonIndex: number): number => {
+    const key = `${module.id}-${lessonIndex}`;
+    const persisted = lessonStudyTime[key] ?? 0;
+    const start = sessionStart.get(lessonIndex);
+    const sessionElapsed = start ? Date.now() - start : 0;
+    return persisted + sessionElapsed;
+  };
+
+  const saveCurrentSession = (lessonIndex: number) => {
+    const start = sessionStartRef.current.get(lessonIndex);
+    if (start !== undefined) {
+      const elapsed = Date.now() - start;
+      if (elapsed > 0) addLessonStudyTime(`${module.id}-${lessonIndex}`, elapsed);
+      sessionStartRef.current.delete(lessonIndex);
+      setSessionStart(prev => {
+        const next = new Map(prev);
+        next.delete(lessonIndex);
+        return next;
+      });
+    }
   };
 
   const handleLessonPress = (lessonIndex: number) => {
     triggerHaptic();
     setSelectedLesson(lessonIndex);
+  };
+
+  const handleCloseSheet = () => {
+    if (selectedLesson !== null) saveCurrentSession(selectedLesson);
+    setSelectedLesson(null);
   };
 
   const handleViewNotation = () => {
@@ -130,63 +136,41 @@ export default function ModuleDetailScreen() {
       const pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(module.pdfLink)}&startPage=${module.pdfPage}&endPage=${module.pdfEndPage ?? module.pdfPage}`;
       Linking.openURL(pageUrl);
     }
-    if (selectedLesson !== null && !lessonTimerStart.has(selectedLesson)) {
-      // Start 15-min timer the first time the notation is opened
+    // Start session timer if not already running for this lesson
+    if (selectedLesson !== null && !sessionStartRef.current.has(selectedLesson)) {
       const now = Date.now();
-      setLessonTimerStart(prev => new Map([...prev, [selectedLesson, now]]));
-      timerProgress.value = withTiming(1, {
-        duration: MIN_STUDY_MS,
-        easing: Easing.linear,
-      });
+      sessionStartRef.current.set(selectedLesson, now);
+      setSessionStart(prev => new Map([...prev, [selectedLesson, now]]));
     }
   };
 
   const handleMarkComplete = () => {
     if (selectedLesson === null) return;
+    saveCurrentSession(selectedLesson);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     markLessonComplete(module.id, selectedLesson);
-    const newCompletedCount = completedCount + 1;
-    if (newCompletedCount === lessonCount) {
-      setShowConfetti(true);
-    }
+    if (completedCount + 1 === lessonCount) setShowConfetti(true);
     setSelectedLesson(null);
   };
 
-  const handleNotesPress = () => {
-    triggerHaptic();
-    setShowNotes(true);
-  };
+  const handleNotesPress = () => { triggerHaptic(); setShowNotes(true); };
+  const handleSaveNote = () => { triggerHaptic(); saveNote(module.id, noteText); setShowNotes(false); };
 
-  const handleSaveNote = () => {
-    triggerHaptic();
-    saveNote(module.id, noteText);
-    setShowNotes(false);
-  };
-
-  const notationOpened = selectedLesson !== null && lessonTimerStart.has(selectedLesson);
-  const timeRemainingMs = selectedLesson !== null ? getTimeRemaining(selectedLesson) : MIN_STUDY_MS;
-  const timerDone = timeRemainingMs <= 0;
-  const canMarkComplete = notationOpened && timerDone;
+  // Derived values for selected lesson
+  const studyMs = selectedLesson !== null ? getTotalStudyMs(selectedLesson) : 0;
+  const studyProgress = Math.min(studyMs / MIN_STUDY_MS, 1);
+  const timerReached = studyMs >= MIN_STUDY_MS;
+  const sessionActive = selectedLesson !== null && sessionStart.has(selectedLesson);
+  const canMarkComplete = timerReached && sessionActive !== false;
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
-      <ConfettiCelebration
-        visible={showConfetti}
-        onComplete={() => setShowConfetti(false)}
-      />
+      <ConfettiCelebration visible={showConfetti} onComplete={() => setShowConfetti(false)} />
 
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
-      >
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Header Image */}
         <View className="relative">
-          <Image
-            source={module.localImage || { uri: module.imageUrl }}
-            style={{ width: '100%', height: 250 }}
-            contentFit="cover"
-          />
+          <Image source={module.localImage || { uri: module.imageUrl }} style={{ width: '100%', height: 250 }} contentFit="cover" />
           <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.3)' }} />
           <Pressable
             onPress={() => { triggerHaptic(); router.back(); }}
@@ -197,32 +181,21 @@ export default function ModuleDetailScreen() {
           </Pressable>
         </View>
 
-        {/* Content */}
         <View className="px-6 -mt-6">
-          <Animated.View
-            entering={FadeInUp.duration(500)}
-            className="p-5 rounded-2xl"
-            style={{ backgroundColor: 'white', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4 }}
-          >
+          {/* Module Info Card */}
+          <Animated.View entering={FadeInUp.duration(500)} className="p-5 rounded-2xl"
+            style={{ backgroundColor: 'white', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 4 }}>
             <View className="flex-row items-center mb-3">
               <View className="px-3 py-1 rounded-full" style={{ backgroundColor: colors.primary[100] }}>
-                <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500] }} className="text-sm">
-                  {module.category}
-                </Text>
+                <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500] }} className="text-sm">{module.category}</Text>
               </View>
               {module.notationRef && (
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[600] }} className="text-sm ml-3">
-                  {module.notationRef}
-                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[600] }} className="text-sm ml-3">{module.notationRef}</Text>
               )}
             </View>
 
-            <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }} className="text-2xl">
-              {module.title}
-            </Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], lineHeight: 22 }} className="text-base mt-3">
-              {module.description}
-            </Text>
+            <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }} className="text-2xl">{module.title}</Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], lineHeight: 22 }} className="text-base mt-3">{module.description}</Text>
 
             <View className="flex-row items-center mt-4 pt-4" style={{ borderTopWidth: 1, borderTopColor: colors.neutral[200] }}>
               <Clock size={16} color={colors.neutral[400]} />
@@ -230,28 +203,38 @@ export default function ModuleDetailScreen() {
               <View className="mx-3 w-1 h-1 rounded-full" style={{ backgroundColor: colors.neutral[300] }} />
               <BookOpen size={16} color={colors.neutral[400]} />
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm ml-2">{lessonCount} lessons</Text>
+              <View className="mx-3 w-1 h-1 rounded-full" style={{ backgroundColor: colors.neutral[300] }} />
+              <Timer size={16} color={colors.neutral[400]} />
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm ml-2">{module.contactHours}h required</Text>
             </View>
 
+            {/* Completion progress */}
             <View className="mt-4">
               <View className="flex-row justify-between mb-2">
                 <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[700] }} className="text-sm">Progress</Text>
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', color: progressPercent === 100 ? colors.success : colors.primary[500] }} className="text-sm">
-                  {completedCount}/{lessonCount} completed
+                  {completedCount}/{lessonCount} lessons
                 </Text>
               </View>
               <View className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: colors.neutral[200] }}>
                 <View className="h-full rounded-full" style={{ backgroundColor: progressPercent === 100 ? colors.success : colors.primary[500], width: `${progressPercent}%` }} />
               </View>
             </View>
+
+            {/* Contact hours logged */}
+            {totalContactHoursLogged > 0 && (
+              <View className="mt-3 flex-row items-center">
+                <Timer size={14} color={colors.gold[500]} />
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[700], fontSize: 12, marginLeft: 6 }}>
+                  {formatStudyTime(totalContactHoursLogged)} documented participation
+                </Text>
+              </View>
+            )}
           </Animated.View>
 
           {/* Notes Button */}
           <Animated.View entering={FadeInUp.duration(500).delay(100)} className="mt-4">
-            <Pressable
-              onPress={handleNotesPress}
-              className="flex-row items-center justify-center py-4 rounded-xl"
-              style={{ backgroundColor: colors.gold[500] }}
-            >
+            <Pressable onPress={handleNotesPress} className="flex-row items-center justify-center py-4 rounded-xl" style={{ backgroundColor: colors.gold[500] }}>
               <StickyNote size={20} color="white" />
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }} className="text-base ml-2">Notes</Text>
             </Pressable>
@@ -261,39 +244,36 @@ export default function ModuleDetailScreen() {
           <Animated.View entering={FadeInUp.duration(500).delay(200)} className="mt-6">
             <View className="flex-row items-center justify-between mb-4">
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-lg">Lessons</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400] }} className="text-xs">Tap to view notation</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400] }} className="text-xs">15 min min. per lesson</Text>
             </View>
 
             {Array.from({ length: lessonCount }, (_, i) => {
               const complete = isLessonComplete(i);
-              const timerStarted = lessonTimerStart.has(i);
-              const remaining = getTimeRemaining(i);
-              const done = remaining <= 0;
+              const studiedMs = getTotalStudyMs(i);
+              const hasStudied = studiedMs > 0;
+              const lessonDone = studiedMs >= MIN_STUDY_MS;
               return (
                 <Pressable
                   key={i}
                   onPress={() => handleLessonPress(i)}
                   className="flex-row items-center p-4 mb-2 rounded-xl"
-                  style={{ backgroundColor: 'white', borderWidth: 1, borderColor: complete ? colors.success : timerStarted && !done ? colors.gold[300] : colors.neutral[200] }}
+                  style={{ backgroundColor: 'white', borderWidth: 1, borderColor: complete ? colors.success : hasStudied ? colors.gold[300] : colors.neutral[200] }}
                 >
-                  <View
-                    className="w-8 h-8 rounded-full items-center justify-center"
-                    style={{ backgroundColor: complete ? colors.success : timerStarted && !done ? colors.gold[100] : colors.neutral[100] }}
-                  >
-                    {complete ? (
-                      <Check size={18} color="white" />
-                    ) : timerStarted && !done ? (
-                      <Timer size={16} color={colors.gold[600]} />
-                    ) : (
-                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500] }} className="text-sm">{i + 1}</Text>
-                    )}
+                  <View className="w-8 h-8 rounded-full items-center justify-center"
+                    style={{ backgroundColor: complete ? colors.success : hasStudied ? colors.gold[100] : colors.neutral[100] }}>
+                    {complete ? <Check size={18} color="white" /> : hasStudied
+                      ? <Timer size={15} color={colors.gold[600]} />
+                      : <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500] }} className="text-sm">{i + 1}</Text>
+                    }
                   </View>
                   <View className="flex-1 ml-3">
                     <Text style={{ fontFamily: 'DMSans_500Medium', color: complete ? colors.success : colors.neutral[700] }} className="text-base">
                       Lesson {i + 1}
                     </Text>
-                    <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: complete ? colors.success : timerStarted && !done ? colors.gold[600] : colors.neutral[400] }}>
-                      {complete ? 'Completed' : timerStarted && !done ? `${formatCountdown(remaining)} remaining` : 'Tap to view notation & mark complete'}
+                    <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: complete ? colors.success : hasStudied ? colors.gold[700] : colors.neutral[400] }}>
+                      {complete ? 'Completed' : hasStudied
+                        ? `${formatStudyTime(studiedMs)} studied${lessonDone ? ' — ready to complete' : ''}`
+                        : 'Tap to open notation & begin study'}
                     </Text>
                   </View>
                   <ChevronRight size={18} color={complete ? colors.success : colors.neutral[300]} />
@@ -307,16 +287,12 @@ export default function ModuleDetailScreen() {
       {/* Lesson Detail Sheet */}
       {selectedLesson !== null && (
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
-          <Pressable style={{ flex: 1 }} onPress={() => setSelectedLesson(null)} />
-          <Animated.View
-            entering={FadeInUp.duration(300)}
-            style={{ backgroundColor: 'white', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 24, paddingTop: 16, paddingBottom: insets.bottom + 24 }}
-          >
-            {/* Handle */}
+          <Pressable style={{ flex: 1 }} onPress={handleCloseSheet} />
+          <Animated.View entering={FadeInUp.duration(300)}
+            style={{ backgroundColor: 'white', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 24, paddingTop: 16, paddingBottom: insets.bottom + 24 }}>
             <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.neutral[200], alignSelf: 'center', marginBottom: 20 }} />
 
             {isLessonComplete(selectedLesson) ? (
-              /* Already complete */
               <View style={{ alignItems: 'center', paddingVertical: 16 }}>
                 <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: colors.success + '20', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                   <Check size={30} color={colors.success} />
@@ -324,39 +300,30 @@ export default function ModuleDetailScreen() {
                 <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 20, marginBottom: 4 }}>
                   Lesson {selectedLesson + 1} Complete
                 </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, textAlign: 'center' }}>
-                  You have already completed this lesson. You can still review the notation.
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, textAlign: 'center', marginBottom: 8 }}>
+                  {formatStudyTime(getTotalStudyMs(selectedLesson))} of documented participation recorded.
                 </Text>
                 {module.pdfLink && (
-                  <Pressable
-                    onPress={handleViewNotation}
-                    style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 14, borderWidth: 1.5, borderColor: colors.primary[300], backgroundColor: colors.primary[50] }}
-                  >
+                  <Pressable onPress={handleViewNotation}
+                    style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 14, borderWidth: 1.5, borderColor: colors.primary[300], backgroundColor: colors.primary[50] }}>
                     <ExternalLink size={18} color={colors.primary[500]} />
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600], fontSize: 15, marginLeft: 10 }}>
-                      Review Notation PDF
-                    </Text>
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600], fontSize: 15, marginLeft: 10 }}>Review Notation PDF</Text>
                   </Pressable>
                 )}
               </View>
             ) : (
-              /* Not yet complete */
               <>
                 <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 22, marginBottom: 4 }}>
                   Lesson {selectedLesson + 1}
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginBottom: 24, lineHeight: 20 }}>
-                  Study the notation for at least 15 minutes, then mark the lesson complete.
+                  Open the notation PDF to study. A minimum of 15 minutes is required before marking complete — take as long as you need.
                 </Text>
 
                 {/* Step 1 — Open Notation */}
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 20 }}>
-                  <View style={{
-                    width: 28, height: 28, borderRadius: 14,
-                    backgroundColor: notationOpened ? colors.success : colors.primary[500],
-                    alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 12,
-                  }}>
-                    {notationOpened
+                  <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: sessionActive ? colors.success : colors.primary[500], alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 12 }}>
+                    {sessionActive
                       ? <Check size={14} color="white" />
                       : <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>1</Text>
                     }
@@ -366,21 +333,13 @@ export default function ModuleDetailScreen() {
                       Open &amp; study the notation
                     </Text>
                     {module.pdfLink ? (
-                      <Pressable
-                        onPress={handleViewNotation}
-                        style={{
-                          flexDirection: 'row', alignItems: 'center',
-                          paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12,
-                          backgroundColor: notationOpened ? colors.primary[50] : colors.primary[500],
-                          borderWidth: notationOpened ? 1 : 0,
-                          borderColor: colors.primary[200],
-                        }}
-                      >
-                        <FileText size={18} color={notationOpened ? colors.primary[500] : 'white'} />
-                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: notationOpened ? colors.primary[600] : 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
-                          {notationOpened ? 'Reopen Notation PDF' : 'Open Notation PDF'}
+                      <Pressable onPress={handleViewNotation}
+                        style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: sessionActive ? colors.primary[50] : colors.primary[500], borderWidth: sessionActive ? 1 : 0, borderColor: colors.primary[200] }}>
+                        <FileText size={18} color={sessionActive ? colors.primary[500] : 'white'} />
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: sessionActive ? colors.primary[600] : 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
+                          {sessionActive ? 'Reopen Notation PDF' : 'Open Notation PDF'}
                         </Text>
-                        <ExternalLink size={14} color={notationOpened ? colors.primary[400] : 'rgba(255,255,255,0.7)'} />
+                        <ExternalLink size={14} color={sessionActive ? colors.primary[400] : 'rgba(255,255,255,0.7)'} />
                       </Pressable>
                     ) : (
                       <View style={{ paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: colors.neutral[100] }}>
@@ -390,22 +349,27 @@ export default function ModuleDetailScreen() {
                   </View>
                 </View>
 
-                {/* Study Timer (shown after opening notation) */}
-                {notationOpened && (
-                  <View style={{ marginBottom: 20, padding: 16, borderRadius: 16, backgroundColor: timerDone ? colors.success + '12' : colors.gold[50], borderWidth: 1, borderColor: timerDone ? colors.success + '40' : colors.gold[200] }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-                      <Timer size={16} color={timerDone ? colors.success : colors.gold[600]} />
-                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerDone ? colors.success : colors.gold[700], fontSize: 14, marginLeft: 8 }}>
-                        {timerDone ? 'Minimum study time reached' : `Study time: ${formatCountdown(timeRemainingMs)} remaining`}
+                {/* Study time tracker (shown once PDF opened) */}
+                {sessionActive && (
+                  <View style={{ marginBottom: 20, padding: 16, borderRadius: 16, backgroundColor: timerReached ? colors.success + '10' : colors.gold[50], borderWidth: 1, borderColor: timerReached ? colors.success + '40' : colors.gold[200] }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Timer size={15} color={timerReached ? colors.success : colors.gold[600]} />
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerReached ? colors.success : colors.gold[700], fontSize: 14, marginLeft: 8 }}>
+                          {timerReached ? 'Participation documented' : 'Documenting participation'}
+                        </Text>
+                      </View>
+                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: timerReached ? colors.success : colors.gold[700], fontSize: 15 }}>
+                        {formatStudyTime(studyMs)}
                       </Text>
                     </View>
-                    {/* Progress track */}
-                    <View style={{ height: 6, borderRadius: 3, backgroundColor: timerDone ? colors.success + '30' : colors.gold[200], overflow: 'hidden' }}>
-                      <Animated.View style={[{ height: '100%', borderRadius: 3, backgroundColor: timerDone ? colors.success : colors.gold[500] }, progressStyle]} />
+                    {/* Progress bar toward 15 min */}
+                    <View style={{ height: 6, borderRadius: 3, backgroundColor: timerReached ? colors.success + '30' : colors.gold[200], overflow: 'hidden' }}>
+                      <View style={{ height: '100%', borderRadius: 3, backgroundColor: timerReached ? colors.success : colors.gold[500], width: `${studyProgress * 100}%` }} />
                     </View>
-                    {!timerDone && (
+                    {!timerReached && (
                       <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[600], fontSize: 12, marginTop: 8 }}>
-                        Keep the notation open to study. The timer tracks your engagement.
+                        {formatStudyTime(MIN_STUDY_MS - studyMs)} more to unlock completion
                       </Text>
                     )}
                   </View>
@@ -413,11 +377,7 @@ export default function ModuleDetailScreen() {
 
                 {/* Step 2 — Mark Complete */}
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                  <View style={{
-                    width: 28, height: 28, borderRadius: 14,
-                    backgroundColor: canMarkComplete ? colors.primary[500] : colors.neutral[200],
-                    alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 12,
-                  }}>
+                  <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: canMarkComplete ? colors.primary[500] : colors.neutral[200], alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 12 }}>
                     {canMarkComplete
                       ? <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13 }}>2</Text>
                       : <Lock size={12} color={colors.neutral[400]} />
@@ -425,14 +385,13 @@ export default function ModuleDetailScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: 'DMSans_600SemiBold', color: canMarkComplete ? colors.neutral[700] : colors.neutral[400], fontSize: 15, marginBottom: 8 }}>
-                      Mark as complete
+                      Record lesson completion
                     </Text>
                     <Pressable
                       onPress={canMarkComplete ? handleMarkComplete : undefined}
-                      style={{ paddingVertical: 15, borderRadius: 12, alignItems: 'center', backgroundColor: canMarkComplete ? colors.success : colors.neutral[100] }}
-                    >
+                      style={{ paddingVertical: 15, borderRadius: 12, alignItems: 'center', backgroundColor: canMarkComplete ? colors.success : colors.neutral[100] }}>
                       <Text style={{ fontFamily: 'DMSans_600SemiBold', color: canMarkComplete ? 'white' : colors.neutral[400], fontSize: 16 }}>
-                        {canMarkComplete ? 'Mark Lesson Complete ✓' : notationOpened ? `Wait ${formatCountdown(timeRemainingMs)}` : 'Open notation first'}
+                        {canMarkComplete ? 'Mark Lesson Complete ✓' : sessionActive ? `${formatStudyTime(MIN_STUDY_MS - studyMs)} remaining` : 'Open notation to begin'}
                       </Text>
                     </Pressable>
                   </View>
@@ -447,11 +406,7 @@ export default function ModuleDetailScreen() {
       {showNotes && (
         <View className="absolute inset-0 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <Pressable className="flex-1" onPress={() => setShowNotes(false)} />
-          <Animated.View
-            entering={FadeInUp.duration(300)}
-            className="rounded-t-3xl p-6"
-            style={{ backgroundColor: 'white', paddingBottom: insets.bottom + 24 }}
-          >
+          <Animated.View entering={FadeInUp.duration(300)} className="rounded-t-3xl p-6" style={{ backgroundColor: 'white', paddingBottom: insets.bottom + 24 }}>
             <View className="flex-row items-center justify-between mb-4">
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }} className="text-xl">Notes</Text>
               <Pressable onPress={handleSaveNote}>
