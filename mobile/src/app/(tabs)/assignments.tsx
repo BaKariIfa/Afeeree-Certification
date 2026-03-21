@@ -489,8 +489,11 @@ export default function AssignmentsScreen() {
                     className="mt-4 p-4 rounded-xl"
                     style={{ backgroundColor: colors.success + '15', borderWidth: 1, borderColor: colors.success + '30' }}
                   >
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.success }} className="text-sm mb-2">
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.success }} className="text-sm mb-1">
                       Jeli Feedback
+                    </Text>
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.success, fontSize: 10, fontStyle: 'italic', marginBottom: 8, opacity: 0.8 }}>
+                      A respected transmitter of history, culture, and embodied wisdom
                     </Text>
                     <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700] }} className="text-base leading-6">
                       {selectedAssignment.feedback}

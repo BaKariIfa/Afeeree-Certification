@@ -1020,7 +1020,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                   {selectedConvName}
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>
-                  Participant
+                  Kalanden
                 </Text>
               </View>
             </View>

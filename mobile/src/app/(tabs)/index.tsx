@@ -294,6 +294,9 @@ export default function HomeScreen() {
             >
               {userName || 'Kalanden'}
             </Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 3 }}>
+              One who studies, absorbs, and prepares to carry forward tradition
+            </Text>
           </View>
         </Animated.View>
 
