@@ -15,7 +15,10 @@ import {
   Camera,
   File,
   ArrowLeft,
-  CheckCircle
+  CheckCircle,
+  Trash2,
+  Link,
+  MessageSquare,
 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -39,6 +42,16 @@ const triggerHaptic = () => {
 
 const statusFilters = ['All', 'Pending', 'Submitted', 'Graded'] as const;
 
+interface MySubmission {
+  id: string;
+  assignmentTitle: string;
+  type: 'video' | 'file' | 'reflection';
+  fileUrl?: string;
+  fileName?: string;
+  reflection?: string;
+  submittedAt: string;
+}
+
 export default function AssignmentsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -50,6 +63,12 @@ export default function AssignmentsScreen() {
   const [submitted, setSubmitted] = useState(false);
   const [reflectionText, setReflectionText] = useState('');
   const [showReflectionInput, setShowReflectionInput] = useState(false);
+
+  // My submissions state
+  const [mySubmissions, setMySubmissions] = useState<MySubmission[]>([]);
+  const [loadingMySubmissions, setLoadingMySubmissions] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const isDemoMode = useUserStore(s => s.isDemoMode);
   const accessCode = useUserStore(s => s.accessCode);
@@ -76,6 +95,7 @@ export default function AssignmentsScreen() {
       setSubmitted(true);
       setShowSubmitModal(false);
       setShowReflectionInput(false);
+      if (selectedAssignment) fetchMySubmissions(selectedAssignment.title);
       setTimeout(() => { setSubmitted(false); setSelectedAssignment(null); }, 2500);
     } catch (e) {
       console.error('[assignments submitToBackend]', e);
@@ -85,8 +105,35 @@ export default function AssignmentsScreen() {
     }
   };
 
+  const fetchMySubmissions = async (assignmentTitle: string) => {
+    if (!accessCode) return;
+    setLoadingMySubmissions(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/submissions/my/${accessCode}`);
+      const data = await res.json() as { submissions: MySubmission[] };
+      setMySubmissions(data.submissions.filter(s => s.assignmentTitle === assignmentTitle));
+    } catch (e) {
+      console.error('[fetchMySubmissions]', e);
+    } finally {
+      setLoadingMySubmissions(false);
+    }
+  };
+
+  const deleteSubmission = async (id: string) => {
+    setDeletingId(id);
+    try {
+      await fetch(`${BACKEND_URL}/api/submissions/${id}`, { method: 'DELETE' });
+      setMySubmissions(prev => prev.filter(s => s.id !== id));
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      console.error('[deleteSubmission]', e);
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
+  };
+
   const handleRecordVideo = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Camera permission required'); return; }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'], videoMaxDuration: 120, quality: 0.7 });
     if (result.canceled || !result.assets[0]) return;
@@ -182,6 +229,11 @@ export default function AssignmentsScreen() {
   const handleAssignmentPress = (assignment: Assignment) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedAssignment(assignment);
+    setMySubmissions([]);
+    setConfirmDeleteId(null);
+    if (!isDemoMode) {
+      fetchMySubmissions(assignment.title);
+    }
   };
 
   const handleSubmitPress = () => {
@@ -438,6 +490,117 @@ export default function AssignmentsScreen() {
                     <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700] }} className="text-base leading-6">
                       {selectedAssignment.feedback}
                     </Text>
+                  </View>
+                )}
+                {/* My Submissions */}
+                {!isDemoMode && (
+                  <View className="mt-6 mb-2">
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase mb-3">
+                      Your Submissions
+                    </Text>
+
+                    {loadingMySubmissions ? (
+                      <ActivityIndicator size="small" color={colors.primary[400]} />
+                    ) : mySubmissions.length === 0 ? (
+                      <View
+                        className="p-4 rounded-xl items-center"
+                        style={{ backgroundColor: colors.neutral[50], borderWidth: 1, borderColor: colors.neutral[200] }}
+                      >
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14 }}>
+                          No submissions yet
+                        </Text>
+                      </View>
+                    ) : (
+                      mySubmissions.map((sub) => (
+                        <View
+                          key={sub.id}
+                          className="mb-3 p-4 rounded-xl"
+                          style={{ backgroundColor: 'white', borderWidth: 1, borderColor: colors.neutral[200] }}
+                        >
+                          {/* Type badge */}
+                          <View className="flex-row items-center justify-between mb-2">
+                            <View
+                              className="px-2 py-1 rounded-full flex-row items-center"
+                              style={{
+                                backgroundColor: sub.type === 'video' ? colors.primary[100] : sub.type === 'file' ? colors.gold[100] : colors.neutral[100]
+                              }}
+                            >
+                              {sub.type === 'video' && <Video size={13} color={colors.primary[500]} />}
+                              {sub.type === 'file' && <File size={13} color={colors.gold[600]} />}
+                              {sub.type === 'reflection' && <MessageSquare size={13} color={colors.neutral[600]} />}
+                              <Text
+                                style={{
+                                  fontFamily: 'DMSans_600SemiBold',
+                                  fontSize: 11,
+                                  marginLeft: 4,
+                                  color: sub.type === 'video' ? colors.primary[600] : sub.type === 'file' ? colors.gold[700] : colors.neutral[600],
+                                }}
+                              >
+                                {sub.type === 'video' ? 'Video' : sub.type === 'file' ? 'File' : 'Reflection'}
+                              </Text>
+                            </View>
+
+                            {/* Delete */}
+                            {confirmDeleteId === sub.id ? (
+                              <View className="flex-row items-center" style={{ gap: 8 }}>
+                                <Pressable
+                                  onPress={() => setConfirmDeleteId(null)}
+                                  className="px-3 py-1 rounded-full"
+                                  style={{ backgroundColor: colors.neutral[100] }}
+                                >
+                                  <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[600], fontSize: 12 }}>Cancel</Text>
+                                </Pressable>
+                                <Pressable
+                                  onPress={() => deleteSubmission(sub.id)}
+                                  className="px-3 py-1 rounded-full flex-row items-center"
+                                  style={{ backgroundColor: colors.error + '18' }}
+                                >
+                                  {deletingId === sub.id ? (
+                                    <ActivityIndicator size="small" color={colors.error} />
+                                  ) : (
+                                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.error, fontSize: 12 }}>Delete</Text>
+                                  )}
+                                </Pressable>
+                              </View>
+                            ) : (
+                              <Pressable
+                                onPress={() => { triggerHaptic(); setConfirmDeleteId(sub.id); }}
+                                className="p-1.5 rounded-full"
+                                style={{ backgroundColor: colors.neutral[100] }}
+                              >
+                                <Trash2 size={15} color={colors.neutral[500]} />
+                              </Pressable>
+                            )}
+                          </View>
+
+                          {/* Content */}
+                          {sub.reflection ? (
+                            <Text
+                              style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], fontSize: 14, lineHeight: 20 }}
+                              numberOfLines={3}
+                            >
+                              {sub.reflection}
+                            </Text>
+                          ) : sub.fileName ? (
+                            <View className="flex-row items-center">
+                              <Link size={13} color={colors.neutral[400]} />
+                              <Text
+                                style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginLeft: 4 }}
+                                numberOfLines={1}
+                              >
+                                {sub.fileName}
+                              </Text>
+                            </View>
+                          ) : null}
+
+                          {confirmDeleteId === sub.id && (
+                            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.error, fontSize: 12, marginTop: 8 }}>
+                              Are you sure you want to delete this submission?
+                            </Text>
+                          )}
+                        </View>
+                      ))
+                    )}
                   </View>
                 )}
               </Animated.View>
