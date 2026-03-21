@@ -8,7 +8,15 @@
       "participantName": "GUEST",
       "question": "How long did it take you to complete the physical language?",
       "postedAt": "2026-03-21T15:26:43.508Z",
-      "replies": []
+      "replies": [
+        {
+          "id": "caf890a0-2d08-4572-9d21-0e02188d0ff3",
+          "authorName": "Instructor",
+          "isAdmin": true,
+          "text": "Approximately 30 years and it is still growing",
+          "postedAt": "2026-03-21T15:34:39.724Z"
+        }
+      ]
     }
   ]
 }
