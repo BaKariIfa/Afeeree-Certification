@@ -442,7 +442,9 @@ export default function ModuleDetailScreen() {
                   <Pressable onPress={() => handleViewNotation(selectedLesson)}
                     style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, paddingVertical: 14, paddingHorizontal: 24, borderRadius: 14, borderWidth: 1.5, borderColor: colors.primary[300], backgroundColor: colors.primary[50] }}>
                     <ExternalLink size={18} color={colors.primary[500]} />
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600], fontSize: 15, marginLeft: 10 }}>Review Notation PDF</Text>
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600], fontSize: 15, marginLeft: 10 }}>
+                      {module.isHistoryModule ? 'Review History & Context' : 'Review Notation PDF'}
+                    </Text>
                   </Pressable>
                 )}
               </View>
@@ -452,7 +454,9 @@ export default function ModuleDetailScreen() {
                   {module.lessonPages?.[selectedLesson]?.title ?? `Lesson ${selectedLesson + 1}`}
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginBottom: 24, lineHeight: 20 }}>
-                  Open the notation PDF to study. A minimum of 15 minutes is required before marking complete — take as long as you need.
+                  {module.isHistoryModule
+                    ? 'Open the readings to study. A minimum of 15 minutes is required before marking complete — take as long as you need.'
+                    : 'Open the notation PDF to study. A minimum of 15 minutes is required before marking complete — take as long as you need.'}
                 </Text>
 
                 {/* Step 1 — Open Notation */}
@@ -465,14 +469,16 @@ export default function ModuleDetailScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 15, marginBottom: 8 }}>
-                      Study the notation
+                      {module.isHistoryModule ? 'Study the readings' : 'Study the notation'}
                     </Text>
                     {(module.pdfLink || (module.isHistoryModule && historyPdfUrl)) ? (
                       <Pressable onPress={() => handleViewNotation(selectedLesson)}
                         style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 13, paddingHorizontal: 16, borderRadius: 12, backgroundColor: pdfViewed ? colors.primary[50] : colors.primary[500], borderWidth: pdfViewed ? 1 : 0, borderColor: colors.primary[200], marginBottom: module.videoUrl ? 10 : 0 }}>
                         <FileText size={18} color={pdfViewed ? colors.primary[500] : 'white'} />
                         <Text style={{ fontFamily: 'DMSans_600SemiBold', color: pdfViewed ? colors.primary[600] : 'white', fontSize: 15, marginLeft: 10, flex: 1 }}>
-                          {pdfViewed ? 'Reopen Notation PDF' : 'Open Notation PDF'}
+                          {pdfViewed
+                            ? (module.isHistoryModule ? 'Reopen History & Context' : 'Reopen Notation PDF')
+                            : (module.isHistoryModule ? 'Open History & Context' : 'Open Notation PDF')}
                         </Text>
                         <ExternalLink size={14} color={pdfViewed ? colors.primary[400] : 'rgba(255,255,255,0.7)'} />
                       </Pressable>
