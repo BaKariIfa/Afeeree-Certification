@@ -16,6 +16,7 @@ import {
   Lock, Plus, Trash2, Copy, Check, ArrowLeft, FileText,
   Upload, CheckCircle, MessageCircle, Send, User, ChevronRight,
   ShieldCheck, Key, Users, Share2, Video, Inbox, ExternalLink,
+  BarChart2, Clock, BookOpen, MessageSquare,
 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -29,6 +30,7 @@ import { useAccessCodeStore, ADMIN_PASSWORD } from '@/lib/accessCodeStore';
 import { useNotationStore } from '@/lib/notationStore';
 import { uploadFile } from '@/lib/upload';
 import { colors } from '@/lib/theme';
+import { mockModules } from '@/lib/mockData';
 import { NotificationToast, type ToastData } from '@/components/NotificationToast';
 import { VoiceNoteRecorder } from '@/components/VoiceNoteRecorder';
 import { AudioMessage } from '@/components/AudioMessage';
@@ -49,7 +51,26 @@ interface BackendMessage {
   mediaType?: 'audio' | 'video';
 }
 
-type AdminView = 'dashboard' | 'messages' | 'conversation' | 'submissions';
+type AdminView = 'dashboard' | 'messages' | 'conversation' | 'submissions' | 'participants' | 'participant-detail';
+
+interface ParticipantProgress {
+  code: string;
+  name: string;
+  email: string;
+  completedLessons: string[];
+  lessonStudyTime: Record<string, number>;
+  lastSyncedAt: string;
+}
+
+interface FeedbackEntry {
+  id: string;
+  participantCode: string;
+  moduleId?: string;
+  message: string;
+  instructorName: string;
+  createdAt: string;
+  readByParticipant: boolean;
+}
 
 interface Submission {
   id: string;
@@ -93,6 +114,15 @@ export default function AdminScreen() {
   // Submissions state
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
+
+  // Participants progress state
+  const [progressList, setProgressList] = useState<ParticipantProgress[]>([]);
+  const [isLoadingProgress, setIsLoadingProgress] = useState(false);
+  const [selectedParticipant, setSelectedParticipant] = useState<ParticipantProgress | null>(null);
+  const [participantFeedback, setParticipantFeedback] = useState<FeedbackEntry[]>([]);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackModuleId, setFeedbackModuleId] = useState<string | undefined>(undefined);
+  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
 
   const { codes, loadCodes, generateCode, deleteCode, isAdmin, setAdmin } = useAccessCodeStore();
   const notationPdfUrl = useNotationStore(s => s.notationPdfUrl);
@@ -205,6 +235,59 @@ export default function AdminScreen() {
       }
     } catch {} finally {
       setIsSending(false);
+    }
+  };
+
+  const fetchProgress = async () => {
+    setIsLoadingProgress(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/progress/all`, {
+        headers: { 'x-admin-password': ADMIN_PASSWORD },
+      });
+      if (res.ok) {
+        const data = await res.json() as { participants: ParticipantProgress[] };
+        setProgressList(data.participants);
+      }
+    } catch {} finally {
+      setIsLoadingProgress(false);
+    }
+  };
+
+  const fetchParticipantFeedback = async (code: string) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/progress/feedback/${code}`, {
+        headers: { 'x-admin-password': ADMIN_PASSWORD },
+      });
+      if (res.ok) {
+        const data = await res.json() as { feedback: FeedbackEntry[] };
+        setParticipantFeedback(data.feedback);
+      }
+    } catch {}
+  };
+
+  const handleSendFeedback = async () => {
+    if (!feedbackText.trim() || !selectedParticipant) return;
+    setIsSendingFeedback(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/progress/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': ADMIN_PASSWORD },
+        body: JSON.stringify({
+          participantCode: selectedParticipant.code,
+          moduleId: feedbackModuleId,
+          message: feedbackText.trim(),
+          instructorName: 'BaKari Lindsay',
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { feedback: FeedbackEntry };
+        setParticipantFeedback(prev => [data.feedback, ...prev]);
+        setFeedbackText('');
+        setFeedbackModuleId(undefined);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch {} finally {
+      setIsSendingFeedback(false);
     }
   };
 
@@ -498,6 +581,255 @@ export default function AdminScreen() {
                 </Animated.View>
               );
             })
+          )}
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ── Participants List ──
+  if (adminView === 'participants') {
+    const totalModuleLessons = mockModules.reduce((s, m) => s + m.lessons, 0);
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <View style={{ paddingTop: insets.top + 16, paddingBottom: 20, paddingHorizontal: 24, backgroundColor: colors.primary[500] }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={() => setAdminView('dashboard')} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
+              <ArrowLeft size={24} color="white" />
+            </Pressable>
+            <View>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Participant Progress</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 1 }}>
+                {progressList.length} participant{progressList.length !== 1 ? 's' : ''} tracked
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+          {isLoadingProgress ? (
+            <View style={{ alignItems: 'center', paddingTop: 80 }}>
+              <ActivityIndicator size="large" color={colors.primary[500]} />
+            </View>
+          ) : progressList.length === 0 ? (
+            <Animated.View entering={FadeInUp.duration(500)} style={{ alignItems: 'center', paddingTop: 80 }}>
+              <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.neutral[100], alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <BarChart2 size={40} color={colors.neutral[300]} />
+              </View>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 17 }}>No progress synced yet</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 6, textAlign: 'center', lineHeight: 20 }}>
+                Progress will appear here once participants complete their first lesson
+              </Text>
+            </Animated.View>
+          ) : (
+            progressList.map((p, i) => {
+              const totalMs = Object.values(p.lessonStudyTime).reduce((s, v) => s + v, 0);
+              const totalHours = (totalMs / 3600000).toFixed(1);
+              const completedCount = p.completedLessons.length;
+              const pct = Math.round((completedCount / totalModuleLessons) * 100);
+              return (
+                <Animated.View key={p.code} entering={FadeInDown.duration(400).delay(i * 60)}>
+                  <Pressable
+                    onPress={async () => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setSelectedParticipant(p);
+                      setFeedbackText('');
+                      setFeedbackModuleId(undefined);
+                      await fetchParticipantFeedback(p.code);
+                      setAdminView('participant-detail');
+                    }}
+                    style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[600], fontSize: 16 }}>
+                          {p.name.charAt(0).toUpperCase()}
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>{p.name}</Text>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12 }}>{p.email || p.code}</Text>
+                      </View>
+                      <ChevronRight size={18} color={colors.neutral[300]} />
+                    </View>
+                    {/* Progress bar */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                      <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: colors.neutral[100], overflow: 'hidden', marginRight: 10 }}>
+                        <View style={{ height: '100%', borderRadius: 3, backgroundColor: pct === 100 ? colors.success : colors.primary[400], width: `${pct}%` }} />
+                      </View>
+                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 12 }}>{pct}%</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', gap: 16 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <BookOpen size={12} color={colors.neutral[400]} />
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginLeft: 4 }}>
+                          {completedCount}/{totalModuleLessons} lessons
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Clock size={12} color={colors.neutral[400]} />
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginLeft: 4 }}>
+                          {totalHours}h documented
+                        </Text>
+                      </View>
+                    </View>
+                  </Pressable>
+                </Animated.View>
+              );
+            })
+          )}
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ── Participant Detail ──
+  if (adminView === 'participant-detail' && selectedParticipant) {
+    const p = selectedParticipant;
+    const MODULE_REQUIRED_MS = 240 * 60 * 1000;
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <View style={{ paddingTop: insets.top + 16, paddingBottom: 20, paddingHorizontal: 24, backgroundColor: colors.primary[500] }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={() => setAdminView('participants')} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
+              <ArrowLeft size={24} color="white" />
+            </Pressable>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22 }}>{p.name}</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>{p.email || p.code}</Text>
+            </View>
+          </View>
+        </View>
+
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
+          {/* Module Progress */}
+          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 12 }}>
+            Module Progress
+          </Text>
+          {mockModules.map((mod, i) => {
+            const completed = p.completedLessons.filter(l => l.startsWith(`${mod.id}-`)).length;
+            const pct = Math.round((completed / mod.lessons) * 100);
+            const studyMs = Object.entries(p.lessonStudyTime)
+              .filter(([k]) => k.startsWith(`${mod.id}-`))
+              .reduce((s, [, v]) => s + v, 0);
+            const studyPct = Math.min(studyMs / MODULE_REQUIRED_MS * 100, 100);
+            const studyHours = (studyMs / 3600000).toFixed(1);
+            return (
+              <Animated.View key={mod.id} entering={FadeInDown.duration(300).delay(i * 40)}>
+                <Pressable
+                  onPress={() => setFeedbackModuleId(prev => prev === mod.id ? undefined : mod.id)}
+                  style={{ backgroundColor: 'white', borderRadius: 14, padding: 14, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 14 }} numberOfLines={1}>{mod.title}</Text>
+                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 1 }}>
+                        {completed}/{mod.lessons} lessons · {studyHours}h / 4h participation
+                      </Text>
+                    </View>
+                    <View style={{ alignItems: 'flex-end', marginLeft: 8 }}>
+                      <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: pct === 100 ? colors.success : colors.neutral[600] }}>{pct}%</Text>
+                    </View>
+                  </View>
+                  {/* Lesson completion bar */}
+                  <View style={{ height: 4, borderRadius: 2, backgroundColor: colors.neutral[100], overflow: 'hidden', marginBottom: 4 }}>
+                    <View style={{ height: '100%', borderRadius: 2, backgroundColor: pct === 100 ? colors.success : colors.primary[400], width: `${pct}%` }} />
+                  </View>
+                  {/* Study time bar */}
+                  <View style={{ height: 4, borderRadius: 2, backgroundColor: colors.neutral[100], overflow: 'hidden' }}>
+                    <View style={{ height: '100%', borderRadius: 2, backgroundColor: studyPct >= 100 ? colors.success : colors.gold[400], width: `${studyPct}%` }} />
+                  </View>
+                  {feedbackModuleId === mod.id && (
+                    <View style={{ marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.neutral[100] }}>
+                      <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500], fontSize: 12 }}>
+                        Feedback will be tagged to this module
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
+              </Animated.View>
+            );
+          })}
+
+          {/* Feedback Section */}
+          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 8, marginBottom: 12 }}>
+            Instructor Feedback
+          </Text>
+
+          {/* Compose feedback */}
+          <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
+            {feedbackModuleId && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primary[50], borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, marginBottom: 10 }}>
+                <BookOpen size={12} color={colors.primary[500]} />
+                <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[600], fontSize: 12, marginLeft: 6, flex: 1 }}>
+                  {mockModules.find(m => m.id === feedbackModuleId)?.title}
+                </Text>
+                <Pressable onPress={() => setFeedbackModuleId(undefined)}>
+                  <Text style={{ color: colors.neutral[400], fontSize: 14 }}>×</Text>
+                </Pressable>
+              </View>
+            )}
+            <TextInput
+              value={feedbackText}
+              onChangeText={setFeedbackText}
+              placeholder={`Write feedback for ${p.name}...`}
+              placeholderTextColor={colors.neutral[400]}
+              multiline
+              style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[800], fontSize: 14, minHeight: 80, textAlignVertical: 'top', marginBottom: 12 }}
+            />
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginBottom: 10 }}>
+              Tap a module above to attach feedback to a specific module
+            </Text>
+            <Pressable
+              onPress={handleSendFeedback}
+              disabled={!feedbackText.trim() || isSendingFeedback}
+              style={{ backgroundColor: feedbackText.trim() ? colors.primary[500] : colors.neutral[200], borderRadius: 12, paddingVertical: 13, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+            >
+              {isSendingFeedback
+                ? <ActivityIndicator size="small" color="white" />
+                : <>
+                    <Send size={15} color={feedbackText.trim() ? 'white' : colors.neutral[400]} />
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: feedbackText.trim() ? 'white' : colors.neutral[400], fontSize: 15, marginLeft: 8 }}>
+                      Send Feedback
+                    </Text>
+                  </>
+              }
+            </Pressable>
+          </View>
+
+          {/* Past feedback */}
+          {participantFeedback.length > 0 && (
+            <>
+              <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 12, marginBottom: 10 }}>
+                Previous feedback ({participantFeedback.length})
+              </Text>
+              {participantFeedback.map((fb, i) => {
+                const mod = fb.moduleId ? mockModules.find(m => m.id === fb.moduleId) : null;
+                return (
+                  <Animated.View key={fb.id} entering={FadeInDown.duration(300).delay(i * 50)}>
+                    <View style={{ backgroundColor: 'white', borderRadius: 14, padding: 14, marginBottom: 10, borderLeftWidth: 3, borderLeftColor: fb.readByParticipant ? colors.neutral[200] : colors.primary[400] }}>
+                      {mod && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                          <BookOpen size={11} color={colors.primary[400]} />
+                          <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500], fontSize: 11, marginLeft: 4 }}>{mod.title}</Text>
+                        </View>
+                      )}
+                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700], fontSize: 14, lineHeight: 20 }}>{fb.message}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11 }}>
+                          {formatDate(fb.createdAt)} · {formatTime(fb.createdAt)}
+                        </Text>
+                        {!fb.readByParticipant && (
+                          <View style={{ marginLeft: 8, backgroundColor: colors.primary[100], paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                            <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500], fontSize: 10 }}>Unread</Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  </Animated.View>
+                );
+              })}
+            </>
           )}
         </ScrollView>
       </View>
@@ -878,30 +1210,35 @@ export default function AdminScreen() {
         <Animated.View entering={FadeInDown.duration(400).delay(90)}>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); fetchSubmissions(); setAdminView('submissions'); }}
-            style={{
-              backgroundColor: 'white',
-              borderRadius: 16,
-              padding: 16,
-              marginBottom: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
-              shadowRadius: 8,
-              elevation: 2,
-            }}
+            style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}
           >
             <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.gold[100], alignItems: 'center', justifyContent: 'center' }}>
               <Inbox size={24} color={colors.gold[600]} />
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Submissions</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>
-                View files, videos & reflections
-              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>View files, videos & reflections</Text>
             </View>
             <ChevronRight size={20} color={colors.neutral[300]} />
+          </Pressable>
+        </Animated.View>
+
+        {/* Participant Progress Card */}
+        <Animated.View entering={FadeInDown.duration(400).delay(110)}>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); fetchProgress(); setAdminView('participants'); }}
+            style={{ backgroundColor: colors.primary[500], borderRadius: 16, padding: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', shadowColor: colors.primary[500], shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 4 }}
+          >
+            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' }}>
+              <BarChart2 size={24} color="white" />
+            </View>
+            <View style={{ flex: 1, marginLeft: 14 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>Participant Progress</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>
+                Track modules, time & offer feedback
+              </Text>
+            </View>
+            <ChevronRight size={20} color="rgba(255,255,255,0.6)" />
           </Pressable>
         </Animated.View>
 

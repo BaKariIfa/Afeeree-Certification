@@ -30,6 +30,7 @@ interface UserState {
   toggleDarkMode: () => void;
   incrementCompletedTasks: () => void;
   addLessonStudyTime: (key: string, ms: number) => void;
+  syncProgress: () => Promise<void>;
   loadUserData: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -123,6 +124,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       moduleProgress[moduleId] = moduleLessons;
       set({ moduleProgress });
       AsyncStorage.setItem('moduleProgress', JSON.stringify(moduleProgress));
+      get().syncProgress();
     }
   },
 
@@ -155,6 +157,20 @@ export const useUserStore = create<UserState>((set, get) => ({
     const updated = { ...current, [key]: (current[key] ?? 0) + ms };
     set({ lessonStudyTime: updated });
     AsyncStorage.setItem('lessonStudyTime', JSON.stringify(updated));
+    get().syncProgress();
+  },
+
+  syncProgress: async () => {
+    try {
+      const { name, email, accessCode, completedLessons, lessonStudyTime } = get();
+      if (!accessCode) return;
+      const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
+      await fetch(`${backendUrl}/api/progress/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: accessCode, name, email, completedLessons, lessonStudyTime }),
+      });
+    } catch {}
   },
 
   loadUserData: async () => {
