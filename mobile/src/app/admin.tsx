@@ -16,7 +16,7 @@ import {
   Lock, Plus, Trash2, Copy, Check, ArrowLeft, FileText,
   Upload, CheckCircle, MessageCircle, Send, User, ChevronRight,
   ShieldCheck, Key, Users, Share2, Video, Inbox, ExternalLink,
-  BarChart2, Clock, BookOpen, MessageSquare,
+  BarChart2, Clock, BookOpen, Play,
 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -623,8 +623,14 @@ export default function AdminScreen() {
             </Animated.View>
           ) : (
             progressList.map((p, i) => {
-              const totalMs = Object.values(p.lessonStudyTime).reduce((s, v) => s + v, 0);
-              const totalHours = (totalMs / 3600000).toFixed(1);
+              const notationMs = Object.entries(p.lessonStudyTime)
+                .filter(([k]) => !k.endsWith('-video'))
+                .reduce((s, [, v]) => s + v, 0);
+              const videoMs = Object.entries(p.lessonStudyTime)
+                .filter(([k]) => k.endsWith('-video'))
+                .reduce((s, [, v]) => s + v, 0);
+              const notationHours = (notationMs / 3600000).toFixed(1);
+              const videoHours = (videoMs / 3600000).toFixed(1);
               const completedCount = p.completedLessons.length;
               const pct = Math.round((completedCount / totalModuleLessons) * 100);
               return (
@@ -652,25 +658,35 @@ export default function AdminScreen() {
                       </View>
                       <ChevronRight size={18} color={colors.neutral[300]} />
                     </View>
-                    {/* Progress bar */}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                    {/* Lesson progress bar */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
                       <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: colors.neutral[100], overflow: 'hidden', marginRight: 10 }}>
                         <View style={{ height: '100%', borderRadius: 3, backgroundColor: pct === 100 ? colors.success : colors.primary[400], width: `${pct}%` }} />
                       </View>
                       <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 12 }}>{pct}%</Text>
                     </View>
-                    <View style={{ flexDirection: 'row', gap: 16 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <BookOpen size={12} color={colors.neutral[400]} />
-                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginLeft: 4 }}>
-                          {completedCount}/{totalModuleLessons} lessons
-                        </Text>
+                    {/* Notation + Video breakdown */}
+                    <View style={{ flexDirection: 'row', gap: 12 }}>
+                      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.gold[50], borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
+                        <FileText size={12} color={colors.gold[600]} />
+                        <View style={{ marginLeft: 6 }}>
+                          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.gold[700], fontSize: 13 }}>{notationHours}h</Text>
+                          <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[600], fontSize: 10 }}>Notation</Text>
+                        </View>
                       </View>
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Clock size={12} color={colors.neutral[400]} />
-                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginLeft: 4 }}>
-                          {totalHours}h documented
-                        </Text>
+                      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#EEF2FF', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
+                        <Play size={12} color="#6366F1" />
+                        <View style={{ marginLeft: 6 }}>
+                          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: '#4F46E5', fontSize: 13 }}>{videoHours}h</Text>
+                          <Text style={{ fontFamily: 'DMSans_400Regular', color: '#6366F1', fontSize: 10 }}>Video</Text>
+                        </View>
+                      </View>
+                      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.neutral[50], borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 }}>
+                        <BookOpen size={12} color={colors.neutral[500]} />
+                        <View style={{ marginLeft: 6 }}>
+                          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 13 }}>{completedCount}</Text>
+                          <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 10 }}>Lessons</Text>
+                        </View>
                       </View>
                     </View>
                   </Pressable>
@@ -761,7 +777,7 @@ export default function AdminScreen() {
 
                   {/* Video watch bar */}
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <MessageSquare size={10} color={colors.neutral[400]} style={{ marginRight: 5 }} />
+                    <Play size={10} color={colors.neutral[400]} style={{ marginRight: 5 }} />
                     <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, width: 56 }}>Video</Text>
                     <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.neutral[100], overflow: 'hidden', marginRight: 6 }}>
                       <View style={{ height: '100%', borderRadius: 2, backgroundColor: videoPct >= 100 ? colors.success : '#6366F1', width: `${videoPct}%` }} />
