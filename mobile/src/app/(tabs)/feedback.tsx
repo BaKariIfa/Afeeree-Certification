@@ -2,12 +2,13 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Send, User, MessageCircle, ChevronRight, Lock, LogOut, Video } from 'lucide-react-native';
+import { ArrowLeft, Send, User, MessageCircle, ChevronRight, Lock, LogOut, Video, Inbox, ExternalLink, Copy } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
+import * as Clipboard from 'expo-clipboard';
 
 import { colors } from '@/lib/theme';
 import { useAccessCodeStore, ADMIN_PASSWORD } from '@/lib/accessCodeStore';
@@ -37,6 +38,18 @@ interface BackendMessage {
   mediaType?: 'audio' | 'video';
 }
 
+interface Submission {
+  id: string;
+  participantCode: string;
+  participantName: string;
+  assignmentTitle: string;
+  type: 'video' | 'file' | 'reflection';
+  fileUrl?: string;
+  fileName?: string;
+  reflection?: string;
+  submittedAt: string;
+}
+
 export default function FeedbackScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -60,6 +73,9 @@ export default function FeedbackScreen() {
     }));
 
   const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
+  const [instructorView, setInstructorView] = useState<'participants' | 'submissions'>('participants');
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
   const [messages, setMessages] = useState<BackendMessage[]>([]);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [newMessage, setNewMessage] = useState('');
@@ -153,6 +169,18 @@ export default function FeedbackScreen() {
     } catch (e) {}
   }, []);
 
+  const fetchSubmissions = useCallback(async () => {
+    setIsLoadingSubmissions(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/submissions`);
+      if (res.ok) {
+        const data = await res.json() as { submissions: Submission[] };
+        setSubmissions(data.submissions.reverse());
+      }
+    } catch {}
+    finally { setIsLoadingSubmissions(false); }
+  }, []);
+
   useEffect(() => {
     loadCodes();
     fetchUnreadCounts();
@@ -176,6 +204,7 @@ export default function FeedbackScreen() {
   const handleInstructorSignOut = async () => {
     await setAdmin(false);
     setSelectedParticipant(null);
+    setInstructorView('participants');
     setMessages([]);
   };
 
@@ -449,6 +478,94 @@ export default function FeedbackScreen() {
       );
     }
 
+    // Submissions view
+    if (instructorView === 'submissions') {
+      const typeBadge = (type: Submission['type']) => {
+        if (type === 'video') return { label: 'Video', bg: colors.primary[100], color: colors.primary[500] };
+        if (type === 'file') return { label: 'File', bg: colors.gold[100], color: colors.gold[600] };
+        return { label: 'Reflection', bg: 'rgba(16,185,129,0.1)', color: '#10B981' };
+      };
+      return (
+        <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+          <NotificationToast toast={toast} onDismiss={() => setToast(null)} />
+          <View style={{ paddingTop: insets.top + 16, paddingBottom: 20, paddingHorizontal: 24, backgroundColor: colors.primary[500] }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Pressable onPress={() => setInstructorView('participants')} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
+                <ArrowLeft size={24} color="white" />
+              </Pressable>
+              <View>
+                <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Submissions</Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 1 }}>
+                  {submissions.length} submission{submissions.length !== 1 ? 's' : ''}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
+            {isLoadingSubmissions ? (
+              <View style={{ alignItems: 'center', paddingTop: 80 }}>
+                <ActivityIndicator color={colors.primary[500]} size="large" />
+              </View>
+            ) : submissions.length === 0 ? (
+              <Animated.View entering={FadeInUp.duration(500)} style={{ alignItems: 'center', paddingTop: 80 }}>
+                <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.neutral[100], alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <Inbox size={40} color={colors.neutral[300]} />
+                </View>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 17 }}>No submissions yet</Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 6, textAlign: 'center', paddingHorizontal: 24 }}>
+                  Submissions appear here once participants complete their assignments
+                </Text>
+              </Animated.View>
+            ) : (
+              submissions.map((sub, i) => {
+                const badge = typeBadge(sub.type);
+                return (
+                  <Animated.View key={sub.id} entering={FadeInDown.duration(400).delay(i * 60)}>
+                    <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 }}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>{sub.participantName}</Text>
+                          <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginTop: 2 }}>{sub.assignmentTitle}</Text>
+                        </View>
+                        <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: badge.bg, marginLeft: 8 }}>
+                          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: badge.color, fontSize: 11 }}>{badge.label}</Text>
+                        </View>
+                      </View>
+                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginBottom: 8 }}>
+                        {new Date(sub.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                      </Text>
+                      {sub.reflection ? (
+                        <View style={{ backgroundColor: colors.neutral[50], borderRadius: 10, padding: 12, marginBottom: 8 }}>
+                          <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700], fontSize: 14, lineHeight: 20 }}>{sub.reflection}</Text>
+                        </View>
+                      ) : null}
+                      {sub.fileUrl ? (
+                        <Pressable
+                          onPress={async () => {
+                            triggerHaptic();
+                            await Clipboard.setStringAsync(sub.fileUrl!);
+                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                          }}
+                          style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primary[50] ?? colors.primary[100], borderRadius: 10, padding: 12 }}
+                        >
+                          <ExternalLink size={16} color={colors.primary[500]} />
+                          <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500], fontSize: 13, marginLeft: 8, flex: 1 }} numberOfLines={1}>
+                            {sub.fileName ?? 'View submitted file — tap to copy link'}
+                          </Text>
+                          <Copy size={14} color={colors.primary[400]} />
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  </Animated.View>
+                );
+              })
+            )}
+          </ScrollView>
+        </View>
+      );
+    }
+
     // Participants list
     return (
       <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
@@ -480,6 +597,30 @@ export default function FeedbackScreen() {
           </View>
 
           <View style={{ paddingHorizontal: 24 }}>
+            {/* Submissions card */}
+            <Animated.View entering={FadeInDown.duration(400)}>
+              <Pressable
+                onPress={() => { triggerHaptic(); fetchSubmissions(); setInstructorView('submissions'); }}
+                style={{
+                  backgroundColor: colors.gold[50] ?? colors.gold[100],
+                  borderRadius: 16, padding: 16, marginBottom: 20,
+                  flexDirection: 'row', alignItems: 'center',
+                  borderWidth: 1.5, borderColor: colors.gold[200] ?? colors.gold[300],
+                }}
+              >
+                <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.gold[100], alignItems: 'center', justifyContent: 'center' }}>
+                  <Inbox size={24} color={colors.gold[600]} />
+                </View>
+                <View style={{ flex: 1, marginLeft: 14 }}>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Submissions</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>
+                    View files, videos & reflections
+                  </Text>
+                </View>
+                <ChevronRight size={20} color={colors.gold[500]} />
+              </Pressable>
+            </Animated.View>
+
             <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18, marginBottom: 16 }}>
               Participants
             </Text>
