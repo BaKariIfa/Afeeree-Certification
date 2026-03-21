@@ -579,11 +579,6 @@ export default function AdminScreen() {
                       </View>
                     </View>
 
-                    {/* Date */}
-                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginBottom: 8 }}>
-                      Submitted {new Date(sub.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                    </Text>
-
                     {/* Reflection text */}
                     {sub.reflection ? (
                       <View style={{ backgroundColor: colors.neutral[50], borderRadius: 10, padding: 12, marginBottom: 8 }}>

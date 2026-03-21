@@ -208,8 +208,8 @@ export const mockAssignments: Assignment[] = [
   },
   {
     id: 'assign-3',
-    title: 'Teaching Demo — Warm-Up Sequence',
-    description: 'Upload a video of yourself teaching the warm-up sequence to at least one other person. Demonstrate clear verbal cues, proper demonstration, and the ability to correct form in real time.',
+    title: 'Teaching Demo — Physical Language Sequence',
+    description: 'Upload a video of yourself teaching the physical language sequence to at least one other person. Demonstrate clear verbal cues, proper demonstration, and the ability to correct form in real time.',
     moduleId: 'module-3',
     moduleName: 'Teaching Methodology',
     dueDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
