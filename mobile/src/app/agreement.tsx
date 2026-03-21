@@ -31,7 +31,7 @@ const CLAUSES = [
   {
     id: 'participation',
     title: '1. Participation & Consent',
-    body: 'I voluntarily agree to participate in the AFeeree Certification Programme ("the Programme"), a structured course in The Physical Language developed and delivered by AFeeree. I understand that participation is entirely voluntary and that I may withdraw at any time without penalty, subject to the refund terms set out in Clause 9 below.',
+    body: 'I voluntarily agree to participate in the AFeeree Certification Programme ("the Programme"), a structured course in The Physical Language developed and delivered by AFeeree Dance Arts / BaKari IfaSegun Lindsay ("AFeeree"). I understand that participation is entirely voluntary and that I may withdraw at any time without penalty, subject to the refund terms set out in Clause 9 below.',
   },
   {
     id: 'photography',
@@ -41,7 +41,7 @@ const CLAUSES = [
   {
     id: 'data',
     title: '3. Data Protection & Privacy',
-    body: 'AFeeree collects and processes the personal data you provide (including your name, email address, and programme progress) in accordance with applicable data protection legislation, including the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018.\n\nYour data will be used to:\n\u2022 Administer your enrolment and access to the Programme;\n\u2022 Track your progress and issue certification upon completion;\n\u2022 Communicate Programme updates, resources, and information;\n\u2022 Improve our teaching and programme delivery.\n\nYour data will not be sold to third parties. You have the right to access, correct, or request deletion of your personal data by contacting AFeeree directly.',
+    body: 'AFeeree Dance Arts collects and processes the personal data you provide (including your name, email address, and programme progress) in accordance with applicable Canadian privacy legislation, including the Personal Information Protection and Electronic Documents Act (PIPEDA) and applicable provincial privacy laws.\n\nYour data will be used to:\n\u2022 Administer your enrolment and access to the Programme;\n\u2022 Track your progress and issue certification upon completion;\n\u2022 Communicate Programme updates, resources, and information;\n\u2022 Improve our teaching and programme delivery.\n\nYour data will not be sold to third parties. You have the right to access, correct, or request deletion of your personal data by contacting AFeeree Dance Arts directly.',
   },
   {
     id: 'health',
@@ -79,13 +79,18 @@ const CLAUSES = [
     body: "To the fullest extent permitted by law, AFeeree's total liability to you under or in connection with this Agreement shall not exceed the total amount paid by you for the Programme. AFeeree shall not be liable for any indirect, special, or consequential loss or damage arising out of your participation in the Programme.\n\nNothing in this Agreement limits AFeeree's liability for death or personal injury caused by its own negligence, fraud, or fraudulent misrepresentation.",
   },
   {
+    id: 'gender',
+    title: '11. Inclusion, Diversity & Gender Identity',
+    body: 'AFeeree Dance Arts is committed to creating a safe, inclusive, and affirming environment for all participants. We respect and honour every individual\'s gender identity, gender expression, sexual orientation, cultural background, ethnicity, age, ability, and lived experience.\n\nAll participants are expected to:\n\u2022 Use the names and pronouns by which fellow participants identify;\n\u2022 Refrain from making assumptions about another person\'s gender, identity, or background;\n\u2022 Engage with all instructors and participants in a manner that affirms their dignity and identity;\n\u2022 Immediately cease any language or behaviour identified as harmful or disrespectful by the affected individual.\n\nAny conduct that discriminates against, marginalises, or disrespects a person\'s gender identity or expression constitutes a breach of this Agreement and may result in removal from the Programme without refund.',
+  },
+  {
     id: 'governing',
-    title: '11. Governing Law',
-    body: 'This Agreement shall be governed by and construed in accordance with the laws of England and Wales. Any dispute arising out of or in connection with this Agreement shall be subject to the exclusive jurisdiction of the courts of England and Wales.',
+    title: '12. Governing Law',
+    body: 'This Agreement shall be governed by and construed in accordance with the laws of the Province of Ontario and the federal laws of Canada applicable therein. Any dispute arising out of or in connection with this Agreement shall be subject to the exclusive jurisdiction of the courts of Ontario, Canada.',
   },
   {
     id: 'amendments',
-    title: '12. Amendments',
+    title: '13. Amendments',
     body: 'AFeeree reserves the right to update this Agreement from time to time. Material changes will be communicated to participants via the app or by email. Continued participation in the Programme following notification of a change constitutes acceptance of the revised Agreement.',
   },
 ];
@@ -265,7 +270,7 @@ export default function AgreementScreen() {
               <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Participant: </Text>{name || '[Participant]'}
             </Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700], fontSize: 14, marginTop: 4 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Organisation: </Text>AFeeree
+              <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Organisation: </Text>AFeeree Dance Arts / BaKari IfaSegun Lindsay
             </Text>
           </Animated.View>
 
