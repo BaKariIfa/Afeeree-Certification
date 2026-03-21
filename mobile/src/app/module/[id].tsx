@@ -14,15 +14,19 @@ import { mockModules } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
 import ConfettiCelebration from '@/components/ConfettiCelebration';
 
-// Minimum study time per lesson before it can be marked complete
+// Minimum session length to be recorded toward participation
 const MIN_STUDY_MS = 15 * 60 * 1000;
+// Total participation required per module (240 min)
+const MODULE_REQUIRED_MS = 240 * 60 * 1000;
 
 const triggerHaptic = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
 function formatStudyTime(ms: number): string {
   const totalSec = Math.floor(ms / 1000);
-  const m = Math.floor(totalSec / 60);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
+  if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
@@ -78,7 +82,8 @@ export default function ModuleDetailScreen() {
       if (!mod) return;
       sessionStartRef.current.forEach((startTime, lessonIndex) => {
         const elapsed = Date.now() - startTime;
-        if (elapsed > 0) {
+        // Only record sessions lasting at least 15 minutes
+        if (elapsed >= MIN_STUDY_MS) {
           addLessonStudyTime(`${mod.id}-${lessonIndex}`, elapsed);
         }
       });
@@ -109,7 +114,8 @@ export default function ModuleDetailScreen() {
     const start = sessionStartRef.current.get(lessonIndex);
     if (start !== undefined) {
       const elapsed = Date.now() - start;
-      if (elapsed > 0) addLessonStudyTime(`${module.id}-${lessonIndex}`, elapsed);
+      // Only record sessions lasting at least 15 minutes
+      if (elapsed >= MIN_STUDY_MS) addLessonStudyTime(`${module.id}-${lessonIndex}`, elapsed);
       sessionStartRef.current.delete(lessonIndex);
       setSessionStart(prev => {
         const next = new Map(prev);
@@ -205,7 +211,7 @@ export default function ModuleDetailScreen() {
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm ml-2">{lessonCount} lessons</Text>
               <View className="mx-3 w-1 h-1 rounded-full" style={{ backgroundColor: colors.neutral[300] }} />
               <Timer size={16} color={colors.neutral[400]} />
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm ml-2">{module.contactHours}h required</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm ml-2">240 min required</Text>
             </View>
 
             {/* Completion progress */}
@@ -221,15 +227,28 @@ export default function ModuleDetailScreen() {
               </View>
             </View>
 
-            {/* Contact hours logged */}
-            {totalContactHoursLogged > 0 && (
-              <View className="mt-3 flex-row items-center">
-                <Timer size={14} color={colors.gold[500]} />
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[700], fontSize: 12, marginLeft: 6 }}>
-                  {formatStudyTime(totalContactHoursLogged)} documented participation
+            {/* Participation progress toward 240 min */}
+            <View className="mt-4 pt-3" style={{ borderTopWidth: 1, borderTopColor: colors.neutral[100] }}>
+              <View className="flex-row items-center justify-between mb-2">
+                <View className="flex-row items-center">
+                  <Timer size={13} color={totalContactHoursLogged >= MODULE_REQUIRED_MS ? colors.success : colors.gold[500]} />
+                  <Text style={{ fontFamily: 'DMSans_500Medium', color: totalContactHoursLogged >= MODULE_REQUIRED_MS ? colors.success : colors.gold[700], fontSize: 12, marginLeft: 5 }}>
+                    Documented Participation
+                  </Text>
+                </View>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: totalContactHoursLogged >= MODULE_REQUIRED_MS ? colors.success : colors.neutral[600] }}>
+                  {formatStudyTime(totalContactHoursLogged)} / 4:00:00
                 </Text>
               </View>
-            )}
+              <View style={{ height: 5, borderRadius: 3, backgroundColor: colors.neutral[100], overflow: 'hidden' }}>
+                <View style={{ height: '100%', borderRadius: 3, backgroundColor: totalContactHoursLogged >= MODULE_REQUIRED_MS ? colors.success : colors.gold[400], width: `${Math.min(totalContactHoursLogged / MODULE_REQUIRED_MS * 100, 100)}%` }} />
+              </View>
+              {totalContactHoursLogged === 0 && (
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 5 }}>
+                  Sessions of 15+ min count toward 240 min total
+                </Text>
+              )}
+            </View>
           </Animated.View>
 
           {/* Notes Button */}
