@@ -313,15 +313,14 @@ export default function ModuleDetailScreen() {
           <Animated.View entering={FadeInUp.duration(300)}
             style={{ backgroundColor: 'white', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 24, paddingTop: 16, paddingBottom: insets.bottom + 24 }}>
             {/* Header row: drag indicator + close button */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-              <View style={{ flex: 1 }} />
-              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.neutral[200] }} />
-              <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                <Pressable onPress={handleCloseSheet}
-                  style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.neutral[200], alignItems: 'center', justifyContent: 'center' }}>
-                  <X size={18} color={colors.neutral[700]} />
-                </Pressable>
-              </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <Pressable onPress={handleCloseSheet} hitSlop={12}
+                style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, backgroundColor: '#1C1917' }}>
+                <X size={14} color="white" />
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 13, marginLeft: 4 }}>Close</Text>
+              </Pressable>
+              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.neutral[300] }} />
+              <View style={{ width: 70 }} />
             </View>
 
             {isLessonComplete(selectedLesson) ? (
