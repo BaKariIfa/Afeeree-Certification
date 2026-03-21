@@ -118,13 +118,25 @@ Each code can only be used once.
   - Certification Ready - Complete all requirements
 - Pull-to-refresh and haptic feedback
 
-### Feedback
+### Feedback / Messaging
 - Two-way messaging between instructor and participants
+- **Voice notes** — record and send audio messages (up to 60 seconds) from both sides
+- **Video notes** — record and send video messages (up to 60 seconds) from both sides
+- Audio player with progress bar and waveform visualization
+- Video thumbnail with tap-to-play fullscreen modal
 - View all participants with their progress
-- Send personalized feedback to each participant
-- Participants can respond to feedback
-- Message history with timestamps
-- Real-time conversation view
+- Send personalized text, audio, or video feedback to each participant
+- Participants can respond with text, voice notes, or video notes
+- Message history with timestamps and date separators
+- Real-time conversation polling (10-second intervals)
+- Notification toast with sound and haptic feedback on new messages
+
+### Admin Panel — Messaging
+- Instructor can view and message all participants from Admin Panel > Messages
+- Full voice note and video note support in instructor conversation view
+- Mic button to record voice notes, camera button to record video notes
+- Unread message badge counts per participant
+- Audio and video messages render inline in the conversation thread
 
 ## UX Enhancements
 
