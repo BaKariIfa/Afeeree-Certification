@@ -372,6 +372,9 @@ export default function ProfileScreen() {
             >
               {userName || 'Kalanden'}
             </Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.55)', fontSize: 12, fontStyle: 'italic', marginTop: 4, textAlign: 'center', paddingHorizontal: 16 }}>
+              One who studies, absorbs, and prepares to carry forward tradition
+            </Text>
 
             <View
               className="mt-2 px-3 py-1 rounded-full"

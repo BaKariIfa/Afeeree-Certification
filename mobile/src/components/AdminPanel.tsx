@@ -561,7 +561,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                 <View className="flex-1 ml-3">
                   <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Messages</Text>
                   <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>
-                    {totalUnread > 0 ? `${totalUnread} unread message${totalUnread > 1 ? 's' : ''}` : 'View participant messages'}
+                    {totalUnread > 0 ? `${totalUnread} unread message${totalUnread > 1 ? 's' : ''}` : 'View Kalanden messages'}
                   </Text>
                 </View>
                 {totalUnread > 0 && (
@@ -820,10 +820,10 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                     <MessageCircle size={36} color={colors.neutral[300]} />
                   </View>
                   <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 17, textAlign: 'center' }}>
-                    No participants yet
+                    No Kalandenw yet
                   </Text>
                   <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, textAlign: 'center', marginTop: 8, paddingHorizontal: 24 }}>
-                    Participants will appear here once they join the program
+                    Kalandenw will appear here once they join the program
                   </Text>
                 </Animated.View>
               ) : (
@@ -914,7 +914,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                       No submissions yet
                     </Text>
                     <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, textAlign: 'center', marginTop: 8, paddingHorizontal: 24 }}>
-                      Participant submissions will appear here
+                      Kalanden submissions will appear here
                     </Text>
                   </Animated.View>
                 ) : (

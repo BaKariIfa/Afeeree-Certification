@@ -580,6 +580,9 @@ export default function FeedbackScreen() {
                   <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginTop: 2 }}>
                     Jeli View
                   </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 1 }}>
+                    A respected transmitter of history, culture, and embodied wisdom
+                  </Text>
                 </View>
               </View>
               <Pressable
@@ -617,9 +620,14 @@ export default function FeedbackScreen() {
               </Pressable>
             </Animated.View>
 
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18, marginBottom: 16 }}>
-              Kalandenw
-            </Text>
+            <View style={{ marginBottom: 8 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18 }}>
+                Kalandenw
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 2, marginBottom: 14 }}>
+                One who studies, absorbs, and prepares to carry forward tradition
+              </Text>
+            </View>
 
             {participants.length === 0 ? (
               <Animated.View entering={FadeInUp.duration(500)} style={{ alignItems: 'center', paddingVertical: 64 }}>
@@ -744,8 +752,11 @@ export default function FeedbackScreen() {
               <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
                 <Lock size={36} color={colors.primary[600]} />
               </View>
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 26, textAlign: 'center', marginBottom: 8 }}>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 26, textAlign: 'center', marginBottom: 4 }}>
                 Jeli Access
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, fontStyle: 'italic', textAlign: 'center', marginBottom: 10 }}>
+                A respected transmitter of history, culture, and embodied wisdom
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
                 Sign in with your Jeli password to view Kalanden messages and respond
@@ -824,6 +835,9 @@ export default function FeedbackScreen() {
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginTop: 2 }}>
                   Jeli View
                 </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 1 }}>
+                  A respected transmitter of history, culture, and embodied wisdom
+                </Text>
               </View>
             </View>
             <Pressable
@@ -837,9 +851,14 @@ export default function FeedbackScreen() {
         </View>
 
         <View style={{ paddingHorizontal: 24 }}>
-          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18, marginBottom: 16 }}>
-            Kalandenw
-          </Text>
+          <View style={{ marginBottom: 8 }}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 18 }}>
+              Kalandenw
+            </Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginTop: 2, marginBottom: 14 }}>
+              One who studies, absorbs, and prepares to carry forward tradition
+            </Text>
+          </View>
 
           {participants.length === 0 ? (
             <Animated.View entering={FadeInUp.duration(500)} style={{ alignItems: 'center', paddingVertical: 64 }}>

@@ -720,6 +720,9 @@ export default function AdminScreen() {
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 1 }}>
                 {progressList.length} Kalanden{progressList.length !== 1 ? 'w' : ''} tracked
               </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontStyle: 'italic', marginTop: 2 }}>
+                One who studies, absorbs, and prepares to carry forward tradition
+              </Text>
             </View>
           </View>
         </View>
@@ -916,8 +919,11 @@ export default function AdminScreen() {
           })}
 
           {/* Feedback Section */}
-          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 8, marginBottom: 12 }}>
+          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 8, marginBottom: 2 }}>
             Jeli Feedback
+          </Text>
+          <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginBottom: 12 }}>
+            A respected transmitter of history, culture, and embodied wisdom
           </Text>
 
           {/* Compose feedback */}
@@ -1653,8 +1659,11 @@ export default function AdminScreen() {
         {/* Used Codes */}
         {usedCodes.length > 0 && (
           <Animated.View entering={FadeInDown.duration(400).delay(300)}>
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12, marginTop: 8 }}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4, marginTop: 8 }}>
               Enrolled Kalandenw
+            </Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginBottom: 12 }}>
+              One who studies, absorbs, and prepares to carry forward tradition
             </Text>
             {usedCodes.map(item => (
               <View

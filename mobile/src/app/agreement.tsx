@@ -206,6 +206,9 @@ export default function AgreementScreen() {
           <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 30 }}>
             {'Kalanden\nAgreement'}
           </Text>
+          <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.55)', fontSize: 12, marginTop: 6, fontStyle: 'italic' }}>
+            One who studies, absorbs, and prepares to carry forward tradition
+          </Text>
           <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 8 }}>
             {alreadySigned
               ? 'You have already signed this agreement. Your copy is shown below.'

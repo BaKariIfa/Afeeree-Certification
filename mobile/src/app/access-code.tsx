@@ -331,7 +331,7 @@ export default function AccessCodeScreen() {
                 style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }}
                 className="text-xs text-center"
               >
-                This app is exclusively for{'\n'}AFeeree Certification participants
+                This app is exclusively for{'\n'}AFeeree Certification Kalandenw
               </Text>
             </Animated.View>
           </View>
