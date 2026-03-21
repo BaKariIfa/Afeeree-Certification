@@ -679,7 +679,15 @@ export default function ProfileScreen() {
                     className="text-base"
                   >
                     {(item as any).subtitle
-                      ? <>{item.label}{' '}<Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text></>
+                      ? <>
+                          <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[800], fontSize: 16 }}>
+                            Kalanden — Carrier of Tradition
+                          </Text>
+                          {'\n'}
+                          <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>
+                            Agreement
+                          </Text>
+                        </>
                       : item.label
                     }
                   </Text>
