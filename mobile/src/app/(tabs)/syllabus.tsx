@@ -164,7 +164,7 @@ export default function SyllabusScreen() {
   const handleModulePress = (module: Module, index: number) => {
     if (isDemoMode && index >= 2) return;
     triggerHaptic();
-    openNotationPdf(module.pdfLink ?? resourceLinks.syllabus, module.pdfPage, module.pdfEndPage);
+    router.push(`/module/${module.id}` as any);
   };
 
   const handleCategoryPress = (category: string) => {
