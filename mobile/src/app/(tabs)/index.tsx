@@ -266,11 +266,11 @@ export default function HomeScreen() {
                 <CreditCard size={22} color="white" />
               </View>
               <View className="flex-1">
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>
-                  Enroll Now — $600 CAD
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>
+                  Enrol now for the introductory course
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 }}>
-                  AFeeree Certification
+                  towards certification — $600 CAD
                 </Text>
               </View>
               <ArrowRight size={20} color="white" />
