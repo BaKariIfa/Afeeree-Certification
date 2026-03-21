@@ -620,18 +620,7 @@ export default function AdminScreen() {
 
   // ── Participants List ──
   if (adminView === 'discussions') {
-    // Group all modules+lessons into a flat list for the forum
-    const allLessons: { moduleId: string; moduleTitle: string; lessonIndex: number; lessonTitle: string }[] = [];
-    mockModules.forEach((mod) => {
-      for (let i = 0; i < mod.lessons; i++) {
-        allLessons.push({
-          moduleId: mod.id,
-          moduleTitle: mod.title,
-          lessonIndex: i,
-          lessonTitle: mod.lessonPages?.[i]?.title ?? `Lesson ${i + 1}`,
-        });
-      }
-    });
+    const historyModule = mockModules.find((m) => m.isHistoryModule);
 
     if (selectedDiscussionLesson) {
       return (
@@ -670,39 +659,48 @@ export default function AdminScreen() {
             <View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22 }}>Discussion Forums</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>
-                Select a lesson to view & reply
+                History & Context — select a lesson
               </Text>
             </View>
           </View>
         </View>
         <ScrollView contentContainerStyle={{ padding: 16 }}>
-          {mockModules.map((mod) => (
-            <View key={mod.id} style={{ marginBottom: 20 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, paddingHorizontal: 4 }}>
-                {mod.title}
+          {!historyModule ? (
+            <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+              <MessageCircle size={32} color={colors.neutral[300]} />
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 12, textAlign: 'center' }}>
+                No discussion module found.
               </Text>
-              {Array.from({ length: mod.lessons }, (_, i) => {
-                const title = mod.lessonPages?.[i]?.title ?? `Lesson ${i + 1}`;
-                const pageRange = mod.lessonPages?.[i] ? ` · pp. ${mod.lessonPages[i].startPage}–${mod.lessonPages[i].endPage}` : '';
+            </View>
+          ) : (
+            <View style={{ marginBottom: 8 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10, paddingHorizontal: 4 }}>
+                {historyModule.title}
+              </Text>
+              {Array.from({ length: historyModule.lessons }, (_, i) => {
+                const title = historyModule.lessonPages?.[i]?.title ?? `Lesson ${i + 1}`;
+                const pageRange = historyModule.lessonPages?.[i]
+                  ? `pp. ${historyModule.lessonPages[i].startPage}–${historyModule.lessonPages[i].endPage}`
+                  : null;
                 return (
                   <Pressable
                     key={i}
-                    onPress={() => setSelectedDiscussionLesson({ moduleId: mod.id, moduleTitle: mod.title, lessonIndex: i, lessonTitle: title })}
-                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: colors.neutral[200] }}
+                    onPress={() => setSelectedDiscussionLesson({ moduleId: historyModule.id, moduleTitle: historyModule.title, lessonIndex: i, lessonTitle: title })}
+                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 14, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: colors.neutral[200], shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 6, elevation: 1 }}
                   >
-                    <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                      <MessageCircle size={16} color={colors.primary[500]} />
+                    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginRight: 14 }}>
+                      <MessageCircle size={18} color={colors.primary[500]} />
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 14 }}>{title}</Text>
-                      {pageRange ? <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>{pageRange}</Text> : null}
+                      <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>{title}</Text>
+                      {pageRange && <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 2 }}>{pageRange}</Text>}
                     </View>
-                    <ChevronRight size={16} color={colors.neutral[300]} />
+                    <ChevronRight size={18} color={colors.neutral[300]} />
                   </Pressable>
                 );
               })}
             </View>
-          ))}
+          )}
         </ScrollView>
       </View>
     );

@@ -567,13 +567,15 @@ export default function ModuleDetailScreen() {
                   </>
                 )}
 
-                {/* Discussion Forum — always visible */}
-                <DiscussionForum
-                  moduleId={module.id}
-                  lessonIndex={selectedLesson}
-                  participantCode={participantCode}
-                  participantName={participantName}
-                />
+                {/* Discussion Forum — only for History & Context module */}
+                {module.isHistoryModule && (
+                  <DiscussionForum
+                    moduleId={module.id}
+                    lessonIndex={selectedLesson}
+                    participantCode={participantCode}
+                    participantName={participantName}
+                  />
+                )}
               </ScrollView>
             </Animated.View>
           </View>
