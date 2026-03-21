@@ -530,9 +530,10 @@ export default function AdminScreen() {
             </Pressable>
             <View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>
-                Kalanden Messages{' '}
+                Kalanden{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.45)', fontSize: 13 }}>— Carrier of Tradition</Text>
               </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 2 }}>Messages</Text>
             </View>
           </View>
         </View>
@@ -658,11 +659,11 @@ export default function AdminScreen() {
             </Pressable>
             <View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22 }}>
-                Discussion Forums{' '}
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>— Kalanden · Carrier of Tradition</Text>
+                Kalandenw{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>— Carriers of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>
-                History & Context — select a lesson
+                Discussion Forums
               </Text>
             </View>
           </View>
@@ -720,11 +721,11 @@ export default function AdminScreen() {
             </Pressable>
             <View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>
-                Kalanden Progress{' '}
+                Kalanden{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>— Carrier of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 }}>
-                {progressList.length} Kalanden{progressList.length !== 1 ? 'w' : ''} tracked
+                Progress · {progressList.length} tracked
               </Text>
             </View>
           </View>
@@ -922,10 +923,13 @@ export default function AdminScreen() {
           })}
 
           {/* Feedback Section */}
-          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 8, marginBottom: 12 }}>
-            Jeli Feedback{' '}
-            <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>— Keeper of the Legacy</Text>
-          </Text>
+          <View style={{ marginTop: 8, marginBottom: 12 }}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase' }}>
+              Jeli{' '}
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>— Keeper of the Legacy</Text>
+            </Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 11, marginTop: 2 }}>Feedback</Text>
+          </View>
 
           {/* Compose feedback */}
           <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
@@ -1030,11 +1034,11 @@ export default function AdminScreen() {
             </Pressable>
             <View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>
-                Kalanden Submissions{' '}
+                Kalanden{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>— Carrier of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 2 }}>
-                {submissions.length} submission{submissions.length !== 1 ? 's' : ''}
+                Submissions · {submissions.length}
               </Text>
             </View>
           </View>
@@ -1350,10 +1354,13 @@ export default function AdminScreen() {
           const videoHrs = (totalVideoMs / 3600000).toFixed(1);
           return (
             <Animated.View entering={FadeInDown.duration(400).delay(40)} style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 12 }}>
-                Study Time — All Kalandenw{' '}
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>— Carriers of Tradition</Text>
-              </Text>
+              <View style={{ marginBottom: 12 }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase' }}>
+                  Kalandenw{' '}
+                  <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>— Carriers of Tradition</Text>
+                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 11, marginTop: 2 }}>Study Time</Text>
+              </View>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <View style={{ flex: 1, backgroundColor: colors.gold[50], borderRadius: 12, padding: 14, alignItems: 'center' }}>
                   <FileText size={18} color={colors.gold[600]} />
@@ -1402,11 +1409,11 @@ export default function AdminScreen() {
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: totalUnread > 0 ? 'white' : colors.neutral[800], fontSize: 16 }}>
-                Kalanden Messages{' '}
+                Kalanden{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: totalUnread > 0 ? 'rgba(255,255,255,0.55)' : colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: totalUnread > 0 ? 'rgba(255,255,255,0.8)' : colors.neutral[500], fontSize: 13, marginTop: 2 }}>
-                {totalUnread > 0 ? `${totalUnread} unread message${totalUnread > 1 ? 's' : ''}` : 'View conversations'}
+                Messages
               </Text>
             </View>
             {totalUnread > 0 && (
@@ -1429,10 +1436,10 @@ export default function AdminScreen() {
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
-                Kalanden Submissions{' '}
+                Kalanden{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
               </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>View files, videos & reflections</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>Submissions</Text>
             </View>
             <ChevronRight size={20} color={colors.neutral[300]} />
           </Pressable>
@@ -1449,11 +1456,11 @@ export default function AdminScreen() {
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>
-                Kalanden Progress{' '}
+                Kalanden{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.55)', fontSize: 11 }}>— Carrier of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 4 }}>
-                Track modules, time & offer feedback
+                Progress
               </Text>
             </View>
             <ChevronRight size={20} color="rgba(255,255,255,0.6)" />
@@ -1471,11 +1478,11 @@ export default function AdminScreen() {
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
-                Discussion Forums{' '}
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Kalanden · Carrier of Tradition</Text>
+                Kalandenw{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carriers of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>
-                View & reply to questions
+                Discussion Forums
               </Text>
             </View>
             <ChevronRight size={20} color={colors.neutral[300]} />
@@ -1606,10 +1613,10 @@ export default function AdminScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
-                Kalanden Agreement{' '}
+                Kalanden{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
               </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 4 }}>View the Kalanden consent form</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 4 }}>Agreement</Text>
             </View>
             <ChevronRight size={18} color={colors.neutral[400]} />
           </Pressable>
@@ -1681,10 +1688,13 @@ export default function AdminScreen() {
         {/* Used Codes */}
         {usedCodes.length > 0 && (
           <Animated.View entering={FadeInDown.duration(400).delay(300)}>
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12, marginTop: 8 }}>
-              Enrolled Kalandenw{' '}
-              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11, textTransform: 'none', letterSpacing: 0 }}>— Carriers of Tradition</Text>
-            </Text>
+            <View style={{ marginBottom: 12, marginTop: 8 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                Kalandenw{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11, textTransform: 'none', letterSpacing: 0 }}>— Carriers of Tradition</Text>
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>Enrolled</Text>
+            </View>
             {usedCodes.map(item => (
               <View
                 key={item.code}

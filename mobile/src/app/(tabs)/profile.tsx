@@ -540,8 +540,12 @@ export default function ProfileScreen() {
                   <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-sm">
                     {achievement.title === 'Dedicated Kalanden' ? (
                       <>
-                        Dedicated Kalanden{' '}
-                        <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10 }}>— Carrier of Tradition</Text>
+                        <Text>
+                          Kalanden{' '}
+                          <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10 }}>— Carrier of Tradition</Text>
+                        </Text>
+                        {'\n'}
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 10 }}>Dedicated</Text>
                       </>
                     ) : achievement.title}
                     {achievement.earned && (
@@ -634,11 +638,11 @@ export default function ProfileScreen() {
             </View>
             <View className="flex-1 ml-4">
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>
-                Kalanden Agreement{' '}
+                Kalanden{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.6)', fontSize: 11 }}>— Carrier of Tradition</Text>
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 4 }}>
-                View your signed agreement
+                Agreement
               </Text>
             </View>
             <ChevronRight size={20} color="rgba(255,255,255,0.6)" />
@@ -892,10 +896,13 @@ export default function ProfileScreen() {
             </View>
 
             {/* Contact */}
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1, marginBottom: 12 }} className="uppercase">
-              Contact Your Jeli{' '}
-              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>— Keeper of the Legacy</Text>
-            </Text>
+            <View style={{ marginBottom: 12 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1, textTransform: 'uppercase' }}>
+                Jeli{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>— Keeper of the Legacy</Text>
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 11, marginTop: 2 }}>Contact</Text>
+            </View>
             <View className="rounded-2xl overflow-hidden" style={{ borderWidth: 1, borderColor: colors.neutral[200] }}>
               <View className="flex-row items-center px-4 py-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[100] }}>
                 <View className="w-9 h-9 rounded-full items-center justify-center mr-3" style={{ backgroundColor: colors.primary[100] }}>

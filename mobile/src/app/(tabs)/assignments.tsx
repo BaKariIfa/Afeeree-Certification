@@ -490,9 +490,10 @@ export default function AssignmentsScreen() {
                     style={{ backgroundColor: colors.success + '15', borderWidth: 1, borderColor: colors.success + '30' }}
                   >
                     <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.success }} className="text-sm mb-1">
-                      Jeli Feedback{' '}
+                      Jeli{' '}
                       <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.success, fontSize: 10, opacity: 0.8 }}>— Keeper of the Legacy</Text>
                     </Text>
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.success, fontSize: 11, marginTop: 2, opacity: 0.9 }}>Feedback</Text>
                     <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700] }} className="text-base leading-6">
                       {selectedAssignment.feedback}
                     </Text>

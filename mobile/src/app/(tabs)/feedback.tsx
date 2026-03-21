@@ -578,9 +578,10 @@ export default function FeedbackScreen() {
                     Feedback
                   </Text>
                   <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 14, marginTop: 2 }}>
-                    Jeli View{' '}
+                    Jeli{' '}
                     <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 12 }}>— Keeper of the Legacy</Text>
                   </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>View</Text>
                 </View>
               </View>
               <Pressable
@@ -702,10 +703,10 @@ export default function FeedbackScreen() {
             </View>
             <View style={{ marginLeft: 12, flex: 1 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
-                Message Your Jeli{' '}
+                Jeli{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Keeper of the Legacy</Text>
               </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginTop: 2 }}>BaKari Lindsay · AFeeree</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginTop: 2 }}>Message</Text>
             </View>
           </View>
         </View>
@@ -752,9 +753,10 @@ export default function FeedbackScreen() {
                 <Lock size={36} color={colors.primary[600]} />
               </View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 26, textAlign: 'center', marginBottom: 4 }}>
-                Jeli Access{' '}
+                Jeli{' '}
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 13 }}>— Keeper of the Legacy</Text>
               </Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 15, textAlign: 'center', marginTop: 2 }}>Access</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
                 Sign in with your Jeli password to view Kalanden messages and respond
               </Text>
@@ -830,9 +832,10 @@ export default function FeedbackScreen() {
                   Feedback
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 14, marginTop: 2 }}>
-                  Jeli View{' '}
+                  Jeli{' '}
                   <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 12 }}>— Keeper of the Legacy</Text>
                 </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>View</Text>
               </View>
             </View>
             <Pressable
