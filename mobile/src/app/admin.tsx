@@ -141,6 +141,7 @@ export default function AdminScreen() {
       setIsAuthenticated(true);
       loadCodes();
       fetchUnreadCounts();
+      fetchProgress();
     }
     loadNotationPdfUrl();
   }, [isAdmin]);
@@ -1209,6 +1210,38 @@ export default function AdminScreen() {
             <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>Enrolled Users</Text>
           </View>
         </Animated.View>
+
+        {/* Study Time Overview */}
+        {progressList.length > 0 && (() => {
+          const totalNotationMs = progressList.reduce((sum, p) =>
+            sum + Object.entries(p.lessonStudyTime).filter(([k]) => !k.endsWith('-video')).reduce((s, [, v]) => s + v, 0), 0);
+          const totalVideoMs = progressList.reduce((sum, p) =>
+            sum + Object.entries(p.lessonStudyTime).filter(([k]) => k.endsWith('-video')).reduce((s, [, v]) => s + v, 0), 0);
+          const notationHrs = (totalNotationMs / 3600000).toFixed(1);
+          const videoHrs = (totalVideoMs / 3600000).toFixed(1);
+          return (
+            <Animated.View entering={FadeInDown.duration(400).delay(40)} style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 12 }}>Study Time — All Participants</Text>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flex: 1, backgroundColor: colors.gold[50], borderRadius: 12, padding: 14, alignItems: 'center' }}>
+                  <FileText size={18} color={colors.gold[600]} />
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.gold[700], fontSize: 22, marginTop: 6 }}>{notationHrs}h</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[600], fontSize: 12, marginTop: 2 }}>Notation Study</Text>
+                </View>
+                <View style={{ flex: 1, backgroundColor: '#EEF2FF', borderRadius: 12, padding: 14, alignItems: 'center' }}>
+                  <Play size={18} color="#6366F1" />
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: '#4F46E5', fontSize: 22, marginTop: 6 }}>{videoHrs}h</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: '#6366F1', fontSize: 12, marginTop: 2 }}>Video Watch</Text>
+                </View>
+                <View style={{ flex: 1, backgroundColor: colors.neutral[50], borderRadius: 12, padding: 14, alignItems: 'center' }}>
+                  <Users size={18} color={colors.neutral[500]} />
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 22, marginTop: 6 }}>{progressList.length}</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginTop: 2 }}>Participants</Text>
+                </View>
+              </View>
+            </Animated.View>
+          );
+        })()}
 
         {/* Messages Card */}
         <Animated.View entering={FadeInDown.duration(400).delay(60)}>
