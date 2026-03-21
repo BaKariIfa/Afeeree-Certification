@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { CheckSquare, Square, FileText, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -98,8 +98,17 @@ const CLAUSES = [
 export default function AgreementScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const navigation = useNavigation();
   const name = useUserStore(s => s.name);
   const setOnboarded = useUserStore(s => s.setOnboarded);
+
+  const handleClose = () => {
+    if (navigation.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/');
+    }
+  };
 
   const [alreadySigned, setAlreadySigned] = useState(false);
   const [signedAt, setSignedAt] = useState('');
@@ -190,7 +199,7 @@ export default function AgreementScreen() {
       >
         <Animated.View entering={FadeInDown.duration(600)}>
           <Pressable
-            onPress={() => router.back()}
+            onPress={handleClose}
             style={{ marginTop: 12, marginBottom: 4, alignSelf: 'flex-start', padding: 4 }}
           >
             <ArrowLeft size={22} color="white" />
