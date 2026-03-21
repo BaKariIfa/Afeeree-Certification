@@ -132,15 +132,15 @@ export default function FeedbackScreen() {
     setMessages([]);
   };
 
-  // Auto-load messages for participant (non-admin) view
+  // Auto-load messages for participant view (anyone with an access code)
   useEffect(() => {
-    if (!isAdmin && accessCode) {
+    if (accessCode) {
       setIsLoadingMessages(true);
       fetchMessages(accessCode).then(() => setIsLoadingMessages(false));
       const interval = setInterval(() => fetchMessages(accessCode), 10000);
       return () => clearInterval(interval);
     }
-  }, [isAdmin, accessCode]);
+  }, [accessCode]);
 
   // Poll for new messages every 10 seconds (admin view)
   useEffect(() => {
@@ -225,8 +225,8 @@ export default function FeedbackScreen() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  // ── Participant view: participant sending a message to the instructor ──
-  if (!isAdmin && accessCode) {
+  // ── Participant view: anyone with an access code sees their own conversation ──
+  if (accessCode) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
         <View style={{ paddingTop: insets.top + 12, backgroundColor: 'white', borderBottomWidth: 1, borderBottomColor: colors.neutral[200], paddingHorizontal: 16, paddingBottom: 16 }}>
