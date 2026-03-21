@@ -57,6 +57,7 @@ export default function AssignmentsScreen() {
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const [taskView, setTaskView] = useState<'detail' | 'submit-options' | 'reflection'>('detail');
   const [refreshing, setRefreshing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -94,7 +95,7 @@ export default function AssignmentsScreen() {
       setSubmitted(true);
       setTaskView('detail');
       if (selectedAssignment) fetchMySubmissions(selectedAssignment.title);
-      setTimeout(() => { setSubmitted(false); setSelectedAssignment(null); setTaskView('detail'); }, 2500);
+      setTimeout(() => { setSubmitted(false); closeModal(); }, 2500);
     } catch (e) {
       console.error('[assignments submitToBackend]', e);
       Alert.alert('Submission Failed', 'Please try again.');
@@ -228,11 +229,17 @@ export default function AssignmentsScreen() {
   const handleAssignmentPress = (assignment: Assignment) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedAssignment(assignment);
+    setTaskView('detail');
     setMySubmissions([]);
     setConfirmDeleteId(null);
+    setModalVisible(true);
     if (!isDemoMode) {
       fetchMySubmissions(assignment.title);
     }
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
   };
 
   const handleSubmitPress = () => {
@@ -398,30 +405,25 @@ export default function AssignmentsScreen() {
 
       {/* Assignment Detail Modal */}
       <Modal
-        visible={selectedAssignment !== null}
+        visible={modalVisible}
         animationType="slide"
         presentationStyle="pageSheet"
-        onRequestClose={() => { setSelectedAssignment(null); setTaskView('detail'); setReflectionText(''); }}
+        onRequestClose={closeModal}
+        onDismiss={() => { setSelectedAssignment(null); setTaskView('detail'); setReflectionText(''); }}
       >
-        {selectedAssignment && (
-          <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
-            <View className="px-6 pt-4 pb-4 flex-row items-center justify-between" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[200] }}>
-              <Text
-                style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }}
-                className="text-lg"
-              >
-                Task Details
-              </Text>
-              <Pressable
-                onPress={() => { setSelectedAssignment(null); setTaskView('detail'); setReflectionText(''); }}
-                className="p-2"
-              >
-                <X size={24} color={colors.neutral[600]} />
-              </Pressable>
-            </View>
+        <View className="flex-1" style={{ backgroundColor: colors.cream[100] }}>
+          {!selectedAssignment ? null : (<>
+          <View className="px-6 pt-4 pb-4 flex-row items-center justify-between" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[200] }}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800] }} className="text-lg">
+              Task Details
+            </Text>
+            <Pressable onPress={closeModal} className="p-2">
+              <X size={24} color={colors.neutral[600]} />
+            </Pressable>
+          </View>
 
-            <ScrollView className="flex-1 px-6 pt-6">
-              <Animated.View entering={FadeIn.duration(400)}>
+          <ScrollView className="flex-1 px-6 pt-6" contentContainerStyle={{ paddingBottom: 24 }}>
+            <View>
                 {/* Status Badge */}
                 <View
                   className="self-start px-3 py-1.5 rounded-full flex-row items-center"
@@ -602,7 +604,7 @@ export default function AssignmentsScreen() {
                     )}
                   </View>
                 )}
-              </Animated.View>
+              </View>
             </ScrollView>
 
             {/* Bottom action area — changes based on taskView */}
@@ -717,8 +719,8 @@ export default function AssignmentsScreen() {
                 </View>
               </View>
             )}
-          </View>
-        )}
+          </>)}
+        </View>
       </Modal>
 
       {/* Submission Success overlay */}
