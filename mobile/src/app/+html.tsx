@@ -20,9 +20,9 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <link rel="apple-touch-icon" sizes="120x120" href="/image-1769399524.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="AFeeree" />
-        <title>AFeeree - The Physical Language</title>
-        <meta name="description" content="AFeeree Introduction to Certification - Experience the physicality of Africanist movement" />
+        <meta name="apple-mobile-web-app-title" content="AFeeree Certification" />
+        <title>AFeeree Certification</title>
+        <meta name="description" content="AFeeree Certification - Experience the physicality of Africanist movement" />
 
         {/*
           Disable body scrolling on web. This makes ScrollView components work closer to how they do on native.

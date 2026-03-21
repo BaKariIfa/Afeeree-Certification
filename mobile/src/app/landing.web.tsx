@@ -137,7 +137,7 @@ export default function LandingPage() {
               lineHeight: 44,
             }}
           >
-            AFeeree Introduction to Certification
+            AFeeree Certification
           </Text>
           <Text
             style={{
@@ -497,7 +497,7 @@ export default function LandingPage() {
               marginLeft: 10,
             }}
           >
-            AFeeree Introduction to Certification
+            AFeeree Certification
           </Text>
         </View>
         <Text

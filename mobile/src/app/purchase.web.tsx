@@ -19,7 +19,7 @@ export default function PurchaseScreen() {
 
   // Program price
   const PROGRAM_PRICE = 600;
-  const PROGRAM_NAME = 'AFeeree Introduction to Certification';
+  const PROGRAM_NAME = 'AFeeree Certification';
 
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
