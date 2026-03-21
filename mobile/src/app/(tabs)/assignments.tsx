@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, Modal, RefreshControl, TextInput, Alert, ActivityIndicator } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -19,6 +20,7 @@ import {
   Trash2,
   Link,
   MessageSquare,
+  ExternalLink,
 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -582,16 +584,20 @@ export default function AssignmentsScreen() {
                             >
                               {sub.reflection}
                             </Text>
-                          ) : sub.fileName ? (
-                            <View className="flex-row items-center">
-                              <Link size={13} color={colors.neutral[400]} />
+                          ) : sub.fileUrl ? (
+                            <Pressable
+                              onPress={async () => { triggerHaptic(); await WebBrowser.openBrowserAsync(sub.fileUrl!); }}
+                              style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primary[100], borderRadius: 8, padding: 10 }}
+                            >
+                              <Link size={13} color={colors.primary[500]} />
                               <Text
-                                style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginLeft: 4 }}
+                                style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500], fontSize: 13, marginLeft: 6, flex: 1 }}
                                 numberOfLines={1}
                               >
-                                {sub.fileName}
+                                {sub.fileName ?? 'View file'}
                               </Text>
-                            </View>
+                              <ExternalLink size={13} color={colors.primary[400]} />
+                            </Pressable>
                           ) : null}
 
                           {confirmDeleteId === sub.id && (

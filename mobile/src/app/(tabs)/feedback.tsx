@@ -9,6 +9,7 @@ import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-g
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import * as Clipboard from 'expo-clipboard';
+import * as WebBrowser from 'expo-web-browser';
 
 import { colors } from '@/lib/theme';
 import { useAccessCodeStore, ADMIN_PASSWORD } from '@/lib/accessCodeStore';
@@ -541,16 +542,14 @@ export default function FeedbackScreen() {
                         <Pressable
                           onPress={async () => {
                             triggerHaptic();
-                            await Clipboard.setStringAsync(sub.fileUrl!);
-                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                            await WebBrowser.openBrowserAsync(sub.fileUrl!);
                           }}
                           style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primary[50] ?? colors.primary[100], borderRadius: 10, padding: 12 }}
                         >
                           <ExternalLink size={16} color={colors.primary[500]} />
                           <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.primary[500], fontSize: 13, marginLeft: 8, flex: 1 }} numberOfLines={1}>
-                            {sub.fileName ?? 'View submitted file — tap to copy link'}
+                            {sub.fileName ?? 'View submitted file'}
                           </Text>
-                          <Copy size={14} color={colors.primary[400]} />
                         </Pressable>
                       ) : null}
                     </View>
