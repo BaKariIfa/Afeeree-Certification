@@ -46,9 +46,9 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
   const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
 
   const researchDocUrl = useResourcesStore(s => s.researchDocUrl);
-  const researchVideoId = useResourcesStore(s => s.researchVideoId);
+  const researchVideoUrl = useResourcesStore(s => s.researchVideoUrl);
   const setResearchDocUrl = useResourcesStore(s => s.setResearchDocUrl);
-  const setResearchVideoId = useResourcesStore(s => s.setResearchVideoId);
+  const setResearchVideoUrl = useResourcesStore(s => s.setResearchVideoUrl);
   const loadResources = useResourcesStore(s => s.loadResources);
 
   const [fontsLoaded] = useFonts({
@@ -190,7 +190,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
     const id = videoIdInput.trim();
     if (!id) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await setResearchVideoId(id);
+    await setResearchVideoUrl(id);
     setVideoIdSaved(true);
     setTimeout(() => setVideoIdSaved(false), 3000);
   };
@@ -461,11 +461,11 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                 </Text>
               </View>
 
-              {researchVideoId && !videoIdInput ? (
+              {researchVideoUrl && !videoIdInput ? (
                 <View className="flex-row items-center p-3 rounded-xl mb-3" style={{ backgroundColor: colors.gold[50] }}>
                   <CheckCircle size={16} color={colors.gold[600]} />
                   <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], marginLeft: 8, fontSize: 12 }}>
-                    Current ID: {researchVideoId}
+                    Current ID: {researchVideoUrl}
                   </Text>
                 </View>
               ) : null}
@@ -474,7 +474,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                 <TextInput
                   value={videoIdInput}
                   onChangeText={setVideoIdInput}
-                  placeholder={researchVideoId ?? 'Enter Vimeo video ID (e.g. 123456789)'}
+                  placeholder={researchVideoUrl ?? 'Enter Vimeo video ID (e.g. 123456789)'}
                   placeholderTextColor={colors.neutral[400]}
                   keyboardType="numeric"
                   style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[800], flex: 1, fontSize: 14 }}

@@ -46,16 +46,15 @@ export default function SyllabusScreen() {
   const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
 
   const researchDocUrl = useResourcesStore(s => s.researchDocUrl);
-  const researchVideoId = useResourcesStore(s => s.researchVideoId);
+  const researchVideoUrl = useResourcesStore(s => s.researchVideoUrl);
   const setResearchDocUrl = useResourcesStore(s => s.setResearchDocUrl);
-  const setResearchVideoId = useResourcesStore(s => s.setResearchVideoId);
+  const setResearchVideoUrl = useResourcesStore(s => s.setResearchVideoUrl);
   const loadResources = useResourcesStore(s => s.loadResources);
 
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [docUploadSuccess, setDocUploadSuccess] = useState(false);
-  const [showVideoInput, setShowVideoInput] = useState(false);
-  const [videoIdInput, setVideoIdInput] = useState('');
-  const [videoIdSaved, setVideoIdSaved] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [videoUploadSuccess, setVideoUploadSuccess] = useState(false);
 
   // Load uploaded notation URL on mount
   React.useEffect(() => { loadNotationPdfUrl(); loadResources(); }, []);
@@ -135,14 +134,25 @@ export default function SyllabusScreen() {
     }
   };
 
-  const handleSaveVideoId = async () => {
-    if (!videoIdInput.trim()) return;
+  const handleUploadResearchVideo = async () => {
     triggerHaptic();
-    await setResearchVideoId(videoIdInput.trim());
-    setVideoIdSaved(true);
-    setShowVideoInput(false);
-    setVideoIdInput('');
-    setTimeout(() => setVideoIdSaved(false), 3000);
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['video/*', 'video/mp4', 'video/quicktime', 'video/mov'],
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+      const asset = result.assets[0];
+      setIsUploadingVideo(true);
+      const uploaded = await uploadFile(asset.uri, asset.name, asset.mimeType ?? 'video/mp4');
+      await setResearchVideoUrl(uploaded.url);
+      setVideoUploadSuccess(true);
+      setTimeout(() => setVideoUploadSuccess(false), 3000);
+    } catch (e) {
+      console.error('[VideoUpload]', e);
+    } finally {
+      setIsUploadingVideo(false);
+    }
   };
 
   const handleModulePress = (module: Module, index: number) => {
@@ -639,126 +649,67 @@ export default function SyllabusScreen() {
               {!isUploadingDoc && !docUploadSuccess && <ChevronRight size={18} color={colors.neutral[400]} />}
             </Pressable>
 
-            {/* Video Link */}
-            {showVideoInput ? (
+            {/* Video Upload */}
+            <Pressable
+              onPress={handleUploadResearchVideo}
+              disabled={isUploadingVideo}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 14,
+                borderRadius: 14,
+                backgroundColor: 'white',
+                borderWidth: 1,
+                borderColor: videoUploadSuccess ? colors.success : colors.neutral[200],
+              }}
+            >
               <View
                 style={{
-                  padding: 14,
-                  borderRadius: 14,
-                  backgroundColor: 'white',
-                  borderWidth: 1,
-                  borderColor: colors.neutral[200],
+                  width: 38, height: 38, borderRadius: 19,
+                  alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: videoUploadSuccess ? 'rgba(34,197,94,0.1)' : colors.gold[100],
                 }}
               >
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15, marginBottom: 10 }}>
-                  Enter Vimeo Video ID
+                {isUploadingVideo ? (
+                  <ActivityIndicator size="small" color={colors.gold[600]} />
+                ) : videoUploadSuccess ? (
+                  <CheckCircle size={18} color={colors.success} />
+                ) : (
+                  <Video size={18} color={colors.gold[600]} />
+                )}
+              </View>
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                  {videoUploadSuccess ? 'Video Uploaded!' : researchVideoUrl ? 'Replace Research Video' : 'Upload Research Video'}
                 </Text>
-                <View
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>
+                  {researchVideoUrl ? 'Video file already attached' : 'MP4, MOV, or video file'}
+                </Text>
+              </View>
+              {researchVideoUrl && !isUploadingVideo && !videoUploadSuccess && (
+                <Pressable
+                  onPress={() => {
+                    triggerHaptic();
+                    WebBrowser.openBrowserAsync(researchVideoUrl, {
+                      presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+                    });
+                  }}
                   style={{
+                    backgroundColor: colors.gold[500],
+                    borderRadius: 8,
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    backgroundColor: colors.neutral[100],
-                    borderRadius: 10,
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    marginBottom: 10,
+                    marginRight: 8,
                   }}
                 >
-                  <Link size={15} color={colors.neutral[400]} />
-                  <TextInput
-                    value={videoIdInput}
-                    onChangeText={setVideoIdInput}
-                    placeholder="e.g. 123456789"
-                    placeholderTextColor={colors.neutral[400]}
-                    style={{
-                      fontFamily: 'DMSans_400Regular',
-                      color: colors.neutral[800],
-                      flex: 1,
-                      marginLeft: 8,
-                      fontSize: 15,
-                    }}
-                    autoFocus
-                    keyboardType="numeric"
-                  />
-                </View>
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  <Pressable
-                    onPress={() => { setShowVideoInput(false); setVideoIdInput(''); }}
-                    style={{
-                      flex: 1, paddingVertical: 10, borderRadius: 10,
-                      borderWidth: 1, borderColor: colors.neutral[300],
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[600], fontSize: 14 }}>Cancel</Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={handleSaveVideoId}
-                    disabled={!videoIdInput.trim()}
-                    style={{
-                      flex: 2, paddingVertical: 10, borderRadius: 10,
-                      backgroundColor: videoIdInput.trim() ? colors.primary[500] : colors.neutral[300],
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 14 }}>Save</Text>
-                  </Pressable>
-                </View>
-              </View>
-            ) : (
-              <Pressable
-                onPress={() => { triggerHaptic(); setShowVideoInput(true); }}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  padding: 14,
-                  borderRadius: 14,
-                  backgroundColor: 'white',
-                  borderWidth: 1,
-                  borderColor: videoIdSaved ? colors.success : colors.neutral[200],
-                }}
-              >
-                <View
-                  style={{
-                    width: 38, height: 38, borderRadius: 19,
-                    alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: videoIdSaved ? 'rgba(34,197,94,0.1)' : colors.gold[100],
-                  }}
-                >
-                  {videoIdSaved ? (
-                    <CheckCircle size={18} color={colors.success} />
-                  ) : (
-                    <Video size={18} color={colors.gold[600]} />
-                  )}
-                </View>
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
-                    {videoIdSaved ? 'Video Link Saved!' : researchVideoId ? 'Update Research Video' : 'Add Research Video'}
-                  </Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>
-                    {researchVideoId ? `Vimeo ID: ${researchVideoId}` : 'Paste a Vimeo video ID'}
-                  </Text>
-                </View>
-                {researchVideoId && !videoIdSaved && (
-                  <Pressable
-                    onPress={() => openVideo(researchVideoId, 'Cultural Research', 'Seven Foundational Principles')}
-                    style={{
-                      backgroundColor: colors.gold[500],
-                      borderRadius: 8,
-                      paddingHorizontal: 10,
-                      paddingVertical: 5,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      marginRight: 8,
-                    }}
-                  >
-                    <Play size={12} color="white" fill="white" />
-                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 12, marginLeft: 3 }}>Play</Text>
-                  </Pressable>
-                )}
-                {!videoIdSaved && <ChevronRight size={18} color={colors.neutral[400]} />}
-              </Pressable>
-            )}
+                  <Play size={12} color="white" fill="white" />
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 12, marginLeft: 3 }}>Play</Text>
+                </Pressable>
+              )}
+              {!isUploadingVideo && !videoUploadSuccess && <ChevronRight size={18} color={colors.neutral[400]} />}
+            </Pressable>
           </View>
         </Animated.View>
       </ScrollView>

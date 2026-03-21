@@ -44,7 +44,7 @@ export default function ResourcesScreen() {
   const isDemoMode = useUserStore(s => s.isDemoMode);
 
   const researchDocUrl = useResourcesStore(s => s.researchDocUrl);
-  const researchVideoId = useResourcesStore(s => s.researchVideoId);
+  const researchVideoUrl = useResourcesStore(s => s.researchVideoUrl);
   const loadResources = useResourcesStore(s => s.loadResources);
 
   React.useEffect(() => { loadNotationPdfUrl(); loadResources(); }, []);
@@ -89,8 +89,14 @@ export default function ResourcesScreen() {
   };
 
   const openResearchVideo = () => {
-    const vimeoId = researchVideoId ?? videoLinks.keyPrinciples;
-    openVideo(vimeoId, 'Seven Foundational Principles', 'Key movement principles');
+    triggerHaptic();
+    if (researchVideoUrl) {
+      WebBrowser.openBrowserAsync(researchVideoUrl, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+      });
+    } else {
+      openVideo(videoLinks.keyPrinciples, 'Seven Foundational Principles', 'Key movement principles');
+    }
   };
 
   const openVideo = (vimeoId: string, title: string, subtitle: string) => {
