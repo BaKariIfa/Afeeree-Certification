@@ -161,13 +161,12 @@ export default function ModuleDetailScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const backendUrl = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
     let pageUrl: string | null = null;
-    if (module.isHistoryModule && historyPdfUrl) {
+    const pdfUrl = module.isHistoryModule ? historyPdfUrl : module.pdfLink;
+    if (pdfUrl) {
       const lessonPage = lessonIndex !== undefined ? module.lessonPages?.[lessonIndex] : null;
-      const start = lessonPage?.startPage ?? 1;
-      const end = lessonPage?.endPage ?? 999;
-      pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(historyPdfUrl)}&startPage=${start}&endPage=${end}`;
-    } else if (module.pdfLink && module.pdfPage) {
-      pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(module.pdfLink)}&startPage=${module.pdfPage}&endPage=${module.pdfEndPage ?? module.pdfPage}`;
+      const start = lessonPage?.startPage ?? module.pdfPage ?? 1;
+      const end = lessonPage?.endPage ?? module.pdfEndPage ?? start;
+      pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(pdfUrl)}&startPage=${start}&endPage=${end}`;
     }
     if (pageUrl) {
       await WebBrowser.openBrowserAsync(pageUrl, {
