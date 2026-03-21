@@ -241,10 +241,10 @@ export const mockModules: Module[] = [
     lessonPages: [
       { title: 'Introduction', startPage: 1, endPage: 9 },
       { title: 'Lesson 1', startPage: 9, endPage: 17 },
-      { title: 'Lesson 2', startPage: 14, endPage: 17 },
-      { title: 'Lesson 3', startPage: 18, endPage: 29 },
-      { title: 'Lesson 4', startPage: 30, endPage: 33 },
-      { title: 'Lesson 5', startPage: 34, endPage: 38 },
+      { title: 'Lesson 2', startPage: 19, endPage: 22 },
+      { title: 'Lesson 3', startPage: 23, endPage: 34 },
+      { title: 'Lesson 4', startPage: 35, endPage: 38 },
+      { title: 'Lesson 5', startPage: 39, endPage: 41 },
     ],
   },
 ];
