@@ -300,6 +300,7 @@ export default function ProfileScreen() {
     {
       icon: <FileText size={22} color={colors.neutral[600]} />,
       label: 'Kalanden Agreement',
+      subtitle: 'One who studies, absorbs, and prepares to carry forward tradition',
       onPress: () => { triggerHaptic(); router.push('/agreement'); }
     },
     {
@@ -547,6 +548,11 @@ export default function ProfileScreen() {
                       </View>
                     )}
                   </View>
+                  {achievement.title === 'Dedicated Kalanden' && (
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginTop: 1 }}>
+                      One who studies, absorbs, and prepares to carry forward tradition
+                    </Text>
+                  )}
                   <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-xs mt-0.5">
                     {achievement.description}
                   </Text>
@@ -668,15 +674,22 @@ export default function ProfileScreen() {
                 <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: item.isDestructive ? colors.error + '15' : colors.neutral[100] }}>
                   {item.icon}
                 </View>
-                <Text
-                  style={{
-                    fontFamily: 'DMSans_500Medium',
-                    color: item.isDestructive ? colors.error : colors.neutral[800]
-                  }}
-                  className="flex-1 ml-4 text-base"
-                >
-                  {item.label}
-                </Text>
+                <View className="flex-1 ml-4">
+                  <Text
+                    style={{
+                      fontFamily: 'DMSans_500Medium',
+                      color: item.isDestructive ? colors.error : colors.neutral[800]
+                    }}
+                    className="text-base"
+                  >
+                    {item.label}
+                  </Text>
+                  {(item as any).subtitle && (
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginTop: 1 }}>
+                      {(item as any).subtitle}
+                    </Text>
+                  )}
+                </View>
                 <ChevronRight size={20} color={colors.neutral[400]} />
               </Pressable>
             ))}
