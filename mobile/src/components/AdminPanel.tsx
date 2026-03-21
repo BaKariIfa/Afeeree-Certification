@@ -3,6 +3,7 @@ import {
   View, Text, Pressable, TextInput, Modal, Share, Alert,
   ActivityIndicator, ScrollView, KeyboardAvoidingView, Platform,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   X, Key, Plus, Copy, Trash2, Share2, ShieldCheck, Users, Check, FileText,
@@ -23,6 +24,9 @@ import { useNotationStore } from '@/lib/notationStore';
 import { useResourcesStore } from '@/lib/resourcesStore';
 import { uploadFile } from '@/lib/upload';
 import { logSquareConfig } from '@/lib/squareConfig';
+import { VoiceNoteRecorder } from '@/components/VoiceNoteRecorder';
+import { AudioMessage } from '@/components/AudioMessage';
+import { VideoMessage } from '@/components/VideoMessage';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
@@ -34,6 +38,8 @@ interface BackendMessage {
   timestamp: string;
   readByAdmin: boolean;
   readByParticipant: boolean;
+  mediaUrl?: string;
+  mediaType?: 'audio' | 'video';
 }
 
 interface AdminPanelProps {
@@ -153,6 +159,38 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
       console.error('[AdminPanel handleSendConvMessage]', e);
     } finally {
       setIsSendingConv(false);
+    }
+  };
+
+  const handleSendConvMedia = async (mediaUrl: string, mediaType: 'audio' | 'video') => {
+    if (!selectedConvCode) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/messages/${selectedConvCode}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senderId: 'admin', senderName: 'BaKari Lindsay', text: '', mediaUrl, mediaType }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { message: BackendMessage };
+        setConvMessages(prev => [...prev, data.message]);
+        setTimeout(() => convScrollRef.current?.scrollToEnd({ animated: true }), 100);
+      }
+    } catch (e) {
+      console.error('[AdminPanel handleSendConvMedia]', e);
+    }
+  };
+
+  const handleSendConvVideo = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') return;
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'], videoMaxDuration: 60, quality: 0.7 });
+    if (result.canceled || !result.assets[0]) return;
+    const asset = result.assets[0];
+    try {
+      const uploaded = await uploadFile(asset.uri, `video-${Date.now()}.mp4`, 'video/mp4');
+      await handleSendConvMedia(uploaded.url, 'video');
+    } catch (e) {
+      console.error('[AdminPanel handleSendConvVideo]', e);
     }
   };
 
@@ -894,24 +932,29 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                           )}
                           <View
                             style={{
-                              paddingHorizontal: 16,
-                              paddingVertical: 12,
+                              paddingHorizontal: msg.mediaType ? 12 : 16,
+                              paddingVertical: msg.mediaType ? 10 : 12,
                               borderRadius: 18,
                               backgroundColor: isFromMe ? colors.primary[500] : 'white',
                               borderBottomRightRadius: isFromMe ? 4 : 18,
                               borderBottomLeftRadius: isFromMe ? 18 : 4,
                             }}
                           >
-                            <Text
-                              style={{
-                                fontFamily: 'DMSans_400Regular',
-                                color: isFromMe ? 'white' : colors.neutral[800],
-                                fontSize: 14,
-                                lineHeight: 20,
-                              }}
-                            >
-                              {msg.text}
-                            </Text>
+                            {msg.mediaType === 'audio' && msg.mediaUrl
+                              ? <AudioMessage uri={msg.mediaUrl} isFromMe={isFromMe} />
+                              : msg.mediaType === 'video' && msg.mediaUrl
+                              ? <VideoMessage uri={msg.mediaUrl} isFromMe={isFromMe} />
+                              : <Text
+                                  style={{
+                                    fontFamily: 'DMSans_400Regular',
+                                    color: isFromMe ? 'white' : colors.neutral[800],
+                                    fontSize: 14,
+                                    lineHeight: 20,
+                                  }}
+                                >
+                                  {msg.text}
+                                </Text>
+                            }
                           </View>
                           <Text
                             style={{
@@ -936,12 +979,14 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                 style={{
                   flexDirection: 'row',
                   alignItems: 'flex-end',
+                  gap: 8,
                   paddingTop: 8,
                   paddingBottom: insets.bottom + 8,
                   borderTopWidth: 1,
                   borderTopColor: colors.neutral[200],
                 }}
               >
+                <VoiceNoteRecorder onSend={handleSendConvMedia} isFromMe={true} />
                 <TextInput
                   value={convNewMessage}
                   onChangeText={setConvNewMessage}
@@ -962,10 +1007,15 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                   }}
                 />
                 <Pressable
+                  onPress={handleSendConvVideo}
+                  style={{ width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.neutral[200] }}
+                >
+                  <Video size={20} color={colors.neutral[600]} />
+                </Pressable>
+                <Pressable
                   onPress={handleSendConvMessage}
                   disabled={!convNewMessage.trim() || isSendingConv}
                   style={{
-                    marginLeft: 8,
                     width: 44,
                     height: 44,
                     borderRadius: 22,
