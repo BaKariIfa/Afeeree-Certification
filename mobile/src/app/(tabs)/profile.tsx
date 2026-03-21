@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Pressable, RefreshControl, Modal, TextInput, Switch, KeyboardAvoidingView, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import {
   HelpCircle,
   LogOut,
   ChevronRight,
+  ChevronDown,
   Mail,
   Calendar,
   ArrowLeft,
@@ -23,6 +24,12 @@ import {
   Camera,
   Moon,
   Sun,
+  Bell,
+  Vibrate,
+  X,
+  MessageSquare,
+  Check,
+  Phone,
 } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
@@ -36,16 +43,52 @@ import { mockModules, mockAssignments } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
 
 const PROFILE_IMAGE_KEY = 'user_profile_image';
+const NOTIFICATIONS_KEY = 'notifications_enabled';
+const HAPTICS_KEY = 'haptics_enabled';
 
 const triggerHaptic = () => {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 };
+
+const FAQ_ITEMS = [
+  {
+    q: 'How do I submit a task?',
+    a: 'Go to the Tasks tab, tap on any task, then tap "Submit Task". You can upload a video, a file, or write a reflection depending on the task type.',
+  },
+  {
+    q: 'When will I receive feedback on my submissions?',
+    a: 'Your instructor reviews submissions regularly. You will see feedback and a grade appear on the task once reviewed — typically within a few days.',
+  },
+  {
+    q: 'How do I track my certification progress?',
+    a: 'Your overall progress is shown at the top of this Profile screen. Complete lessons and submit tasks to advance toward your Foundation Certification.',
+  },
+  {
+    q: 'Can I resubmit a task?',
+    a: 'Yes. You can submit multiple times. Your instructor will see all submissions and will assess the most recent one.',
+  },
+  {
+    q: 'What if I forget my access code?',
+    a: 'Contact your instructor directly. They can look up your code from the instructor panel and share it with you.',
+  },
+];
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  // Settings modal state
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [hapticsEnabled, setHapticsEnabled] = useState(true);
+  const [nameSaved, setNameSaved] = useState(false);
+
+  // Help modal state
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   // User store values
   const userName = useUserStore(s => s.name);
@@ -60,6 +103,7 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     loadProfileImage();
+    loadPreferences();
   }, []);
 
   const loadProfileImage = async () => {
@@ -70,6 +114,19 @@ export default function ProfileScreen() {
       }
     } catch (error) {
       console.log('Error loading profile image:', error);
+    }
+  };
+
+  const loadPreferences = async () => {
+    try {
+      const [notifs, haptics] = await Promise.all([
+        AsyncStorage.getItem(NOTIFICATIONS_KEY),
+        AsyncStorage.getItem(HAPTICS_KEY),
+      ]);
+      setNotificationsEnabled(notifs !== 'false');
+      setHapticsEnabled(haptics !== 'false');
+    } catch (error) {
+      console.log('Error loading preferences:', error);
     }
   };
 
@@ -118,7 +175,24 @@ export default function ProfileScreen() {
 
   const handleSettingsPress = () => {
     triggerHaptic();
-    console.log('Opening settings...');
+    setEditName(userName || '');
+    setNameSaved(false);
+    setShowSettingsModal(true);
+  };
+
+  const saveSettings = async () => {
+    triggerHaptic();
+    if (editName.trim() && editName.trim() !== userName) {
+      useUserStore.getState().setUser(editName.trim(), userEmail);
+    }
+    await AsyncStorage.setItem(NOTIFICATIONS_KEY, notificationsEnabled ? 'true' : 'false');
+    await AsyncStorage.setItem(HAPTICS_KEY, hapticsEnabled ? 'true' : 'false');
+    setNameSaved(true);
+    setTimeout(() => {
+      setShowSettingsModal(false);
+      setNameSaved(false);
+    }, 700);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   const [fontsLoaded] = useFonts({
@@ -226,7 +300,7 @@ export default function ProfileScreen() {
       label: 'Account Settings',
       onPress: handleSettingsPress
     },
-    { icon: <HelpCircle size={22} color={colors.neutral[600]} />, label: 'Help & Support', onPress: () => triggerHaptic() },
+    { icon: <HelpCircle size={22} color={colors.neutral[600]} />, label: 'Help & Support', onPress: () => { triggerHaptic(); setShowHelpModal(true); } },
     { icon: <LogOut size={22} color={colors.error} />, label: isDemoMode ? 'Exit Preview' : 'Sign Out', onPress: handleSignOut, isDestructive: true },
   ];
 
@@ -581,6 +655,235 @@ export default function ProfileScreen() {
           </Text>
         </Animated.View>
       </ScrollView>
+
+      {/* ── Account Settings Modal ── */}
+      <Modal
+        visible={showSettingsModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowSettingsModal(false)}
+      >
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
+          onPress={() => setShowSettingsModal(false)}
+        />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0 }}
+        >
+          <View
+            style={{
+              backgroundColor: 'white',
+              borderTopLeftRadius: 28,
+              borderTopRightRadius: 28,
+              paddingBottom: insets.bottom + 24,
+              paddingHorizontal: 24,
+              paddingTop: 16,
+            }}
+          >
+            {/* Drag handle */}
+            <View className="w-10 h-1 rounded-full self-center mb-5" style={{ backgroundColor: colors.neutral[200] }} />
+
+            {/* Header */}
+            <View className="flex-row items-center justify-between mb-6">
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 22 }}>
+                Account Settings
+              </Text>
+              <Pressable
+                onPress={() => setShowSettingsModal(false)}
+                className="w-9 h-9 rounded-full items-center justify-center"
+                style={{ backgroundColor: colors.neutral[100] }}
+              >
+                <X size={18} color={colors.neutral[600]} />
+              </Pressable>
+            </View>
+
+            {/* Display Name */}
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase mb-2">
+              Display Name
+            </Text>
+            <View
+              className="flex-row items-center rounded-xl px-4 mb-6"
+              style={{ backgroundColor: colors.neutral[50], borderWidth: 1.5, borderColor: colors.neutral[200], height: 52 }}
+            >
+              <User size={18} color={colors.neutral[400]} />
+              <TextInput
+                value={editName}
+                onChangeText={setEditName}
+                placeholder="Your name"
+                placeholderTextColor={colors.neutral[400]}
+                style={{ flex: 1, marginLeft: 10, fontFamily: 'DMSans_500Medium', fontSize: 16, color: colors.neutral[800] }}
+                returnKeyType="done"
+              />
+            </View>
+
+            {/* Preferences */}
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase mb-2">
+              Preferences
+            </Text>
+            <View
+              className="rounded-xl overflow-hidden mb-6"
+              style={{ borderWidth: 1, borderColor: colors.neutral[200] }}
+            >
+              <View className="flex-row items-center px-4 py-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[100] }}>
+                <View className="w-9 h-9 rounded-full items-center justify-center mr-3" style={{ backgroundColor: colors.primary[100] }}>
+                  <Bell size={18} color={colors.primary[500]} />
+                </View>
+                <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[800], fontSize: 15, flex: 1 }}>
+                  Notifications
+                </Text>
+                <Switch
+                  value={notificationsEnabled}
+                  onValueChange={(v) => { triggerHaptic(); setNotificationsEnabled(v); }}
+                  trackColor={{ false: colors.neutral[200], true: colors.primary[400] }}
+                  thumbColor="white"
+                />
+              </View>
+              <View className="flex-row items-center px-4 py-4">
+                <View className="w-9 h-9 rounded-full items-center justify-center mr-3" style={{ backgroundColor: colors.gold[100] }}>
+                  <Vibrate size={18} color={colors.gold[600]} />
+                </View>
+                <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[800], fontSize: 15, flex: 1 }}>
+                  Haptic Feedback
+                </Text>
+                <Switch
+                  value={hapticsEnabled}
+                  onValueChange={(v) => { triggerHaptic(); setHapticsEnabled(v); }}
+                  trackColor={{ false: colors.neutral[200], true: colors.primary[400] }}
+                  thumbColor="white"
+                />
+              </View>
+            </View>
+
+            {/* Save Button */}
+            <Pressable
+              onPress={saveSettings}
+              className="rounded-2xl items-center justify-center py-4 flex-row"
+              style={{ backgroundColor: nameSaved ? '#22C55E' : colors.primary[500] }}
+            >
+              {nameSaved ? (
+                <Check size={20} color="white" />
+              ) : (
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>
+                  Save Changes
+                </Text>
+              )}
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Help & Support Modal ── */}
+      <Modal
+        visible={showHelpModal}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowHelpModal(false)}
+      >
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
+          onPress={() => setShowHelpModal(false)}
+        />
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderTopLeftRadius: 28,
+            borderTopRightRadius: 28,
+            maxHeight: '85%',
+            paddingBottom: insets.bottom + 16,
+          }}
+        >
+          <View style={{ paddingHorizontal: 24, paddingTop: 16 }}>
+            <View className="w-10 h-1 rounded-full self-center mb-5" style={{ backgroundColor: colors.neutral[200] }} />
+            <View className="flex-row items-center justify-between mb-6">
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 22 }}>
+                Help & Support
+              </Text>
+              <Pressable
+                onPress={() => setShowHelpModal(false)}
+                className="w-9 h-9 rounded-full items-center justify-center"
+                style={{ backgroundColor: colors.neutral[100] }}
+              >
+                <X size={18} color={colors.neutral[600]} />
+              </Pressable>
+            </View>
+          </View>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
+          >
+            {/* FAQ */}
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase mb-3">
+              Frequently Asked Questions
+            </Text>
+            <View className="rounded-2xl overflow-hidden mb-6" style={{ borderWidth: 1, borderColor: colors.neutral[200] }}>
+              {FAQ_ITEMS.map((item, i) => (
+                <Pressable
+                  key={i}
+                  onPress={() => { triggerHaptic(); setExpandedFaq(expandedFaq === i ? null : i); }}
+                  style={{ borderBottomWidth: i < FAQ_ITEMS.length - 1 ? 1 : 0, borderBottomColor: colors.neutral[100] }}
+                >
+                  <View className="flex-row items-center px-4 py-4">
+                    <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[800], fontSize: 14, flex: 1, lineHeight: 20 }}>
+                      {item.q}
+                    </Text>
+                    <ChevronDown
+                      size={18}
+                      color={colors.neutral[400]}
+                      style={{ transform: [{ rotate: expandedFaq === i ? '180deg' : '0deg' }] }}
+                    />
+                  </View>
+                  {expandedFaq === i && (
+                    <View className="px-4 pb-4">
+                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], fontSize: 14, lineHeight: 22 }}>
+                        {item.a}
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
+              ))}
+            </View>
+
+            {/* Contact */}
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase mb-3">
+              Contact Your Instructor
+            </Text>
+            <View className="rounded-2xl overflow-hidden" style={{ borderWidth: 1, borderColor: colors.neutral[200] }}>
+              <View className="flex-row items-center px-4 py-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[100] }}>
+                <View className="w-9 h-9 rounded-full items-center justify-center mr-3" style={{ backgroundColor: colors.primary[100] }}>
+                  <MessageSquare size={18} color={colors.primary[500]} />
+                </View>
+                <View className="flex-1">
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                    In-App Messaging
+                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>
+                    Use the Messages tab to reach your instructor
+                  </Text>
+                </View>
+              </View>
+              <View className="flex-row items-center px-4 py-4">
+                <View className="w-9 h-9 rounded-full items-center justify-center mr-3" style={{ backgroundColor: colors.gold[100] }}>
+                  <Phone size={18} color={colors.gold[600]} />
+                </View>
+                <View className="flex-1">
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                    Direct Contact
+                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>
+                    Reach out to your instructor directly for urgent help
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 }
