@@ -165,7 +165,7 @@ export default function LandingPage() {
               }}
             >
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[800], fontSize: 16 }}>
-                Enroll Now
+                Introductory Course — Enrol Now
               </Text>
               <ArrowRight size={20} color={colors.primary[800]} style={{ marginLeft: 8 }} />
             </Pressable>
@@ -475,7 +475,7 @@ export default function LandingPage() {
           }}
         >
           <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[800], fontSize: 18 }}>
-            Enroll Now — $600
+            Introductory Course — Enrol Now
           </Text>
           <ArrowRight size={22} color={colors.primary[800]} style={{ marginLeft: 10 }} />
         </Pressable>
