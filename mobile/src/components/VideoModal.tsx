@@ -263,7 +263,7 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle,
                 onPress={onClose}
                 style={{ backgroundColor: colors.gold[500], borderRadius: 14, paddingVertical: 14, paddingHorizontal: 32 }}
               >
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 14 }}>Enrol now for the introductory course towards certification</Text>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15 }}>Introductory Course — Enrol Now</Text>
               </Pressable>
               <Pressable onPress={onClose} style={{ marginTop: 14 }}>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>Close</Text>
