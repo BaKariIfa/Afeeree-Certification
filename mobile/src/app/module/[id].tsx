@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, TextInput, Linking } from 'react-nat
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, BookOpen, Clock, Check, FileText, StickyNote, ExternalLink, Lock, ChevronRight, Timer } from 'lucide-react-native';
+import { ArrowLeft, BookOpen, Clock, Check, FileText, StickyNote, ExternalLink, Lock, ChevronRight, Timer, X } from 'lucide-react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
@@ -318,7 +318,7 @@ export default function ModuleDetailScreen() {
               <View style={{ flex: 1, alignItems: 'flex-end' }}>
                 <Pressable onPress={handleCloseSheet}
                   style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.neutral[100], alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 18, lineHeight: 20 }}>×</Text>
+                  <X size={16} color={colors.neutral[500]} />
                 </Pressable>
               </View>
             </View>
