@@ -10,14 +10,24 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Lock, Plus, Trash2, Copy, Check, ArrowLeft, FileText, Upload, CheckCircle, MessageCircle, Send, User, ChevronRight } from 'lucide-react-native';
+import {
+  Lock, Plus, Trash2, Copy, Check, ArrowLeft, FileText,
+  Upload, CheckCircle, MessageCircle, Send, User, ChevronRight,
+  ShieldCheck, Key, Users, Share2,
+} from 'lucide-react-native';
+import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
+import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
+import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 import * as Clipboard from 'expo-clipboard';
 import * as DocumentPicker from 'expo-document-picker';
+import * as Haptics from 'expo-haptics';
+import { Share } from 'react-native';
 import { useAccessCodeStore, ADMIN_PASSWORD } from '@/lib/accessCodeStore';
 import { useNotationStore } from '@/lib/notationStore';
 import { uploadFile } from '@/lib/upload';
+import { colors } from '@/lib/theme';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
@@ -34,11 +44,14 @@ interface BackendMessage {
 type AdminView = 'dashboard' | 'messages' | 'conversation';
 
 export default function AdminScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
+
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   // View state
   const [adminView, setAdminView] = useState<AdminView>('dashboard');
@@ -58,6 +71,13 @@ export default function AdminScreen() {
   const setNotationPdfUrl = useNotationStore(s => s.setNotationPdfUrl);
   const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
 
+  const [fontsLoaded] = useFonts({
+    PlayfairDisplay_700Bold,
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_600SemiBold,
+  });
+
   useEffect(() => {
     if (isAdmin) {
       setIsAuthenticated(true);
@@ -67,14 +87,12 @@ export default function AdminScreen() {
     loadNotationPdfUrl();
   }, [isAdmin]);
 
-  // Poll unread counts on messages view
   useEffect(() => {
     if (!isAuthenticated || adminView !== 'messages') return;
     const interval = setInterval(fetchUnreadCounts, 10000);
     return () => clearInterval(interval);
   }, [isAuthenticated, adminView]);
 
-  // Poll conversation messages
   useEffect(() => {
     if (!isAuthenticated || adminView !== 'conversation' || !selectedCode) return;
     const interval = setInterval(() => fetchConvMessages(selectedCode), 10000);
@@ -116,6 +134,7 @@ export default function AdminScreen() {
 
   const handleSend = async () => {
     if (!newMessage.trim() || !selectedCode) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsSending(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/messages/${selectedCode}`, {
@@ -136,27 +155,43 @@ export default function AdminScreen() {
 
   const handleLogin = () => {
     if (password.toUpperCase() === ADMIN_PASSWORD) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setIsAuthenticated(true);
+      setPasswordError('');
       setAdmin(true);
       loadCodes();
       fetchUnreadCounts();
     } else {
-      Alert.alert('Error', 'Incorrect password');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setPasswordError('Incorrect password. Please try again.');
     }
   };
 
   const handleGenerateCode = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const code = await generateCode();
-    Alert.alert('Code Generated', `New code: ${code}`);
+    await Clipboard.setStringAsync(code);
+    Alert.alert('Code Generated', `New code: ${code}\n\nCopied to clipboard!`);
   };
 
   const handleCopyCode = async (code: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await Clipboard.setStringAsync(code);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  const handleShareCode = async (code: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      await Share.share({
+        message: `Your AFeeree Certification Program access code is: ${code}\n\nDownload the app and enter this code to get started.`,
+      });
+    } catch {}
+  };
+
   const handleDeleteCode = (code: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert('Delete Code', `Are you sure you want to delete ${code}?`, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => deleteCode(code) },
@@ -169,12 +204,14 @@ export default function AdminScreen() {
       copyToCacheDirectory: true,
     });
     if (result.canceled) return;
-    const asset = result.assets[0];
+    const asset = result.assets[0]!;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsUploading(true);
     try {
       const uploaded = await uploadFile(asset.uri, asset.name, asset.mimeType ?? 'application/pdf');
       await setNotationPdfUrl(uploaded.url);
-      Alert.alert('Success', `"${asset.name}" uploaded and saved to the app.`);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('Success', `"${asset.name}" uploaded successfully.`);
     } catch (err) {
       Alert.alert('Upload Failed', err instanceof Error ? err.message : 'Please try again.');
     } finally {
@@ -182,12 +219,15 @@ export default function AdminScreen() {
     }
   };
 
-  const formatTime = (ts: string) => new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const formatTime = (ts: string) =>
+    new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
   const formatDate = (ts: string) => {
     const d = new Date(ts);
     const today = new Date();
     if (d.toDateString() === today.toDateString()) return 'Today';
-    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
     if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
@@ -197,117 +237,238 @@ export default function AdminScreen() {
   const participants = codes.filter(c => c.userName);
   const totalUnread = Object.values(unreadCounts).reduce((s, n) => s + n, 0);
 
+  if (!fontsLoaded) return null;
+
   // ── Password screen ──
   if (!isAuthenticated) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#111827' }}>
-        <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24 }}>
-          <View style={{ alignItems: 'center', marginBottom: 32 }}>
-            <View style={{ width: 80, height: 80, backgroundColor: 'rgba(245,158,11,0.2)', borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-              <Lock size={40} color="#F59E0B" />
-            </View>
-            <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>Admin Access</Text>
-            <Text style={{ color: '#9CA3AF', marginTop: 8 }}>Enter password to continue</Text>
+      <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <View style={{
+          paddingTop: insets.top + 16,
+          paddingBottom: 20,
+          paddingHorizontal: 24,
+          backgroundColor: colors.primary[500],
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={() => router.back()} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
+              <ArrowLeft size={24} color="white" />
+            </Pressable>
+            <ShieldCheck size={22} color={colors.gold[400]} />
+            <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22, marginLeft: 8 }}>
+              Admin Panel
+            </Text>
           </View>
-
-          <TextInput
-            style={{ backgroundColor: '#1F2937', color: 'white', paddingHorizontal: 16, paddingVertical: 16, borderRadius: 12, fontSize: 18, marginBottom: 16 }}
-            placeholder="Password"
-            placeholderTextColor="#6B7280"
-            secureTextEntry
-            autoCapitalize="characters"
-            value={password}
-            onChangeText={setPassword}
-            onSubmitEditing={handleLogin}
-          />
-
-          <Pressable style={{ backgroundColor: '#F59E0B', paddingVertical: 16, borderRadius: 12, alignItems: 'center' }} onPress={handleLogin}>
-            <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 18 }}>Login</Text>
-          </Pressable>
-
-          <Pressable style={{ marginTop: 24, alignItems: 'center' }} onPress={() => router.back()}>
-            <Text style={{ color: '#9CA3AF' }}>Cancel</Text>
-          </Pressable>
         </View>
-      </SafeAreaView>
+
+        <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 32 }}>
+          <Animated.View entering={FadeIn.duration(500)}>
+            <View style={{ alignItems: 'center', marginBottom: 36 }}>
+              <View style={{
+                width: 88, height: 88,
+                borderRadius: 44,
+                backgroundColor: colors.gold[100],
+                alignItems: 'center', justifyContent: 'center',
+                marginBottom: 20,
+                shadowColor: colors.gold[500],
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
+              }}>
+                <Lock size={40} color={colors.gold[600]} />
+              </View>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 28, marginBottom: 8 }}>
+                Admin Access
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
+                Enter your password to manage the AFeeree program
+              </Text>
+            </View>
+
+            <View style={{
+              backgroundColor: 'white',
+              borderRadius: 20,
+              padding: 24,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.08,
+              shadowRadius: 16,
+              elevation: 4,
+            }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 12, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 10 }}>
+                Password
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: colors.neutral[50],
+                  borderWidth: 1.5,
+                  borderColor: passwordError ? colors.error : colors.neutral[200],
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  fontFamily: 'DMSans_400Regular',
+                  color: colors.neutral[800],
+                  fontSize: 16,
+                  marginBottom: passwordError ? 8 : 20,
+                }}
+                placeholder="Enter password..."
+                placeholderTextColor={colors.neutral[400]}
+                secureTextEntry
+                autoCapitalize="characters"
+                value={password}
+                onChangeText={t => { setPassword(t); setPasswordError(''); }}
+                onSubmitEditing={handleLogin}
+              />
+              {passwordError ? (
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.error, fontSize: 13, marginBottom: 16 }}>
+                  {passwordError}
+                </Text>
+              ) : null}
+
+              <Pressable
+                onPress={handleLogin}
+                style={{
+                  backgroundColor: password.trim() ? colors.primary[500] : colors.neutral[200],
+                  paddingVertical: 16,
+                  borderRadius: 14,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: password.trim() ? 'white' : colors.neutral[400], fontSize: 16 }}>
+                  Sign In
+                </Text>
+              </Pressable>
+            </View>
+          </Animated.View>
+        </View>
+      </View>
     );
   }
 
-  // ── Messages list view ──
+  // ── Messages list ──
   if (adminView === 'messages') {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#111827' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#1F2937' }}>
-          <Pressable onPress={() => { setAdminView('dashboard'); fetchUnreadCounts(); }} style={{ padding: 8, marginLeft: -8, marginRight: 8 }}>
-            <ArrowLeft size={24} color="white" />
-          </Pressable>
-          <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>Messages</Text>
+      <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <View style={{
+          paddingTop: insets.top + 16,
+          paddingBottom: 20,
+          paddingHorizontal: 24,
+          backgroundColor: colors.primary[500],
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={() => { setAdminView('dashboard'); fetchUnreadCounts(); }} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
+              <ArrowLeft size={24} color="white" />
+            </Pressable>
+            <View>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>Messages</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 1 }}>
+                Participant conversations
+              </Text>
+            </View>
+          </View>
         </View>
 
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
           {participants.length === 0 ? (
-            <View style={{ alignItems: 'center', paddingTop: 80 }}>
-              <User size={48} color="#374151" />
-              <Text style={{ color: '#6B7280', fontSize: 16, marginTop: 16 }}>No participants yet</Text>
-            </View>
+            <Animated.View entering={FadeInUp.duration(500)} style={{ alignItems: 'center', paddingTop: 80 }}>
+              <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.neutral[100], alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <User size={40} color={colors.neutral[300]} />
+              </View>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[600], fontSize: 17 }}>No participants yet</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 6, textAlign: 'center' }}>
+                Participants will appear once they join
+              </Text>
+            </Animated.View>
           ) : (
-            participants.map(p => {
+            participants.map((p, i) => {
               const unread = unreadCounts[p.code] ?? 0;
               return (
-                <Pressable
-                  key={p.code}
-                  onPress={async () => {
-                    setSelectedCode(p.code);
-                    setSelectedName(p.userName ?? 'Participant');
-                    setIsLoadingMessages(true);
-                    setAdminView('conversation');
-                    await fetchConvMessages(p.code);
-                    setIsLoadingMessages(false);
-                    await markRead(p.code);
-                  }}
-                  style={{ backgroundColor: '#1F2937', borderRadius: 16, padding: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center' }}
-                >
-                  <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: '#374151', alignItems: 'center', justifyContent: 'center' }}>
-                    <User size={24} color="#9CA3AF" />
-                  </View>
-                  <View style={{ flex: 1, marginLeft: 14 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>{p.userName}</Text>
+                <Animated.View key={p.code} entering={FadeInDown.duration(400).delay(i * 80)}>
+                  <Pressable
+                    onPress={async () => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setSelectedCode(p.code);
+                      setSelectedName(p.userName ?? 'Participant');
+                      setIsLoadingMessages(true);
+                      setAdminView('conversation');
+                      await fetchConvMessages(p.code);
+                      setIsLoadingMessages(false);
+                      await markRead(p.code);
+                    }}
+                    style={{
+                      backgroundColor: 'white',
+                      borderRadius: 16,
+                      padding: 16,
+                      marginBottom: 12,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 8,
+                      elevation: 2,
+                      borderWidth: unread > 0 ? 1.5 : 0,
+                      borderColor: unread > 0 ? colors.gold[400] : 'transparent',
+                    }}
+                  >
+                    <View style={{
+                      width: 50, height: 50, borderRadius: 25,
+                      backgroundColor: unread > 0 ? colors.gold[100] : colors.primary[100],
+                      alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <User size={24} color={unread > 0 ? colors.gold[600] : colors.primary[500]} />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 14 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
+                          {p.userName}
+                        </Text>
+                        {unread > 0 && (
+                          <View style={{ backgroundColor: colors.gold[500], borderRadius: 12, minWidth: 24, height: 24, paddingHorizontal: 7, alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 12 }}>{unread}</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 3 }}>
+                        {p.userEmail}
+                      </Text>
                       {unread > 0 && (
-                        <View style={{ backgroundColor: '#F59E0B', borderRadius: 10, minWidth: 22, height: 22, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' }}>
-                          <Text style={{ color: 'black', fontSize: 12, fontWeight: 'bold' }}>{unread}</Text>
-                        </View>
+                        <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.gold[600], fontSize: 13, marginTop: 4 }}>
+                          {unread} new message{unread > 1 ? 's' : ''}
+                        </Text>
                       )}
                     </View>
-                    <Text style={{ color: '#6B7280', fontSize: 13, marginTop: 2 }}>{p.userEmail}</Text>
-                    {unread > 0 && (
-                      <Text style={{ color: '#F59E0B', fontSize: 13, marginTop: 4 }}>{unread} new message{unread > 1 ? 's' : ''}</Text>
-                    )}
-                  </View>
-                  <ChevronRight size={20} color="#4B5563" />
-                </Pressable>
+                    <ChevronRight size={20} color={colors.neutral[300]} />
+                  </Pressable>
+                </Animated.View>
               );
             })
           )}
         </ScrollView>
-      </SafeAreaView>
+      </View>
     );
   }
 
-  // ── Conversation view ──
+  // ── Conversation ──
   if (adminView === 'conversation') {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#111827' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#1F2937' }}>
-          <Pressable onPress={() => { setAdminView('messages'); fetchUnreadCounts(); }} style={{ padding: 8, marginLeft: -8, marginRight: 8 }}>
-            <ArrowLeft size={24} color="white" />
-          </Pressable>
-          <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#374151', alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
-            <User size={18} color="#9CA3AF" />
-          </View>
-          <View>
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>{selectedName}</Text>
-            <Text style={{ color: '#6B7280', fontSize: 12 }}>Participant</Text>
+      <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+        <View style={{
+          paddingTop: insets.top + 16,
+          paddingBottom: 16,
+          paddingHorizontal: 20,
+          backgroundColor: colors.primary[500],
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={() => { setAdminView('messages'); fetchUnreadCounts(); }} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
+              <ArrowLeft size={24} color="white" />
+            </Pressable>
+            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+              <User size={20} color="white" />
+            </View>
+            <View>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 17 }}>{selectedName}</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Participant</Text>
+            </View>
           </View>
         </View>
 
@@ -315,12 +476,15 @@ export default function AdminScreen() {
           <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 8 }}>
             {isLoadingMessages ? (
               <View style={{ alignItems: 'center', paddingTop: 60 }}>
-                <ActivityIndicator color="#F59E0B" />
+                <ActivityIndicator color={colors.primary[500]} />
               </View>
             ) : convMessages.length === 0 ? (
               <View style={{ alignItems: 'center', paddingTop: 60 }}>
-                <MessageCircle size={48} color="#374151" />
-                <Text style={{ color: '#6B7280', fontSize: 16, marginTop: 16 }}>No messages yet</Text>
+                <MessageCircle size={48} color={colors.neutral[300]} />
+                <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 16, marginTop: 16 }}>No messages yet</Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 14, marginTop: 4 }}>
+                  Send a message to {selectedName}
+                </Text>
               </View>
             ) : (
               convMessages.map((msg, index) => {
@@ -329,21 +493,33 @@ export default function AdminScreen() {
                 return (
                   <View key={msg.id}>
                     {showDate && (
-                      <Text style={{ color: '#6B7280', fontSize: 12, textAlign: 'center', marginVertical: 12 }}>{formatDate(msg.timestamp)}</Text>
+                      <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[400], fontSize: 12, textAlign: 'center', marginVertical: 14 }}>
+                        {formatDate(msg.timestamp)}
+                      </Text>
                     )}
                     <View style={{ marginBottom: 10, maxWidth: '80%', alignSelf: isFromMe ? 'flex-end' : 'flex-start' }}>
                       {!isFromMe && (
-                        <Text style={{ color: '#9CA3AF', fontSize: 11, marginBottom: 3 }}>{msg.senderName}</Text>
+                        <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.neutral[500], fontSize: 11, marginBottom: 3 }}>
+                          {msg.senderName}
+                        </Text>
                       )}
                       <View style={{
-                        paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18,
-                        backgroundColor: isFromMe ? '#F59E0B' : '#1F2937',
+                        paddingHorizontal: 16, paddingVertical: 11, borderRadius: 18,
+                        backgroundColor: isFromMe ? colors.primary[500] : 'white',
                         borderBottomRightRadius: isFromMe ? 4 : 18,
                         borderBottomLeftRadius: isFromMe ? 18 : 4,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 1 },
+                        shadowOpacity: isFromMe ? 0 : 0.05,
+                        shadowRadius: 4,
                       }}>
-                        <Text style={{ color: isFromMe ? 'black' : 'white', fontSize: 14, lineHeight: 20 }}>{msg.text}</Text>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', color: isFromMe ? 'white' : colors.neutral[800], fontSize: 15, lineHeight: 21 }}>
+                          {msg.text}
+                        </Text>
                       </View>
-                      <Text style={{ color: '#4B5563', fontSize: 11, marginTop: 2, textAlign: isFromMe ? 'right' : 'left' }}>{formatTime(msg.timestamp)}</Text>
+                      <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 3, textAlign: isFromMe ? 'right' : 'left' }}>
+                        {formatTime(msg.timestamp)}
+                      </Text>
                     </View>
                   </View>
                 );
@@ -351,150 +527,280 @@ export default function AdminScreen() {
             )}
           </ScrollView>
 
-          <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#1F2937' }}>
+          <View style={{
+            flexDirection: 'row', alignItems: 'flex-end',
+            paddingHorizontal: 16, paddingTop: 12, paddingBottom: insets.bottom + 8,
+            backgroundColor: 'white',
+            borderTopWidth: 1, borderTopColor: colors.neutral[100],
+          }}>
             <TextInput
               value={newMessage}
               onChangeText={setNewMessage}
               placeholder="Type your response..."
-              placeholderTextColor="#4B5563"
+              placeholderTextColor={colors.neutral[400]}
               multiline
-              style={{ flex: 1, backgroundColor: '#1F2937', color: 'white', borderRadius: 20, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, maxHeight: 100, fontSize: 15 }}
+              style={{
+                flex: 1,
+                backgroundColor: colors.neutral[100],
+                borderRadius: 22,
+                paddingHorizontal: 18,
+                paddingTop: 11,
+                paddingBottom: 11,
+                maxHeight: 100,
+                fontFamily: 'DMSans_400Regular',
+                color: colors.neutral[800],
+                fontSize: 15,
+              }}
             />
             <Pressable
               onPress={handleSend}
               disabled={!newMessage.trim() || isSending}
-              style={{ marginLeft: 8, width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: newMessage.trim() ? '#F59E0B' : '#374151' }}
+              style={{
+                marginLeft: 10, width: 46, height: 46, borderRadius: 23,
+                alignItems: 'center', justifyContent: 'center',
+                backgroundColor: newMessage.trim() ? colors.primary[500] : colors.neutral[200],
+              }}
             >
-              {isSending ? <ActivityIndicator size="small" color="black" /> : <Send size={20} color={newMessage.trim() ? 'black' : '#6B7280'} />}
+              {isSending
+                ? <ActivityIndicator size="small" color="white" />
+                : <Send size={20} color={newMessage.trim() ? 'white' : colors.neutral[400]} />
+              }
             </Pressable>
           </View>
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // ── Dashboard ──
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#111827' }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#1F2937' }}>
-        <Pressable onPress={() => router.back()} style={{ padding: 8, marginLeft: -8 }}>
-          <ArrowLeft size={24} color="white" />
-        </Pressable>
-        <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', marginLeft: 8 }}>Access Code Admin</Text>
-      </View>
-
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-
-        {/* Messages Card */}
-        <Pressable
-          onPress={() => { fetchUnreadCounts(); setAdminView('messages'); }}
-          style={{ backgroundColor: '#1F2937', borderRadius: 16, padding: 16, marginBottom: 16, flexDirection: 'row', alignItems: 'center', borderWidth: totalUnread > 0 ? 1 : 0, borderColor: '#F59E0B' }}
-        >
-          <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: totalUnread > 0 ? 'rgba(245,158,11,0.2)' : '#374151', alignItems: 'center', justifyContent: 'center' }}>
-            <MessageCircle size={22} color={totalUnread > 0 ? '#F59E0B' : '#9CA3AF'} />
-          </View>
-          <View style={{ flex: 1, marginLeft: 14 }}>
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>Messages</Text>
-            <Text style={{ color: totalUnread > 0 ? '#F59E0B' : '#6B7280', fontSize: 13, marginTop: 2 }}>
-              {totalUnread > 0 ? `${totalUnread} unread message${totalUnread > 1 ? 's' : ''}` : 'View participant messages'}
+    <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+      {/* Header */}
+      <View style={{
+        paddingTop: insets.top + 16,
+        paddingBottom: 20,
+        paddingHorizontal: 24,
+        backgroundColor: colors.primary[500],
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={() => router.back()} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
+              <ArrowLeft size={24} color="white" />
+            </Pressable>
+            <ShieldCheck size={22} color={colors.gold[400]} />
+            <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24, marginLeft: 8 }}>
+              Admin Panel
             </Text>
           </View>
-          {totalUnread > 0 && (
-            <View style={{ backgroundColor: '#F59E0B', borderRadius: 12, minWidth: 26, height: 26, paddingHorizontal: 7, alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
-              <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 13 }}>{totalUnread}</Text>
+        </View>
+      </View>
+
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
+
+        {/* Stats row */}
+        <Animated.View entering={FadeInDown.duration(400)} style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+          <View style={{ flex: 1, backgroundColor: 'white', borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <Key size={18} color={colors.primary[500]} />
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 28, marginLeft: 8 }}>{unusedCodes.length}</Text>
             </View>
-          )}
-          <ChevronRight size={20} color="#4B5563" />
-        </Pressable>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>Available Codes</Text>
+          </View>
+          <View style={{ flex: 1, backgroundColor: 'white', borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <Users size={18} color={colors.success} />
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 28, marginLeft: 8 }}>{usedCodes.length}</Text>
+            </View>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>Enrolled Users</Text>
+          </View>
+        </Animated.View>
+
+        {/* Messages Card */}
+        <Animated.View entering={FadeInDown.duration(400).delay(60)}>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); fetchUnreadCounts(); setAdminView('messages'); }}
+            style={{
+              backgroundColor: totalUnread > 0 ? colors.primary[500] : 'white',
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.06,
+              shadowRadius: 8,
+              elevation: 2,
+            }}
+          >
+            <View style={{
+              width: 48, height: 48, borderRadius: 24,
+              backgroundColor: totalUnread > 0 ? 'rgba(255,255,255,0.2)' : colors.primary[100],
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <MessageCircle size={24} color={totalUnread > 0 ? 'white' : colors.primary[500]} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 14 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: totalUnread > 0 ? 'white' : colors.neutral[800], fontSize: 16 }}>
+                Messages
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: totalUnread > 0 ? 'rgba(255,255,255,0.8)' : colors.neutral[500], fontSize: 13, marginTop: 2 }}>
+                {totalUnread > 0 ? `${totalUnread} unread message${totalUnread > 1 ? 's' : ''}` : 'View participant messages'}
+              </Text>
+            </View>
+            {totalUnread > 0 && (
+              <View style={{ backgroundColor: colors.gold[400], borderRadius: 14, minWidth: 28, height: 28, paddingHorizontal: 8, alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 14 }}>{totalUnread}</Text>
+              </View>
+            )}
+            <ChevronRight size={20} color={totalUnread > 0 ? 'rgba(255,255,255,0.6)' : colors.neutral[300]} />
+          </Pressable>
+        </Animated.View>
 
         {/* Notation File Upload */}
-        <View style={{ backgroundColor: '#1F2937', borderRadius: 16, padding: 16, marginBottom: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-            <FileText size={20} color="#F59E0B" />
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginLeft: 8 }}>Notation File</Text>
-          </View>
-          {notationPdfUrl ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: 10, padding: 12, marginBottom: 12 }}>
-              <CheckCircle size={16} color="#10B981" />
-              <Text style={{ color: '#9CA3AF', fontSize: 12, marginLeft: 8, flex: 1 }} numberOfLines={1}>{notationPdfUrl.split('/').pop()}</Text>
+        <Animated.View entering={FadeInDown.duration(400).delay(120)}>
+          <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 18, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
+              <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.gold[100], alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+                <FileText size={18} color={colors.gold[600]} />
+              </View>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Notation File</Text>
             </View>
-          ) : (
-            <Text style={{ color: '#6B7280', fontSize: 13, marginBottom: 12 }}>No file uploaded yet.</Text>
-          )}
-          <Pressable
-            style={{ backgroundColor: isUploading ? '#374151' : '#F59E0B', paddingVertical: 12, borderRadius: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
-            onPress={handleUploadNotation}
-            disabled={isUploading}
-          >
-            {isUploading ? <ActivityIndicator color="#fff" size="small" /> : (
-              <>
-                <Upload size={16} color="black" />
-                <Text style={{ color: 'black', fontWeight: 'bold', marginLeft: 8 }}>{notationPdfUrl ? 'Replace File' : 'Upload Notation File'}</Text>
-              </>
+
+            {notationPdfUrl ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(34,197,94,0.08)', borderRadius: 10, padding: 12, marginBottom: 14 }}>
+                <CheckCircle size={16} color={colors.success} />
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], fontSize: 12, marginLeft: 8, flex: 1 }} numberOfLines={1}>
+                  {notationPdfUrl.split('/').pop()}
+                </Text>
+              </View>
+            ) : (
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 13, marginBottom: 14 }}>
+                No file uploaded yet.
+              </Text>
             )}
+
+            <Pressable
+              onPress={handleUploadNotation}
+              disabled={isUploading}
+              style={{
+                backgroundColor: isUploading ? colors.neutral[200] : colors.primary[500],
+                paddingVertical: 13,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {isUploading ? (
+                <ActivityIndicator size="small" color={colors.neutral[500]} />
+              ) : (
+                <>
+                  <Upload size={16} color="white" />
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', marginLeft: 8, fontSize: 14 }}>
+                    {notationPdfUrl ? 'Replace File' : 'Upload Notation File'}
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          </View>
+        </Animated.View>
+
+        {/* Generate Code Button */}
+        <Animated.View entering={FadeInDown.duration(400).delay(180)}>
+          <Pressable
+            onPress={handleGenerateCode}
+            style={{
+              backgroundColor: colors.gold[500],
+              paddingVertical: 16,
+              borderRadius: 16,
+              alignItems: 'center',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              marginBottom: 20,
+              shadowColor: colors.gold[500],
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          >
+            <Plus size={22} color="white" />
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16, marginLeft: 8 }}>
+              Generate New Code
+            </Text>
           </Pressable>
-        </View>
-
-        {/* Generate Button */}
-        <Pressable
-          style={{ backgroundColor: '#F59E0B', paddingVertical: 16, borderRadius: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}
-          onPress={handleGenerateCode}
-        >
-          <Plus size={24} color="black" />
-          <Text style={{ color: 'black', fontWeight: 'bold', fontSize: 16, marginLeft: 8 }}>Generate New Code</Text>
-        </Pressable>
-
-        {/* Stats */}
-        <View style={{ flexDirection: 'row', marginBottom: 16, gap: 12 }}>
-          <View style={{ flex: 1, backgroundColor: '#1F2937', padding: 16, borderRadius: 12 }}>
-            <Text style={{ color: '#9CA3AF' }}>Available</Text>
-            <Text style={{ color: 'white', fontSize: 32, fontWeight: 'bold' }}>{unusedCodes.length}</Text>
-          </View>
-          <View style={{ flex: 1, backgroundColor: '#1F2937', padding: 16, borderRadius: 12 }}>
-            <Text style={{ color: '#9CA3AF' }}>Used</Text>
-            <Text style={{ color: 'white', fontSize: 32, fontWeight: 'bold' }}>{usedCodes.length}</Text>
-          </View>
-        </View>
+        </Animated.View>
 
         {/* Available Codes */}
-        <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginBottom: 12 }}>Available Codes</Text>
-        {unusedCodes.length === 0 ? (
-          <View style={{ backgroundColor: '#1F2937', padding: 16, borderRadius: 12, marginBottom: 16 }}>
-            <Text style={{ color: '#6B7280', textAlign: 'center' }}>No codes available. Generate one above.</Text>
-          </View>
-        ) : (
-          unusedCodes.map(item => (
-            <View key={item.code} style={{ backgroundColor: '#1F2937', padding: 16, borderRadius: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <View>
-                <Text style={{ color: 'white', fontSize: 18, fontFamily: 'monospace', fontWeight: 'bold' }}>{item.code}</Text>
-                <Text style={{ color: '#6B7280', fontSize: 13 }}>Created: {new Date(item.createdAt).toLocaleDateString()}</Text>
+        {unusedCodes.length > 0 && (
+          <Animated.View entering={FadeInDown.duration(400).delay(240)}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 }}>
+              Available Codes
+            </Text>
+            {unusedCodes.map(item => (
+              <View
+                key={item.code}
+                style={{
+                  backgroundColor: 'white', borderRadius: 14, padding: 16, marginBottom: 10,
+                  flexDirection: 'row', alignItems: 'center',
+                  shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[500], fontSize: 18, letterSpacing: 2 }}>{item.code}</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 2 }}>
+                    Created {new Date(item.createdAt).toLocaleDateString()}
+                  </Text>
+                </View>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <Pressable onPress={() => handleCopyCode(item.code)} style={{ backgroundColor: colors.neutral[100], padding: 10, borderRadius: 10 }}>
+                    {copiedCode === item.code ? <Check size={18} color={colors.success} /> : <Copy size={18} color={colors.neutral[600]} />}
+                  </Pressable>
+                  <Pressable onPress={() => handleShareCode(item.code)} style={{ backgroundColor: colors.primary[100], padding: 10, borderRadius: 10 }}>
+                    <Share2 size={18} color={colors.primary[500]} />
+                  </Pressable>
+                  <Pressable onPress={() => handleDeleteCode(item.code)} style={{ backgroundColor: 'rgba(239,68,68,0.1)', padding: 10, borderRadius: 10 }}>
+                    <Trash2 size={18} color={colors.error} />
+                  </Pressable>
+                </View>
               </View>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <Pressable style={{ backgroundColor: '#374151', padding: 10, borderRadius: 8 }} onPress={() => handleCopyCode(item.code)}>
-                  {copiedCode === item.code ? <Check size={20} color="#10B981" /> : <Copy size={20} color="white" />}
-                </Pressable>
-                <Pressable style={{ backgroundColor: 'rgba(239,68,68,0.2)', padding: 10, borderRadius: 8 }} onPress={() => handleDeleteCode(item.code)}>
-                  <Trash2 size={20} color="#EF4444" />
-                </Pressable>
-              </View>
-            </View>
-          ))
+            ))}
+          </Animated.View>
         )}
 
         {/* Used Codes */}
         {usedCodes.length > 0 && (
-          <>
-            <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginTop: 8, marginBottom: 12 }}>Used Codes</Text>
+          <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12, marginTop: 8 }}>
+              Enrolled Participants
+            </Text>
             {usedCodes.map(item => (
-              <View key={item.code} style={{ backgroundColor: 'rgba(31,41,55,0.5)', padding: 16, borderRadius: 12, marginBottom: 10 }}>
-                <Text style={{ color: '#6B7280', fontSize: 16, textDecorationLine: 'line-through' }}>{item.code}</Text>
-                <Text style={{ color: '#6B7280', fontSize: 13 }}>Used by: {item.usedBy}</Text>
-                <Text style={{ color: '#6B7280', fontSize: 13 }}>Used on: {item.usedAt ? new Date(item.usedAt).toLocaleDateString() : 'N/A'}</Text>
+              <View
+                key={item.code}
+                style={{
+                  backgroundColor: colors.neutral[50], borderRadius: 14, padding: 16, marginBottom: 10,
+                  flexDirection: 'row', alignItems: 'center',
+                  borderWidth: 1, borderColor: colors.neutral[100],
+                }}
+              >
+                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                  <User size={20} color={colors.primary[500]} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 15 }}>
+                    {item.userName ?? item.usedBy}
+                  </Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 2 }}>
+                    {item.code} · Joined {item.usedAt ? new Date(item.usedAt).toLocaleDateString() : ''}
+                  </Text>
+                </View>
+                <CheckCircle size={18} color={colors.success} />
               </View>
             ))}
-          </>
+          </Animated.View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

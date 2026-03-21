@@ -35,8 +35,35 @@
       "senderName": "GUEST",
       "text": "Hey BaKari this is a test message",
       "timestamp": "2026-03-21T01:58:22.479Z",
-      "readByAdmin": false,
+      "readByAdmin": true,
       "readByParticipant": true
+    },
+    {
+      "id": "1774059488015-b398lwag9n",
+      "senderId": "admin",
+      "senderName": "BaKari Lindsay",
+      "text": "Hey what would you like to ask",
+      "timestamp": "2026-03-21T02:18:08.015Z",
+      "readByAdmin": true,
+      "readByParticipant": false
+    },
+    {
+      "id": "1774059547288-1sy4tnfcyn7",
+      "senderId": "participant",
+      "senderName": "GUEST",
+      "text": "I was just testing this app to make sure it all works",
+      "timestamp": "2026-03-21T02:19:07.288Z",
+      "readByAdmin": true,
+      "readByParticipant": true
+    },
+    {
+      "id": "1774059584336-cgsh4363t55",
+      "senderId": "admin",
+      "senderName": "BaKari Lindsay",
+      "text": "Voool this works now",
+      "timestamp": "2026-03-21T02:19:44.336Z",
+      "readByAdmin": true,
+      "readByParticipant": false
     }
   ]
 }
