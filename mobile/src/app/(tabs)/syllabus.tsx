@@ -26,7 +26,7 @@ const triggerHaptic = () => {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 };
 
-const categories = ['All', 'Technique', 'Theory', 'Teaching Practice'] as const;
+const categories = ['All', 'Technique', 'Theory'] as const;
 
 export default function SyllabusScreen() {
   const insets = useSafeAreaInsets();
