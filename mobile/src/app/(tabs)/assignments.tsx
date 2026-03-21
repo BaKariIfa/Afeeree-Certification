@@ -134,6 +134,7 @@ export default function AssignmentsScreen() {
   };
 
   const handleRecordVideo = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Camera permission required'); return; }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['videos'], videoMaxDuration: 120, quality: 0.7 });
     if (result.canceled || !result.assets[0]) return;
