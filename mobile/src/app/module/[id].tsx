@@ -13,6 +13,7 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '@/lib/theme';
 import { mockModules } from '@/lib/mockData';
 import { useUserStore } from '@/lib/userStore';
+import { useResourcesStore } from '@/lib/resourcesStore';
 import ConfettiCelebration from '@/components/ConfettiCelebration';
 
 // Minimum session length to be recorded toward participation
@@ -57,6 +58,11 @@ export default function ModuleDetailScreen() {
   const markLessonComplete = useUserStore(s => s.markLessonComplete);
   const saveNote = useUserStore(s => s.saveNote);
   const addLessonStudyTime = useUserStore(s => s.addLessonStudyTime);
+
+  const historyPdfUrl = useResourcesStore(s => s.historyPdfUrl);
+  const loadResources = useResourcesStore(s => s.loadResources);
+
+  useEffect(() => { loadResources(); }, []);
 
   const module = mockModules.find(m => m.id === id);
 
@@ -150,8 +156,11 @@ export default function ModuleDetailScreen() {
 
   const handleViewNotation = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (module.pdfLink && module.pdfPage) {
-      const backendUrl = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
+    const backendUrl = process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
+    if (module.isHistoryModule && historyPdfUrl) {
+      const pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(historyPdfUrl)}`;
+      Linking.openURL(pageUrl);
+    } else if (module.pdfLink && module.pdfPage) {
       const pageUrl = `${backendUrl}/api/notation/view?url=${encodeURIComponent(module.pdfLink)}&startPage=${module.pdfPage}&endPage=${module.pdfEndPage ?? module.pdfPage}`;
       Linking.openURL(pageUrl);
     }

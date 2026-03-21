@@ -220,6 +220,22 @@ export const mockModules: Module[] = [
     contactHours: 4,
     videoUrl: 'https://vimeo.com/771232190',
   },
+  {
+    id: 'history',
+    title: 'History and Context of the Development of AFeeree',
+    description: 'Explore the historical roots and scholarly research behind the development of AFeeree — from its West African origins to its contemporary pedagogical framework. Required readings with timed study sessions.',
+    notationRef: 'History & Research Readings',
+    pdfPage: 1,
+    pdfEndPage: 10,
+    localImage: danceClassImage,
+    duration: '4 weeks',
+    lessons: 6,
+    completedLessons: 0,
+    isLocked: false,
+    category: 'Theory',
+    contactHours: 4,
+    isHistoryModule: true,
+  },
 ];
 
 export const mockAssignments: Assignment[] = [

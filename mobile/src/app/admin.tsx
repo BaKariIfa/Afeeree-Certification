@@ -28,6 +28,7 @@ import * as Haptics from 'expo-haptics';
 import { Share } from 'react-native';
 import { useAccessCodeStore, ADMIN_PASSWORD } from '@/lib/accessCodeStore';
 import { useNotationStore } from '@/lib/notationStore';
+import { useResourcesStore } from '@/lib/resourcesStore';
 import { uploadFile } from '@/lib/upload';
 import { colors } from '@/lib/theme';
 import { mockModules } from '@/lib/mockData';
@@ -129,6 +130,10 @@ export default function AdminScreen() {
   const setNotationPdfUrl = useNotationStore(s => s.setNotationPdfUrl);
   const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
 
+  const historyPdfUrl = useResourcesStore(s => s.historyPdfUrl);
+  const setHistoryPdfUrl = useResourcesStore(s => s.setHistoryPdfUrl);
+  const loadResources = useResourcesStore(s => s.loadResources);
+
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
     DMSans_400Regular,
@@ -144,6 +149,7 @@ export default function AdminScreen() {
       fetchProgress();
     }
     loadNotationPdfUrl();
+    loadResources();
   }, [isAdmin]);
 
   useEffect(() => {
@@ -355,6 +361,28 @@ export default function AdminScreen() {
       Alert.alert('Upload Failed', err instanceof Error ? err.message : 'Please try again.');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const [isUploadingHistory, setIsUploadingHistory] = useState(false);
+  const handleUploadHistoryPdf = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['application/pdf', 'image/*'],
+      copyToCacheDirectory: true,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0]!;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setIsUploadingHistory(true);
+    try {
+      const uploaded = await uploadFile(asset.uri, asset.name, asset.mimeType ?? 'application/pdf');
+      await setHistoryPdfUrl(uploaded.url);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('Success', `"${asset.name}" uploaded successfully.`);
+    } catch (err) {
+      Alert.alert('Upload Failed', err instanceof Error ? err.message : 'Please try again.');
+    } finally {
+      setIsUploadingHistory(false);
     }
   };
 
@@ -1363,6 +1391,58 @@ export default function AdminScreen() {
                   <Upload size={16} color="white" />
                   <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', marginLeft: 8, fontSize: 14 }}>
                     {notationPdfUrl ? 'Replace File' : 'Upload Notation File'}
+                  </Text>
+                </>
+              )}
+            </Pressable>
+          </View>
+        </Animated.View>
+
+        {/* History Readings Upload */}
+        <Animated.View entering={FadeInDown.duration(400).delay(130)}>
+          <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 18, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
+              <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+                <BookOpen size={18} color="#6366F1" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>History Readings</Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>History and Context of AFeeree</Text>
+              </View>
+            </View>
+
+            {historyPdfUrl ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(34,197,94,0.08)', borderRadius: 10, padding: 12, marginBottom: 14 }}>
+                <CheckCircle size={16} color={colors.success} />
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], fontSize: 12, marginLeft: 8, flex: 1 }} numberOfLines={1}>
+                  {historyPdfUrl.split('/').pop()}
+                </Text>
+              </View>
+            ) : (
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 13, marginBottom: 14 }}>
+                No readings file uploaded yet.
+              </Text>
+            )}
+
+            <Pressable
+              onPress={handleUploadHistoryPdf}
+              disabled={isUploadingHistory}
+              style={{
+                backgroundColor: isUploadingHistory ? colors.neutral[200] : '#6366F1',
+                paddingVertical: 13,
+                borderRadius: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {isUploadingHistory ? (
+                <ActivityIndicator size="small" color={colors.neutral[500]} />
+              ) : (
+                <>
+                  <Upload size={16} color="white" />
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', marginLeft: 8, fontSize: 14 }}>
+                    {historyPdfUrl ? 'Replace Readings File' : 'Upload Readings File'}
                   </Text>
                 </>
               )}
