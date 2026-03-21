@@ -180,13 +180,6 @@ export default function ModuleDetailScreen() {
         <View className="relative">
           <Image source={module.localImage || { uri: module.imageUrl }} style={{ width: '100%', height: 250 }} contentFit="cover" />
           <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.3)' }} />
-          <Pressable
-            onPress={() => { triggerHaptic(); router.back(); }}
-            className="absolute p-3 rounded-full"
-            style={{ top: insets.top + 8, left: 16, backgroundColor: 'rgba(0,0,0,0.5)' }}
-          >
-            <ArrowLeft size={24} color="white" />
-          </Pressable>
         </View>
 
         <View className="px-6 -mt-6">
@@ -305,6 +298,14 @@ export default function ModuleDetailScreen() {
         </View>
       </ScrollView>
 
+      {/* Fixed back button — always visible regardless of scroll */}
+      <Pressable
+        onPress={() => { triggerHaptic(); router.back(); }}
+        style={{ position: 'absolute', top: insets.top + 8, left: 16, zIndex: 10, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center' }}
+      >
+        <ArrowLeft size={22} color="white" />
+      </Pressable>
+
       {/* Lesson Detail Sheet */}
       {selectedLesson !== null && (
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
@@ -317,8 +318,8 @@ export default function ModuleDetailScreen() {
               <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.neutral[200] }} />
               <View style={{ flex: 1, alignItems: 'flex-end' }}>
                 <Pressable onPress={handleCloseSheet}
-                  style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.neutral[100], alignItems: 'center', justifyContent: 'center' }}>
-                  <X size={16} color={colors.neutral[500]} />
+                  style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.neutral[200], alignItems: 'center', justifyContent: 'center' }}>
+                  <X size={18} color={colors.neutral[700]} />
                 </Pressable>
               </View>
             </View>
