@@ -244,7 +244,7 @@ export const mockModules: Module[] = [
       { title: 'Lesson 2', startPage: 19, endPage: 22 },
       { title: 'Lesson 3', startPage: 23, endPage: 34 },
       { title: 'Lesson 4', startPage: 35, endPage: 38 },
-      { title: 'Lesson 5', startPage: 38, endPage: 41 },
+      { title: 'Lesson 5', startPage: 38, endPage: 43 },
     ],
   },
 ];
