@@ -638,6 +638,9 @@ export default function ProfileScreen() {
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 1 }}>
                 View your signed agreement
               </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 10, fontStyle: 'italic', marginTop: 2 }}>
+                One who studies, absorbs, and prepares to carry forward tradition
+              </Text>
             </View>
             <ChevronRight size={20} color="rgba(255,255,255,0.6)" />
           </Pressable>
@@ -885,8 +888,11 @@ export default function ProfileScreen() {
             </View>
 
             {/* Contact */}
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase mb-3">
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1 }} className="uppercase mb-1">
               Contact Your Jeli
+            </Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic', marginBottom: 12 }}>
+              A respected transmitter of history, culture, and embodied wisdom
             </Text>
             <View className="rounded-2xl overflow-hidden" style={{ borderWidth: 1, borderColor: colors.neutral[200] }}>
               <View className="flex-row items-center px-4 py-4" style={{ borderBottomWidth: 1, borderBottomColor: colors.neutral[100] }}>

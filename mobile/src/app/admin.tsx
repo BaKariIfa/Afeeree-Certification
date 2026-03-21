@@ -533,6 +533,9 @@ export default function AdminScreen() {
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 1 }}>
                 Kalanden conversations
               </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 11, fontStyle: 'italic', marginTop: 2 }}>
+                One who studies, absorbs, and prepares to carry forward tradition
+              </Text>
             </View>
           </View>
         </View>
@@ -1344,7 +1347,10 @@ export default function AdminScreen() {
           const videoHrs = (totalVideoMs / 3600000).toFixed(1);
           return (
             <Animated.View entering={FadeInDown.duration(400).delay(40)} style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 12 }}>Study Time — All Kalandenw</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase', marginBottom: 4 }}>Study Time — All Kalandenw</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginBottom: 12 }}>
+                One who studies, absorbs, and prepares to carry forward tradition
+              </Text>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <View style={{ flex: 1, backgroundColor: colors.gold[50], borderRadius: 12, padding: 14, alignItems: 'center' }}>
                   <FileText size={18} color={colors.gold[600]} />
@@ -1438,6 +1444,9 @@ export default function AdminScreen() {
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>Kalanden Progress</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>
                 Track modules, time & offer feedback
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.45)', fontSize: 10, fontStyle: 'italic', marginTop: 2 }}>
+                One who studies, absorbs, and prepares to carry forward tradition
               </Text>
             </View>
             <ChevronRight size={20} color="rgba(255,255,255,0.6)" />
@@ -1588,6 +1597,7 @@ export default function AdminScreen() {
             <View style={{ flex: 1 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Kalanden Agreement</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>View the Kalanden consent form</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 10, fontStyle: 'italic', marginTop: 2 }}>One who studies, absorbs, and prepares to carry forward tradition</Text>
             </View>
             <ChevronRight size={18} color={colors.neutral[400]} />
           </Pressable>
