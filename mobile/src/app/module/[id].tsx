@@ -394,7 +394,7 @@ export default function ModuleDetailScreen() {
                     <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: complete ? colors.success : hasStudied ? colors.gold[700] : colors.neutral[400] }}>
                       {complete ? 'Completed' : hasStudied
                         ? `${formatStudyTime(studiedMs)} studied${lessonDone ? ' — ready to complete' : ''}`
-                        : 'Tap to open readings & begin study'}
+                        : module.isHistoryModule ? 'Tap to open readings & begin study' : 'Tap to open notation & begin study'}
                     </Text>
                   </View>
                   <ChevronRight size={18} color={complete ? colors.success : colors.neutral[300]} />
