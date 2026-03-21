@@ -26,6 +26,15 @@
       "senderName": "GUEST",
       "text": "HEY BAKARI I HAVE A QUESTION DO YOU HAVE SOME TIME NOMW",
       "timestamp": "2026-03-21T01:41:41.528Z",
+      "readByAdmin": true,
+      "readByParticipant": true
+    },
+    {
+      "id": "1774058302479-g4pa93oaozt",
+      "senderId": "participant",
+      "senderName": "GUEST",
+      "text": "Hey BaKari this is a test message",
+      "timestamp": "2026-03-21T01:58:22.479Z",
       "readByAdmin": false,
       "readByParticipant": true
     }

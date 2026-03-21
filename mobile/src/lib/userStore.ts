@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAccessCodeStore } from './accessCodeStore';
 
 interface UserState {
   name: string;
@@ -57,6 +58,10 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ hasAccess, accessCode: code });
     AsyncStorage.setItem('hasAccess', hasAccess ? 'true' : 'false');
     AsyncStorage.setItem('accessCode', code);
+    // Entering as a participant always clears instructor/admin mode
+    if (code) {
+      useAccessCodeStore.getState().setAdmin(false);
+    }
   },
 
   setDemoMode: (value) => {
@@ -76,7 +81,9 @@ export const useUserStore = create<UserState>((set, get) => ({
       'notes',
       'practiceTime',
       'darkMode',
+      'isAdmin',
     ]);
+    useAccessCodeStore.getState().setAdmin(false);
     set({
       name: '',
       email: '',
