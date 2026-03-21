@@ -22,6 +22,7 @@ import { Audio } from 'expo-av';
 import { colors } from '@/lib/theme';
 import { resourceLinks, videoLinks, mandinkaTerms, foundationalPrinciples } from '@/lib/mockData';
 import { useNotationStore } from '@/lib/notationStore';
+import { useResourcesStore } from '@/lib/resourcesStore';
 import { useUserStore } from '@/lib/userStore';
 import VideoModal from '@/components/VideoModal';
 
@@ -42,7 +43,11 @@ export default function ResourcesScreen() {
   const loadNotationPdfUrl = useNotationStore(s => s.loadNotationPdfUrl);
   const isDemoMode = useUserStore(s => s.isDemoMode);
 
-  React.useEffect(() => { loadNotationPdfUrl(); }, []);
+  const researchDocUrl = useResourcesStore(s => s.researchDocUrl);
+  const researchVideoId = useResourcesStore(s => s.researchVideoId);
+  const loadResources = useResourcesStore(s => s.loadResources);
+
+  React.useEffect(() => { loadNotationPdfUrl(); loadResources(); }, []);
 
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_700Bold,
@@ -76,6 +81,16 @@ export default function ResourcesScreen() {
     WebBrowser.openBrowserAsync(viewerUrl, {
       presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
     });
+  };
+
+  const openResearchDoc = () => {
+    const url = researchDocUrl ?? resourceLinks.culturalResearch;
+    openRawPdf(url);
+  };
+
+  const openResearchVideo = () => {
+    const vimeoId = researchVideoId ?? videoLinks.keyPrinciples;
+    openVideo(vimeoId, 'Seven Foundational Principles', 'Key movement principles');
   };
 
   const openVideo = (vimeoId: string, title: string, subtitle: string) => {
@@ -186,7 +201,7 @@ export default function ResourcesScreen() {
             Cultural Research
           </Text>
           <Pressable
-            onPress={() => openRawPdf(resourceLinks.culturalResearch)}
+            onPress={openResearchDoc}
             className="p-4 rounded-2xl flex-row items-center"
             style={{
               backgroundColor: 'white',
@@ -227,7 +242,7 @@ export default function ResourcesScreen() {
             Video: Key Principles
           </Text>
           <Pressable
-            onPress={() => openVideo(videoLinks.keyPrinciples, 'Seven Foundational Principles', 'Key movement principles')}
+            onPress={openResearchVideo}
             className="p-4 rounded-2xl flex-row items-center"
             style={{
               backgroundColor: colors.primary[500],
