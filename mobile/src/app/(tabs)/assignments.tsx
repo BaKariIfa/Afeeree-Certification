@@ -75,6 +75,7 @@ export default function AssignmentsScreen() {
   const isDemoMode = useUserStore(s => s.isDemoMode);
   const accessCode = useUserStore(s => s.accessCode);
   const userName = useUserStore(s => s.name);
+  const incrementCompletedTasks = useUserStore(s => s.incrementCompletedTasks);
 
   const submitToBackend = async (type: 'video' | 'file' | 'reflection', fileUrl?: string, fileName?: string, reflection?: string) => {
     if (!selectedAssignment) return;
@@ -96,6 +97,7 @@ export default function AssignmentsScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setSubmitted(true);
       setTaskView('detail');
+      incrementCompletedTasks();
       if (selectedAssignment) fetchMySubmissions(selectedAssignment.title);
       setTimeout(() => { setSubmitted(false); closeModal(); }, 2500);
     } catch (e) {

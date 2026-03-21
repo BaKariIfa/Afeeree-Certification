@@ -15,6 +15,7 @@ interface UserState {
   notes: Record<string, string>;
   practiceTime: number;
   darkMode: boolean;
+  completedTasks: number;
 
   // Actions
   setUser: (name: string, email: string) => void;
@@ -25,6 +26,7 @@ interface UserState {
   saveNote: (moduleId: string, note: string) => void;
   addPracticeTime: (seconds: number) => void;
   toggleDarkMode: () => void;
+  incrementCompletedTasks: () => void;
   loadUserData: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -42,6 +44,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   notes: {},
   practiceTime: 0,
   darkMode: false,
+  completedTasks: 0,
 
   setUser: (name, email) => {
     set({ name, email });
@@ -82,6 +85,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       'practiceTime',
       'darkMode',
       'isAdmin',
+      'completedTasks',
     ]);
     useAccessCodeStore.getState().setAdmin(false);
     set({
@@ -97,6 +101,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       notes: {},
       practiceTime: 0,
       darkMode: false,
+      completedTasks: 0,
     });
   },
 
@@ -135,6 +140,12 @@ export const useUserStore = create<UserState>((set, get) => ({
     AsyncStorage.setItem('darkMode', newValue ? 'true' : 'false');
   },
 
+  incrementCompletedTasks: () => {
+    const newCount = get().completedTasks + 1;
+    set({ completedTasks: newCount });
+    AsyncStorage.setItem('completedTasks', newCount.toString());
+  },
+
   loadUserData: async () => {
     try {
       const [
@@ -149,6 +160,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         notes,
         practiceTime,
         darkMode,
+        completedTasks,
       ] = await Promise.all([
         AsyncStorage.getItem('userName'),
         AsyncStorage.getItem('userEmail'),
@@ -161,6 +173,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         AsyncStorage.getItem('notes'),
         AsyncStorage.getItem('practiceTime'),
         AsyncStorage.getItem('darkMode'),
+        AsyncStorage.getItem('completedTasks'),
       ]);
 
       set({
@@ -175,6 +188,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         notes: notes ? JSON.parse(notes) : {},
         practiceTime: practiceTime ? parseInt(practiceTime, 10) : 0,
         darkMode: darkMode === 'true',
+        completedTasks: completedTasks ? parseInt(completedTasks, 10) : 0,
       });
     } catch (error) {
       console.error('Error loading user data:', error);

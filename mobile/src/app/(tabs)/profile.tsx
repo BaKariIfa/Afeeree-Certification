@@ -100,6 +100,7 @@ export default function ProfileScreen() {
   const darkMode = useUserStore(s => s.darkMode);
   const toggleDarkMode = useUserStore(s => s.toggleDarkMode);
   const isDemoMode = useUserStore(s => s.isDemoMode);
+  const completedTasks = useUserStore(s => s.completedTasks);
   const logout = useUserStore(s => s.logout);
 
   useEffect(() => {
@@ -218,7 +219,7 @@ export default function ProfileScreen() {
     return moduleLessons === m.lessons && m.lessons > 0;
   }).length;
 
-  const completedAssignments = mockAssignments.filter(a => a.status === 'graded').length;
+  const completedAssignments = completedTasks;
 
   // Achievements data
   const achievements = [
@@ -251,8 +252,8 @@ export default function ProfileScreen() {
     },
     {
       id: 4,
-      title: 'Assignment Ace',
-      description: 'Submit 5 assignments',
+      title: 'Task Achiever',
+      description: 'Submit 5 tasks',
       icon: <FileCheck size={20} color={colors.primary[500]} />,
       earned: completedAssignments >= 5,
       progress: Math.min(completedAssignments, 5),
@@ -439,7 +440,7 @@ export default function ProfileScreen() {
                   {completedAssignments}
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-xs">
-                  Assignments
+                  Tasks Done
                 </Text>
               </View>
             </View>
