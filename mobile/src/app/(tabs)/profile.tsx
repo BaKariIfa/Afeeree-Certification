@@ -876,7 +876,7 @@ export default function ProfileScreen() {
                     Direct Contact
                   </Text>
                   <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>
-                    Reach out to your instructor directly for urgent help
+                    bakari@afeeree.com
                   </Text>
                 </View>
               </View>
