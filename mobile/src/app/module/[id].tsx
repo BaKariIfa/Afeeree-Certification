@@ -311,7 +311,17 @@ export default function ModuleDetailScreen() {
           <Pressable style={{ flex: 1 }} onPress={handleCloseSheet} />
           <Animated.View entering={FadeInUp.duration(300)}
             style={{ backgroundColor: 'white', borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 24, paddingTop: 16, paddingBottom: insets.bottom + 24 }}>
-            <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.neutral[200], alignSelf: 'center', marginBottom: 20 }} />
+            {/* Header row: drag indicator + close button */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+              <View style={{ flex: 1 }} />
+              <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.neutral[200] }} />
+              <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                <Pressable onPress={handleCloseSheet}
+                  style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.neutral[100], alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 18, lineHeight: 20 }}>×</Text>
+                </Pressable>
+              </View>
+            </View>
 
             {isLessonComplete(selectedLesson) ? (
               <View style={{ alignItems: 'center', paddingVertical: 16 }}>
