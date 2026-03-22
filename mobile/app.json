@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vibecode.afeereecertificationprogram.8nfkhv",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
         "NSCameraUsageDescription": "AFeeree Certification Program uses the camera to capture photos inside the app before you publish them.",
         "NSPhotoLibraryUsageDescription": "AFeeree Certification Program accesses your photo library to let you choose media that appears in the app.",
