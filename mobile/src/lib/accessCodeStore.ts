@@ -39,6 +39,7 @@ export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
   },
 
   loadCodes: async () => {
+    if (!BACKEND_URL) return;
     try {
       const res = await fetch(`${BACKEND_URL}/api/codes`, {
         headers: { 'x-admin-password': ADMIN_PASSWORD },
@@ -52,6 +53,7 @@ export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
   },
 
   generateCode: async () => {
+    if (!BACKEND_URL) throw new Error('Backend not configured');
     const res = await fetch(`${BACKEND_URL}/api/codes/generate`, {
       method: 'POST',
       headers: { 'x-admin-password': ADMIN_PASSWORD },
@@ -68,6 +70,7 @@ export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
   },
 
   deleteCode: async (code: string) => {
+    if (!BACKEND_URL) return;
     await fetch(`${BACKEND_URL}/api/codes/${encodeURIComponent(code)}`, {
       method: 'DELETE',
       headers: { 'x-admin-password': ADMIN_PASSWORD },
@@ -90,6 +93,7 @@ export const useAccessCodeStore = create<AccessCodeStore>((set) => ({
   },
 
   isCodeValid: async (code: string) => {
+    if (!BACKEND_URL) return { valid: false, userName: null, userEmail: null };
     try {
       const res = await fetch(`${BACKEND_URL}/api/codes/validate`, {
         method: 'POST',
