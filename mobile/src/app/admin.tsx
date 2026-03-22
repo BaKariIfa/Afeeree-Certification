@@ -423,9 +423,14 @@ export default function AdminScreen() {
               <ArrowLeft size={24} color="white" />
             </Pressable>
             <ShieldCheck size={22} color={colors.gold[400]} />
-            <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22, marginLeft: 8 }}>
-              JELI Panel
-            </Text>
+            <View style={{ marginLeft: 8 }}>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22 }}>
+                JELI Panel
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
+                AFeeree Certification
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -1317,9 +1322,14 @@ export default function AdminScreen() {
               <ArrowLeft size={24} color="white" />
             </Pressable>
             <ShieldCheck size={22} color={colors.gold[400]} />
-            <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24, marginLeft: 8 }}>
-              JELI Panel
-            </Text>
+            <View style={{ marginLeft: 8 }}>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>
+                JELI Panel
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
+                AFeeree Certification
+              </Text>
+            </View>
           </View>
         </View>
       </View>

@@ -472,12 +472,17 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
         >
           <View className="flex-row items-center">
             <ShieldCheck size={24} color={colors.gold[400]} />
-            <Text
-              style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white' }}
-              className="text-xl ml-3"
-            >
-              JELI Panel
-            </Text>
+            <View style={{ marginLeft: 12 }}>
+              <Text
+                style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white' }}
+                className="text-xl"
+              >
+                JELI Panel
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
+                AFeeree Certification
+              </Text>
+            </View>
           </View>
           <Pressable onPress={onClose} className="p-2">
             <X size={24} color="white" />
