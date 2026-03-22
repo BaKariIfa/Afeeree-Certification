@@ -56,7 +56,7 @@ const CLAUSES = [
   {
     id: 'certification',
     title: '6. Certification & Assessment',
-    body: "Certification is awarded upon satisfactory completion of all required modules, assessments, and any practical evaluations as defined by AFeeree. AFeeree reserves the right to withhold or revoke certification where a Kalanden fails to meet the required standard, breaches this Agreement, or engages in conduct unbecoming of a certified practitioner.\n\nAFeeree's decision regarding certification is final.",
+    body: "Participation in the foundation phase of the Programme does not guarantee certification. The foundation phase represents the beginning of a journey towards certification and is intended to provide Kalandenw with the foundational knowledge, skills, and experience necessary to progress.\n\nCertification is awarded upon satisfactory completion of all required modules, assessments, and any practical evaluations as defined by AFeeree. AFeeree reserves the right to withhold or revoke certification where a Kalanden fails to meet the required standard, breaches this Agreement, or engages in conduct unbecoming of a certified practitioner.\n\nAFeeree's decision regarding certification is final.",
   },
   {
     id: 'conduct',
