@@ -424,7 +424,7 @@ export default function AdminScreen() {
             </Pressable>
             <ShieldCheck size={22} color={colors.gold[400]} />
             <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22, marginLeft: 8 }}>
-              Admin Panel
+              JELI Panel
             </Text>
           </View>
         </View>
@@ -446,7 +446,7 @@ export default function AdminScreen() {
                 <Lock size={40} color={colors.gold[600]} />
               </View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 28, marginBottom: 8 }}>
-                Admin Access
+                JELI Panel
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
                 Enter your password to manage the AFeeree program
@@ -1318,7 +1318,7 @@ export default function AdminScreen() {
             </Pressable>
             <ShieldCheck size={22} color={colors.gold[400]} />
             <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24, marginLeft: 8 }}>
-              Admin Panel
+              JELI Panel
             </Text>
           </View>
         </View>

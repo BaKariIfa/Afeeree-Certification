@@ -476,7 +476,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
               style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white' }}
               className="text-xl ml-3"
             >
-              Admin Panel
+              JELI Panel
             </Text>
           </View>
           <Pressable onPress={onClose} className="p-2">
@@ -497,7 +497,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
               </View>
 
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }} className="text-xl text-center mb-2">
-                Admin Access
+              JELI Panel
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm text-center mb-6">
                 Enter the admin password to manage access codes

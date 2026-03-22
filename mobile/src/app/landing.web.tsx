@@ -523,7 +523,7 @@ export default function LandingPage() {
               fontSize: 12,
             }}
           >
-            Admin
+            JELI Panel
           </Text>
         </Pressable>
       </View>
