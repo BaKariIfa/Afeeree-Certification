@@ -582,7 +582,7 @@ export default function LandingPage() {
           }}
         >
           <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[800], fontSize: 18 }}>
-            Introductory Course — Enrol Now
+            Foundation Course — Enrol Now
           </Text>
           <ArrowRight size={22} color={colors.primary[800]} style={{ marginLeft: 10 }} />
         </Pressable>
