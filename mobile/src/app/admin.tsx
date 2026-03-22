@@ -1348,7 +1348,7 @@ export default function AdminScreen() {
           </View>
           <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: 14 }}>
             <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 26 }}>{usedCodes.length}</Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 2 }}>Enrolled</Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 2 }}>Kalandenw</Text>
           </View>
           <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: 14 }}>
             <Text style={{ fontFamily: 'DMSans_600SemiBold', color: totalUnread > 0 ? colors.gold[300] : 'white', fontSize: 26 }}>{totalUnread}</Text>
@@ -1370,8 +1370,11 @@ export default function AdminScreen() {
               <MessageCircle size={20} color={totalUnread > 0 ? colors.primary[500] : colors.neutral[400]} />
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Messages</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Kalanden conversations</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                Kalanden{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Messages</Text>
             </View>
             {totalUnread > 0 && (
               <View style={{ backgroundColor: colors.primary[500], borderRadius: 10, minWidth: 22, height: 22, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
@@ -1389,8 +1392,11 @@ export default function AdminScreen() {
               <Inbox size={20} color={colors.gold[600]} />
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Submissions</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Review Kalanden work</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                Kalanden{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Submissions</Text>
             </View>
             <ChevronRight size={18} color={colors.neutral[300]} />
           </Pressable>
@@ -1403,8 +1409,11 @@ export default function AdminScreen() {
               <BarChart2 size={20} color="#16A34A" />
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Progress</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Track Kalanden learning</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                Kalanden{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Progress</Text>
             </View>
             <ChevronRight size={18} color={colors.neutral[300]} />
           </Pressable>
@@ -1417,8 +1426,11 @@ export default function AdminScreen() {
               <MessageCircle size={20} color="#6366F1" />
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Discussions</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Forum activity</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                Kalandenw{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carriers of Tradition</Text>
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Discussions</Text>
             </View>
             <ChevronRight size={18} color={colors.neutral[300]} />
           </Pressable>
@@ -1431,8 +1443,11 @@ export default function AdminScreen() {
               <FileText size={20} color={colors.gold[600]} />
             </View>
             <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Agreement</Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Participant agreement</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>
+                Kalanden{' '}
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Agreement</Text>
             </View>
             <ChevronRight size={18} color={colors.neutral[300]} />
           </Pressable>
@@ -1544,9 +1559,14 @@ export default function AdminScreen() {
         {/* Enrolled */}
         {usedCodes.length > 0 && (
           <Animated.View entering={FadeInDown.duration(350).delay(180)}>
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[400], fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 10 }}>
-              Enrolled Kalandenw
-            </Text>
+            <View style={{ marginBottom: 10 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 13 }}>
+                Kalandenw
+              </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, fontStyle: 'italic' }}>
+                — Carriers of Tradition · Enrolled
+              </Text>
+            </View>
             <View style={{ backgroundColor: 'white', borderRadius: 16, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 }}>
               {usedCodes.map((item, idx) => (
                 <View
