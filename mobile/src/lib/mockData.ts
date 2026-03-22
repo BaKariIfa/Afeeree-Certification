@@ -25,7 +25,7 @@ export const kataLinks = {
 
 // Video Demonstrations
 export const videoLinks = {
-  part1: 'https://vimeo.com/455075353',
+  part1: 'https://vimeo.com/1175845245/114d8fb946',
   part2: 'https://vimeo.com/455075798',
   keyPrinciples: 'https://vimeo.com/771232190',
 };

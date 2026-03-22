@@ -17,10 +17,13 @@ interface VideoModalProps {
   previewMode?: boolean;
 }
 
-function getVimeoId(url: string): string {
-  // Accepts full URL like https://vimeo.com/455075353 or just the ID
+function getVimeoId(url: string): { id: string; h?: string } {
+  // Accepts full URL like https://vimeo.com/455075353 or private https://vimeo.com/123456/abcdef or just the ID
+  const privateMatch = url.match(/vimeo\.com\/(\d+)\/([a-f0-9]+)/i);
+  if (privateMatch) return { id: privateMatch[1], h: privateMatch[2] };
   const match = url.match(/vimeo\.com\/(\d+)/);
-  return match ? match[1] : url;
+  if (match) return { id: match[1] };
+  return { id: url };
 }
 
 export default function VideoModal({ visible, onClose, vimeoId, title, subtitle, previewMode }: VideoModalProps) {
@@ -30,7 +33,10 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle,
   const [expired, setExpired] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const id = getVimeoId(vimeoId);
+  const { id, h } = getVimeoId(vimeoId);
+  const vimeoSrc = h
+    ? `https://player.vimeo.com/video/${id}?h=${h}&autoplay=1&color=C9963C&title=0&byline=0&portrait=0&playsinline=1`
+    : `https://player.vimeo.com/video/${id}?autoplay=1&color=C9963C&title=0&byline=0&portrait=0&playsinline=1`;
 
   // Reset and start timer when modal opens in preview mode
   useEffect(() => {
@@ -70,7 +76,7 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle,
 </head>
 <body>
   <iframe
-    src="https://player.vimeo.com/video/${id}?autoplay=1&color=C9963C&title=0&byline=0&portrait=0&playsinline=1"
+    src="${vimeoSrc}"
     allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
     allowfullscreen
   ></iframe>
@@ -193,7 +199,7 @@ export default function VideoModal({ visible, onClose, vimeoId, title, subtitle,
           )}
           {id && embedHtml && !expired ? (
             <WebView
-              key={id}
+              key={`${id}-${h ?? ''}`}
               source={{ html: embedHtml, baseUrl: 'https://player.vimeo.com' }}
               style={{ flex: 1, backgroundColor: '#000' }}
               allowsFullscreenVideo
