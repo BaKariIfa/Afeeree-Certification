@@ -32,7 +32,8 @@
         "distribution": "store"
       },
       "android": {
-        "distribution": "store"
+        "distribution": "store",
+        "resourceClass": "large"
       }
     }
   },
