@@ -474,8 +474,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
             <ShieldCheck size={24} color={colors.gold[400]} />
             <View style={{ marginLeft: 12 }}>
               <Text
-                style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white' }}
-                className="text-xl"
+                style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 15 }}
               >
                 JELI - Keeper of the Legacy
               </Text>

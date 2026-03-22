@@ -424,7 +424,7 @@ export default function AdminScreen() {
             </Pressable>
             <ShieldCheck size={22} color={colors.gold[400]} />
             <View style={{ marginLeft: 8 }}>
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22 }}>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 15 }}>
                 JELI - Keeper of the Legacy
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
@@ -1326,7 +1326,7 @@ export default function AdminScreen() {
             </Pressable>
             <ShieldCheck size={22} color={colors.gold[400]} />
             <View style={{ marginLeft: 8 }}>
-              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>
+              <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 15 }}>
                 JELI - Keeper of the Legacy
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
