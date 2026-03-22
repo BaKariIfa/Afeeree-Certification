@@ -326,7 +326,7 @@ export default function HomeScreen() {
           </View>
         </Animated.View>
 
-        {/* Certification Pathway */}
+        {/* Certification Pathway Card */}
         <Animated.View entering={FadeInDown.duration(600).delay(230)} className="px-6 mt-5">
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowPathway(v => !v); }}
