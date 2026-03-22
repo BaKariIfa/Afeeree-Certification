@@ -56,6 +56,7 @@ export default function LandingPage() {
   });
 
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [showPathway, setShowPathway] = useState(false);
 
   if (!fontsLoaded) {
     return null;
@@ -359,52 +360,82 @@ export default function LandingPage() {
       </View>
 
       {/* Certification Pathway Section */}
-      <View style={{ padding: 24, paddingVertical: 60, backgroundColor: colors.primary[700] }}>
-        <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.gold[400], fontSize: 13, letterSpacing: 2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 8 }}>
-          Your Journey
-        </Text>
-        <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 28, textAlign: 'center', marginBottom: 8, lineHeight: 36 }}>
-          Certification Pathway
-        </Text>
-        <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 15, textAlign: 'center', marginBottom: 48, maxWidth: 520, alignSelf: 'center', lineHeight: 24 }}>
-          Becoming a certified practitioner of the Physical Language unfolds across three distinct phases, each building on the last.
-        </Text>
-
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, justifyContent: 'center', maxWidth: 1000, alignSelf: 'center', width: '100%' }}>
-          {CERTIFICATION_PHASES.map((phase) => (
-            <View
-              key={phase.label}
-              style={{
-                backgroundColor: 'rgba(255,255,255,0.07)',
-                borderRadius: 20,
-                padding: 28,
-                width: 300,
-                borderWidth: 1,
-                borderColor: 'rgba(255,255,255,0.12)',
-              }}
+      <View style={{ padding: 24, paddingVertical: 32, backgroundColor: colors.neutral[100] }}>
+        <View style={{ maxWidth: 700, alignSelf: 'center', width: '100%' }}>
+          <Pressable
+            onPress={() => setShowPathway(v => !v)}
+            style={{
+              borderRadius: 18,
+              overflow: 'hidden',
+              shadowColor: colors.primary[700],
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.18,
+              shadowRadius: 12,
+              elevation: 4,
+            }}
+          >
+            <LinearGradient
+              colors={[colors.primary[600], colors.primary[500]]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flexDirection: 'row', alignItems: 'center', padding: 20 }}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-                <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: phase.accent + '30', alignItems: 'center', justifyContent: 'center', marginRight: 14, borderWidth: 1, borderColor: phase.accent + '60' }}>
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: phase.accent, fontSize: 13, letterSpacing: 0.5 }}>{phase.number}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 18 }}>{phase.label}</Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.55)', fontSize: 12, marginTop: 2 }}>{phase.subtitle}</Text>
+              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginRight: 14 }}>
+                <Award size={20} color={colors.gold[300]} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 18 }}>
+                  Certification Pathway
+                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 2 }}>
+                  Foundation · Exploration · Demonstration
+                </Text>
+              </View>
+              {showPathway
+                ? <ChevronUp size={20} color="rgba(255,255,255,0.7)" />
+                : <ChevronDown size={20} color="rgba(255,255,255,0.7)" />}
+            </LinearGradient>
+
+            {showPathway && (
+              <View style={{ backgroundColor: colors.primary[700], padding: 4 }}>
+                {CERTIFICATION_PHASES.map((phase, i) => (
+                  <View
+                    key={phase.label}
+                    style={{
+                      margin: 8,
+                      marginTop: i === 0 ? 8 : 4,
+                      borderRadius: 14,
+                      overflow: 'hidden',
+                      borderWidth: 1,
+                      borderColor: 'rgba(255,255,255,0.1)',
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16, backgroundColor: 'rgba(255,255,255,0.07)' }}>
+                      <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: phase.accent + '30', alignItems: 'center', justifyContent: 'center', marginRight: 14, borderWidth: 1, borderColor: phase.accent + '60' }}>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: phase.accent, fontSize: 12 }}>{phase.number}</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 16 }}>{phase.label}</Text>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.55)', fontSize: 12, marginTop: 2 }}>{phase.subtitle}</Text>
+                      </View>
+                    </View>
+                    <View style={{ padding: 16, paddingTop: 12, backgroundColor: 'rgba(0,0,0,0.15)', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)' }}>
+                      {phase.body.split('\n\n').map((para, pi) => (
+                        <Text key={pi} style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 14, lineHeight: 22, marginBottom: pi < phase.body.split('\n\n').length - 1 ? 10 : 0 }}>
+                          {para}
+                        </Text>
+                      ))}
+                    </View>
+                  </View>
+                ))}
+                <View style={{ margin: 8, marginTop: 4, padding: 14, borderRadius: 12, backgroundColor: 'rgba(201,150,60,0.15)', borderWidth: 1, borderColor: colors.gold[600] + '50' }}>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.gold[300], fontSize: 13, lineHeight: 20, textAlign: 'center' }}>
+                    Participation in the Foundation phase does not guarantee certification. Each phase represents a distinct milestone on the path toward becoming a certified practitioner of the Physical Language.
+                  </Text>
                 </View>
               </View>
-              {phase.body.split('\n\n').map((para, pi) => (
-                <Text key={pi} style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 14, lineHeight: 22, marginBottom: pi < phase.body.split('\n\n').length - 1 ? 12 : 0 }}>
-                  {para}
-                </Text>
-              ))}
-            </View>
-          ))}
-        </View>
-
-        <View style={{ marginTop: 40, padding: 20, borderRadius: 14, backgroundColor: 'rgba(201,150,60,0.15)', borderWidth: 1, borderColor: colors.gold[600] + '60', maxWidth: 600, alignSelf: 'center', width: '100%' }}>
-          <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.gold[300], fontSize: 14, lineHeight: 22, textAlign: 'center' }}>
-            Participation in the Foundation phase does not guarantee certification. Each phase represents a distinct milestone on the path toward becoming a certified practitioner of the Physical Language.
-          </Text>
+            )}
+          </Pressable>
         </View>
       </View>
 
