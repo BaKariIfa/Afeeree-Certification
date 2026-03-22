@@ -24,7 +24,9 @@
         "EXPO_PUBLIC_VIBECODE_REVENUECAT_TEST_KEY": "test_dsXJYhDHZnInDTQquvZrZGUUhVD",
         "EXPO_PUBLIC_VIBECODE_BACKEND_URL": "https://crimson-pottery.vibecode.run",
         "EXPO_PUBLIC_VIBECODE_OPENAI_API_KEY": "sk-proj-anielepohng9eing5Ol6Phex3oin9geg-n0tr3al",
-        "EXPO_PUBLIC_SQUARE_LOCATION_ID": "LQ8MTKJ9Q82Z9"
+        "EXPO_PUBLIC_SQUARE_LOCATION_ID": "LQ8MTKJ9Q82Z9",
+        "GRADLE_OPTS": "-Xmx4g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError",
+        "JAVA_TOOL_OPTIONS": "-Xmx4g"
       },
       "ios": {
         "distribution": "store"
