@@ -31,6 +31,7 @@ import { useNotationStore } from '@/lib/notationStore';
 import { useResourcesStore } from '@/lib/resourcesStore';
 import { uploadFile } from '@/lib/upload';
 import { colors } from '@/lib/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 import { mockModules } from '@/lib/mockData';
 import { NotificationToast, type ToastData } from '@/components/NotificationToast';
 import { VoiceNoteRecorder } from '@/components/VoiceNoteRecorder';
@@ -1310,427 +1311,263 @@ export default function AdminScreen() {
 
   // ── Dashboard ──
   return (
-    <View style={{ flex: 1, backgroundColor: colors.cream[100] }}>
+    <View style={{ flex: 1, backgroundColor: '#F7F7F5' }}>
       <NotificationToast toast={toast} onDismiss={() => setToast(null)} />
+
       {/* Header */}
-      <View style={{
-        paddingTop: insets.top + 16,
-        paddingBottom: 20,
-        paddingHorizontal: 24,
-        backgroundColor: colors.primary[500],
-      }}>
+      <LinearGradient
+        colors={[colors.primary[600], colors.primary[500]]}
+        style={{
+          paddingTop: insets.top + 12,
+          paddingBottom: 24,
+          paddingHorizontal: 20,
+        }}
+      >
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Pressable onPress={() => router.back()} style={{ padding: 8, marginLeft: -8, marginRight: 12 }}>
-              <ArrowLeft size={24} color="white" />
+            <Pressable onPress={() => router.back()} style={{ padding: 8, marginLeft: -8, marginRight: 10 }}>
+              <ArrowLeft size={22} color="rgba(255,255,255,0.8)" />
             </Pressable>
-            <ShieldCheck size={22} color={colors.gold[400]} />
-            <View style={{ marginLeft: 8 }}>
+            <View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 15 }}>
                 JELI - Keeper of the Legacy
               </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 1, letterSpacing: 1.5, textTransform: 'uppercase' }}>
                 Panel
               </Text>
             </View>
           </View>
+          <ShieldCheck size={20} color={colors.gold[400]} />
         </View>
-      </View>
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
-
-        {/* Stats row */}
-        <Animated.View entering={FadeInDown.duration(400)} style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
-          <View style={{ flex: 1, backgroundColor: 'white', borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <Key size={18} color={colors.primary[500]} />
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 28, marginLeft: 8 }}>{unusedCodes.length}</Text>
-            </View>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>Available Codes</Text>
+        {/* Stats strip */}
+        <View style={{ flexDirection: 'row', marginTop: 20, gap: 10 }}>
+          <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: 14 }}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 26 }}>{unusedCodes.length}</Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 2 }}>Codes Available</Text>
           </View>
-          <View style={{ flex: 1, backgroundColor: 'white', borderRadius: 16, padding: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <Users size={18} color={colors.success} />
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 28, marginLeft: 8 }}>{usedCodes.length}</Text>
-            </View>
-            <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13 }}>Enrolled Users</Text>
+          <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: 14 }}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 26 }}>{usedCodes.length}</Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 2 }}>Enrolled</Text>
           </View>
-        </Animated.View>
+          <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 12, padding: 14 }}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: totalUnread > 0 ? colors.gold[300] : 'white', fontSize: 26 }}>{totalUnread}</Text>
+            <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 2 }}>Unread</Text>
+          </View>
+        </View>
+      </LinearGradient>
 
-        {/* Study Time Overview */}
-        {progressList.length > 0 && (() => {
-          const totalNotationMs = progressList.reduce((sum, p) =>
-            sum + Object.entries(p.lessonStudyTime).filter(([k]) => !k.endsWith('-video')).reduce((s, [, v]) => s + v, 0), 0);
-          const totalVideoMs = progressList.reduce((sum, p) =>
-            sum + Object.entries(p.lessonStudyTime).filter(([k]) => k.endsWith('-video')).reduce((s, [, v]) => s + v, 0), 0);
-          const notationHrs = (totalNotationMs / 3600000).toFixed(1);
-          const videoHrs = (totalVideoMs / 3600000).toFixed(1);
-          return (
-            <Animated.View entering={FadeInDown.duration(400).delay(40)} style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
-              <View style={{ marginBottom: 12 }}>
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[500], fontSize: 11, letterSpacing: 1.1, textTransform: 'uppercase' }}>
-                  Kalandenw{' '}
-                  <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>— Carriers of Tradition</Text>
-                </Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 11, marginTop: 2 }}>Study Time</Text>
-              </View>
-              <View style={{ flexDirection: 'row', gap: 10 }}>
-                <View style={{ flex: 1, backgroundColor: colors.gold[50], borderRadius: 12, padding: 14, alignItems: 'center' }}>
-                  <FileText size={18} color={colors.gold[600]} />
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.gold[700], fontSize: 22, marginTop: 6 }}>{notationHrs}h</Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.gold[600], fontSize: 12, marginTop: 2 }}>Notation Study</Text>
-                </View>
-                <View style={{ flex: 1, backgroundColor: '#EEF2FF', borderRadius: 12, padding: 14, alignItems: 'center' }}>
-                  <Play size={18} color="#6366F1" />
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: '#4F46E5', fontSize: 22, marginTop: 6 }}>{videoHrs}h</Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', color: '#6366F1', fontSize: 12, marginTop: 2 }}>Video Watch</Text>
-                </View>
-                <View style={{ flex: 1, backgroundColor: colors.neutral[50], borderRadius: 12, padding: 14, alignItems: 'center' }}>
-                  <Users size={18} color={colors.neutral[500]} />
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 22, marginTop: 6 }}>{progressList.length}</Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12, marginTop: 2 }}>Kalandenw</Text>
-                </View>
-              </View>
-            </Animated.View>
-          );
-        })()}
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 60 }}>
 
-        {/* Messages Card */}
-        <Animated.View entering={FadeInDown.duration(400).delay(60)}>
+        {/* Action rows */}
+        <Animated.View entering={FadeInDown.duration(350)} style={{ backgroundColor: 'white', borderRadius: 16, overflow: 'hidden', marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 }}>
+
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); fetchUnreadCounts(); setAdminView('messages'); }}
-            style={{
-              backgroundColor: totalUnread > 0 ? colors.primary[500] : 'white',
-              borderRadius: 16,
-              padding: 16,
-              marginBottom: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
-              shadowRadius: 8,
-              elevation: 2,
-            }}
+            style={{ flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#F3F3F1' }}
           >
-            <View style={{
-              width: 48, height: 48, borderRadius: 24,
-              backgroundColor: totalUnread > 0 ? 'rgba(255,255,255,0.2)' : colors.primary[100],
-              alignItems: 'center', justifyContent: 'center',
-            }}>
-              <MessageCircle size={24} color={totalUnread > 0 ? 'white' : colors.primary[500]} />
+            <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: totalUnread > 0 ? colors.primary[100] : '#F3F3F1', alignItems: 'center', justifyContent: 'center' }}>
+              <MessageCircle size={20} color={totalUnread > 0 ? colors.primary[500] : colors.neutral[400]} />
             </View>
-            <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: totalUnread > 0 ? 'white' : colors.neutral[800], fontSize: 16 }}>
-                Kalanden{' '}
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: totalUnread > 0 ? 'rgba(255,255,255,0.55)' : colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: totalUnread > 0 ? 'rgba(255,255,255,0.8)' : colors.neutral[500], fontSize: 13, marginTop: 2 }}>
-                Messages
-              </Text>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Messages</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Kalanden conversations</Text>
             </View>
             {totalUnread > 0 && (
-              <View style={{ backgroundColor: colors.gold[400], borderRadius: 14, minWidth: 28, height: 28, paddingHorizontal: 8, alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 14 }}>{totalUnread}</Text>
+              <View style={{ backgroundColor: colors.primary[500], borderRadius: 10, minWidth: 22, height: 22, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 11 }}>{totalUnread}</Text>
               </View>
             )}
-            <ChevronRight size={20} color={totalUnread > 0 ? 'rgba(255,255,255,0.6)' : colors.neutral[300]} />
+            <ChevronRight size={18} color={colors.neutral[300]} />
           </Pressable>
-        </Animated.View>
 
-        {/* Submissions Card */}
-        <Animated.View entering={FadeInDown.duration(400).delay(90)}>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); fetchSubmissions(); setAdminView('submissions'); }}
-            style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}
+            style={{ flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#F3F3F1' }}
           >
-            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.gold[100], alignItems: 'center', justifyContent: 'center' }}>
-              <Inbox size={24} color={colors.gold[600]} />
+            <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#FFF8EE', alignItems: 'center', justifyContent: 'center' }}>
+              <Inbox size={20} color={colors.gold[600]} />
             </View>
-            <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
-                Kalanden{' '}
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>Submissions</Text>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Submissions</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Review Kalanden work</Text>
             </View>
-            <ChevronRight size={20} color={colors.neutral[300]} />
+            <ChevronRight size={18} color={colors.neutral[300]} />
           </Pressable>
-        </Animated.View>
 
-        {/* Participant Progress Card */}
-        <Animated.View entering={FadeInDown.duration(400).delay(110)}>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); fetchProgress(); setAdminView('participants'); }}
-            style={{ backgroundColor: colors.primary[500], borderRadius: 16, padding: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', shadowColor: colors.primary[500], shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 4 }}
+            style={{ flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#F3F3F1' }}
           >
-            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' }}>
-              <BarChart2 size={24} color="white" />
+            <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#F0FDF4', alignItems: 'center', justifyContent: 'center' }}>
+              <BarChart2 size={20} color="#16A34A" />
             </View>
-            <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>
-                Kalanden{' '}
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.55)', fontSize: 11 }}>— Carrier of Tradition</Text>
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 4 }}>
-                Progress
-              </Text>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Progress</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Track Kalanden learning</Text>
             </View>
-            <ChevronRight size={20} color="rgba(255,255,255,0.6)" />
+            <ChevronRight size={18} color={colors.neutral[300]} />
           </Pressable>
-        </Animated.View>
 
-        {/* Discussion Forum Card */}
-        <Animated.View entering={FadeInDown.duration(400).delay(115)}>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setAdminView('discussions'); }}
-            style={{ backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: colors.primary[200] }}
+            style={{ flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#F3F3F1' }}
           >
-            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center' }}>
-              <MessageCircle size={24} color={colors.primary[500]} />
+            <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' }}>
+              <MessageCircle size={20} color="#6366F1" />
             </View>
-            <View style={{ flex: 1, marginLeft: 14 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
-                Kalandenw{' '}
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carriers of Tradition</Text>
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>
-                Discussion Forums
-              </Text>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Discussions</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Forum activity</Text>
             </View>
-            <ChevronRight size={20} color={colors.neutral[300]} />
+            <ChevronRight size={18} color={colors.neutral[300]} />
+          </Pressable>
+
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/agreement'); }}
+            style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}
+          >
+            <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#FFF8EE', alignItems: 'center', justifyContent: 'center' }}>
+              <FileText size={20} color={colors.gold[600]} />
+            </View>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Agreement</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Participant agreement</Text>
+            </View>
+            <ChevronRight size={18} color={colors.neutral[300]} />
           </Pressable>
         </Animated.View>
 
-        {/* Notation File Upload */}
-        <Animated.View entering={FadeInDown.duration(400).delay(120)}>
-          <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 18, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
-              <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.gold[100], alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
-                <FileText size={18} color={colors.gold[600]} />
-              </View>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>Notation File</Text>
+        {/* Files */}
+        <Animated.View entering={FadeInDown.duration(350).delay(50)} style={{ backgroundColor: 'white', borderRadius: 16, overflow: 'hidden', marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 }}>
+          <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[400], fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', paddingHorizontal: 16, paddingTop: 14, paddingBottom: 4 }}>Files</Text>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#F3F3F1' }}>
+            <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#FFF8EE', alignItems: 'center', justifyContent: 'center' }}>
+              <FileText size={20} color={colors.gold[600]} />
             </View>
-
-            {notationPdfUrl ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(34,197,94,0.08)', borderRadius: 10, padding: 12, marginBottom: 14 }}>
-                <CheckCircle size={16} color={colors.success} />
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], fontSize: 12, marginLeft: 8, flex: 1 }} numberOfLines={1}>
-                  {notationPdfUrl.split('/').pop()}
-                </Text>
-              </View>
-            ) : (
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 13, marginBottom: 14 }}>
-                No file uploaded yet.
-              </Text>
-            )}
-
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>Notation File</Text>
+              {notationPdfUrl ? (
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: '#16A34A', fontSize: 12, marginTop: 1 }} numberOfLines={1}>Uploaded</Text>
+              ) : (
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Not uploaded</Text>
+              )}
+            </View>
             <Pressable
               onPress={handleUploadNotation}
               disabled={isUploading}
-              style={{
-                backgroundColor: isUploading ? colors.neutral[200] : colors.primary[500],
-                paddingVertical: 13,
-                borderRadius: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              style={{ backgroundColor: isUploading ? colors.neutral[100] : colors.primary[500], paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8 }}
             >
-              {isUploading ? (
-                <ActivityIndicator size="small" color={colors.neutral[500]} />
-              ) : (
-                <>
-                  <Upload size={16} color="white" />
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', marginLeft: 8, fontSize: 14 }}>
-                    {notationPdfUrl ? 'Replace File' : 'Upload Notation File'}
-                  </Text>
-                </>
-              )}
+              {isUploading ? <ActivityIndicator size="small" color={colors.neutral[400]} /> : <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 12 }}>{notationPdfUrl ? 'Replace' : 'Upload'}</Text>}
             </Pressable>
           </View>
-        </Animated.View>
 
-        {/* History Readings Upload */}
-        <Animated.View entering={FadeInDown.duration(400).delay(130)}>
-          <View style={{ backgroundColor: 'white', borderRadius: 16, padding: 18, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
-              <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
-                <BookOpen size={18} color="#6366F1" />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>History Readings</Text>
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 12 }}>History and Context of AFeeree</Text>
-              </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+            <View style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' }}>
+              <BookOpen size={20} color="#6366F1" />
             </View>
-
-            {historyPdfUrl ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(34,197,94,0.08)', borderRadius: 10, padding: 12, marginBottom: 14 }}>
-                <CheckCircle size={16} color={colors.success} />
-                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], fontSize: 12, marginLeft: 8, flex: 1 }} numberOfLines={1}>
-                  {historyPdfUrl.split('/').pop()}
-                </Text>
-              </View>
-            ) : (
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 13, marginBottom: 14 }}>
-                No readings file uploaded yet.
-              </Text>
-            )}
-
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 15 }}>History Readings</Text>
+              {historyPdfUrl ? (
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: '#16A34A', fontSize: 12, marginTop: 1 }}>Uploaded</Text>
+              ) : (
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 1 }}>Not uploaded</Text>
+              )}
+            </View>
             <Pressable
               onPress={handleUploadHistoryPdf}
               disabled={isUploadingHistory}
-              style={{
-                backgroundColor: isUploadingHistory ? colors.neutral[200] : '#6366F1',
-                paddingVertical: 13,
-                borderRadius: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              style={{ backgroundColor: isUploadingHistory ? colors.neutral[100] : '#6366F1', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8 }}
             >
-              {isUploadingHistory ? (
-                <ActivityIndicator size="small" color={colors.neutral[500]} />
-              ) : (
-                <>
-                  <Upload size={16} color="white" />
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', marginLeft: 8, fontSize: 14 }}>
-                    {historyPdfUrl ? 'Replace Readings File' : 'Upload Readings File'}
-                  </Text>
-                </>
-              )}
+              {isUploadingHistory ? <ActivityIndicator size="small" color={colors.neutral[400]} /> : <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 12 }}>{historyPdfUrl ? 'Replace' : 'Upload'}</Text>}
             </Pressable>
           </View>
         </Animated.View>
 
-        {/* Participant Agreement Card */}
-        <Animated.View entering={FadeInDown.duration(400).delay(105)}>
-          <Pressable
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/agreement'); }}
-            style={{
-              backgroundColor: 'white',
-              borderRadius: 16,
-              padding: 16,
-              marginBottom: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.06,
-              shadowRadius: 8,
-              elevation: 2,
-            }}
-          >
-            <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.gold[100], alignItems: 'center', justifyContent: 'center', marginRight: 14 }}>
-              <FileText size={22} color={colors.gold[600]} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[800], fontSize: 16 }}>
-                Kalanden{' '}
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 4 }}>Agreement</Text>
-            </View>
-            <ChevronRight size={18} color={colors.neutral[400]} />
-          </Pressable>
-        </Animated.View>
-
-        {/* Generate Code Button */}
-        <Animated.View entering={FadeInDown.duration(400).delay(180)}>
+        {/* Generate Code */}
+        <Animated.View entering={FadeInDown.duration(350).delay(100)}>
           <Pressable
             onPress={handleGenerateCode}
             style={{
               backgroundColor: colors.gold[500],
-              paddingVertical: 16,
-              borderRadius: 16,
+              paddingVertical: 15,
+              borderRadius: 14,
               alignItems: 'center',
               flexDirection: 'row',
               justifyContent: 'center',
               marginBottom: 20,
-              shadowColor: colors.gold[500],
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 4,
             }}
           >
-            <Plus size={22} color="white" />
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16, marginLeft: 8 }}>
-              Generate New Code
+            <Plus size={20} color="white" />
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 15, marginLeft: 8 }}>
+              Generate Access Code
             </Text>
           </Pressable>
         </Animated.View>
 
         {/* Available Codes */}
         {unusedCodes.length > 0 && (
-          <Animated.View entering={FadeInDown.duration(400).delay(240)}>
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 }}>
+          <Animated.View entering={FadeInDown.duration(350).delay(140)}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[400], fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 10 }}>
               Available Codes
             </Text>
-            {unusedCodes.map(item => (
-              <View
-                key={item.code}
-                style={{
-                  backgroundColor: 'white', borderRadius: 14, padding: 16, marginBottom: 10,
-                  flexDirection: 'row', alignItems: 'center',
-                  shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[500], fontSize: 18, letterSpacing: 2 }}>{item.code}</Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 2 }}>
-                    Created {new Date(item.createdAt).toLocaleDateString()}
-                  </Text>
+            <View style={{ backgroundColor: 'white', borderRadius: 16, overflow: 'hidden', marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 }}>
+              {unusedCodes.map((item, idx) => (
+                <View
+                  key={item.code}
+                  style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: idx < unusedCodes.length - 1 ? 1 : 0, borderBottomColor: '#F3F3F1' }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.primary[500], fontSize: 16, letterSpacing: 2 }}>{item.code}</Text>
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 2 }}>
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', gap: 6 }}>
+                    <Pressable onPress={() => handleCopyCode(item.code)} style={{ backgroundColor: '#F3F3F1', padding: 8, borderRadius: 8 }}>
+                      {copiedCode === item.code ? <Check size={16} color="#16A34A" /> : <Copy size={16} color={colors.neutral[500]} />}
+                    </Pressable>
+                    <Pressable onPress={() => handleShareCode(item.code)} style={{ backgroundColor: colors.primary[50], padding: 8, borderRadius: 8 }}>
+                      <Share2 size={16} color={colors.primary[500]} />
+                    </Pressable>
+                    <Pressable onPress={() => handleDeleteCode(item.code)} style={{ backgroundColor: '#FEF2F2', padding: 8, borderRadius: 8 }}>
+                      <Trash2 size={16} color={colors.error} />
+                    </Pressable>
+                  </View>
                 </View>
-                <View style={{ flexDirection: 'row', gap: 8 }}>
-                  <Pressable onPress={() => handleCopyCode(item.code)} style={{ backgroundColor: colors.neutral[100], padding: 10, borderRadius: 10 }}>
-                    {copiedCode === item.code ? <Check size={18} color={colors.success} /> : <Copy size={18} color={colors.neutral[600]} />}
-                  </Pressable>
-                  <Pressable onPress={() => handleShareCode(item.code)} style={{ backgroundColor: colors.primary[100], padding: 10, borderRadius: 10 }}>
-                    <Share2 size={18} color={colors.primary[500]} />
-                  </Pressable>
-                  <Pressable onPress={() => handleDeleteCode(item.code)} style={{ backgroundColor: 'rgba(239,68,68,0.1)', padding: 10, borderRadius: 10 }}>
-                    <Trash2 size={18} color={colors.error} />
-                  </Pressable>
-                </View>
-              </View>
-            ))}
+              ))}
+            </View>
           </Animated.View>
         )}
 
-        {/* Used Codes */}
+        {/* Enrolled */}
         {usedCodes.length > 0 && (
-          <Animated.View entering={FadeInDown.duration(400).delay(300)}>
-            <View style={{ marginBottom: 12, marginTop: 8 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                Kalandenw{' '}
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11, textTransform: 'none', letterSpacing: 0 }}>— Carriers of Tradition</Text>
-              </Text>
-              <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 13, marginTop: 2 }}>Enrolled</Text>
+          <Animated.View entering={FadeInDown.duration(350).delay(180)}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[400], fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 10 }}>
+              Enrolled Kalandenw
+            </Text>
+            <View style={{ backgroundColor: 'white', borderRadius: 16, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 }}>
+              {usedCodes.map((item, idx) => (
+                <View
+                  key={item.code}
+                  style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: idx < usedCodes.length - 1 ? 1 : 0, borderBottomColor: '#F3F3F1' }}
+                >
+                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                    <User size={18} color={colors.primary[500]} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 14 }}>
+                      {item.userName ?? item.usedBy}
+                    </Text>
+                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 11, marginTop: 1 }}>
+                      {item.code} · {item.usedAt ? new Date(item.usedAt).toLocaleDateString() : ''}
+                    </Text>
+                  </View>
+                  <CheckCircle size={16} color="#16A34A" />
+                </View>
+              ))}
             </View>
-            {usedCodes.map(item => (
-              <View
-                key={item.code}
-                style={{
-                  backgroundColor: colors.neutral[50], borderRadius: 14, padding: 16, marginBottom: 10,
-                  flexDirection: 'row', alignItems: 'center',
-                  borderWidth: 1, borderColor: colors.neutral[100],
-                }}
-              >
-                <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary[100], alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                  <User size={20} color={colors.primary[500]} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: colors.neutral[700], fontSize: 15 }}>
-                    {item.userName ?? item.usedBy}
-                  </Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[400], fontSize: 12, marginTop: 2 }}>
-                    {item.code} · Joined {item.usedAt ? new Date(item.usedAt).toLocaleDateString() : ''}
-                  </Text>
-                </View>
-                <CheckCircle size={18} color={colors.success} />
-              </View>
-            ))}
           </Animated.View>
         )}
       </ScrollView>
