@@ -477,10 +477,10 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                 style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white' }}
                 className="text-xl"
               >
-                JELI
+                JELI - Keeper of the Legacy
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
-                Keeper Of the Legacy Panel
+                Panel
               </Text>
             </View>
           </View>
@@ -502,7 +502,7 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
               </View>
 
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800] }} className="text-xl text-center mb-2">
-              JELI Panel
+              JELI - Keeper of the Legacy
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500] }} className="text-sm text-center mb-6">
                 Enter the admin password to manage access codes

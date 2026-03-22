@@ -108,8 +108,8 @@ export default function AdminScreen() {
             <View style={{ width: 80, height: 80, backgroundColor: 'rgba(245, 158, 11, 0.2)', borderRadius: 40, alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
               <Lock size={40} color="#F59E0B" />
             </View>
-            <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>JELI</Text>
-            <Text style={{ color: '#9CA3AF', fontSize: 12, marginTop: 2 }}>Keeper of the Legacy Panel</Text>
+            <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>JELI - Keeper of the Legacy</Text>
+            <Text style={{ color: '#9CA3AF', fontSize: 12, marginTop: 2 }}>Panel</Text>
             <Text style={{ color: '#9CA3AF', marginTop: 8 }}>Enter password to continue</Text>
           </View>
 
@@ -137,8 +137,8 @@ export default function AdminScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#111827' }}>
       <View style={{ paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#1F2937' }}>
-        <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>JELI</Text>
-        <Text style={{ color: '#9CA3AF', fontSize: 12, marginTop: 2 }}>Keeper of the Legacy Panel</Text>
+        <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>JELI - Keeper of the Legacy</Text>
+        <Text style={{ color: '#9CA3AF', fontSize: 12, marginTop: 2 }}>Panel</Text>
       </View>
 
       <ScrollView style={{ flex: 1, paddingHorizontal: 16, maxWidth: 600, alignSelf: 'center', width: '100%' }}>

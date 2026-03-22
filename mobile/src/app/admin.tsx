@@ -425,10 +425,10 @@ export default function AdminScreen() {
             <ShieldCheck size={22} color={colors.gold[400]} />
             <View style={{ marginLeft: 8 }}>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 22 }}>
-                JELI
+                JELI - Keeper of the Legacy
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
-                Keeper of the Legacy Panel
+                Panel
               </Text>
             </View>
           </View>
@@ -451,10 +451,10 @@ export default function AdminScreen() {
                 <Lock size={40} color={colors.gold[600]} />
               </View>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 28, marginBottom: 4 }}>
-                JELI
+                JELI - Keeper of the Legacy
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 14, marginBottom: 8 }}>
-                Keeper of the Legacy Panel
+                Panel
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[500], fontSize: 15, textAlign: 'center', lineHeight: 22 }}>
                 Enter your password to manage the AFeeree program
@@ -1327,10 +1327,10 @@ export default function AdminScreen() {
             <ShieldCheck size={22} color={colors.gold[400]} />
             <View style={{ marginLeft: 8 }}>
               <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 24 }}>
-                JELI
+                JELI - Keeper of the Legacy
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
-                Keeper of the Legacy Panel
+                Panel
               </Text>
             </View>
           </View>
