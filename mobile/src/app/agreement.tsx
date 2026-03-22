@@ -95,6 +95,35 @@ const CLAUSES = [
   },
 ];
 
+/** Renders a body string with "Kalandenw" and "Kalanden" styled inline. */
+function renderBody(text: string, baseColor: string) {
+  // Split on Kalandenw first (longer match), then Kalanden
+  const parts = text.split(/(Kalandenw|Kalanden)/g);
+  return (
+    <Text style={{ fontFamily: 'DMSans_400Regular', color: baseColor, lineHeight: 22, fontSize: 14 }}>
+      {parts.map((part, i) => {
+        if (part === 'Kalandenw') {
+          return (
+            <Text key={i}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: baseColor }}>Kalandenw</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: baseColor, fontSize: 12, opacity: 0.65 }}>{' '}— Carriers of Tradition</Text>
+            </Text>
+          );
+        }
+        if (part === 'Kalanden') {
+          return (
+            <Text key={i}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', color: baseColor }}>Kalanden</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: baseColor, fontSize: 12, opacity: 0.65 }}>{' '}— Carrier of Tradition</Text>
+            </Text>
+          );
+        }
+        return <Text key={i}>{part}</Text>;
+      })}
+    </Text>
+  );
+}
+
 export default function AgreementScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -271,7 +300,9 @@ export default function AgreementScreen() {
               <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Date: </Text>{TODAY}
             </Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700], fontSize: 14, marginTop: 4 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Kalanden: </Text>{name || '[Kalanden]'}
+              <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Kalanden</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[500], fontSize: 12 }}> — Carrier of Tradition: </Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular' }}>{name || '[Kalanden]'}</Text>
             </Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[700], fontSize: 14, marginTop: 4 }}>
               <Text style={{ fontFamily: 'DMSans_600SemiBold' }}>Organisation: </Text>AFeeree Dance Arts / BaKari IfaSegun Lindsay
@@ -333,9 +364,7 @@ export default function AgreementScreen() {
                     </Text>
                   </Pressable>
                   <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-                    <Text style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], lineHeight: 22, fontSize: 14 }}>
-                      {clause.body}
-                    </Text>
+                    {renderBody(clause.body, colors.neutral[600])}
                   </View>
                 </View>
               </Animated.View>
