@@ -4,7 +4,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BookOpen, Trophy, Clock, ChevronRight, Bell, Home, FileText, User, Library, MessageCircle, CreditCard, ArrowRight, ClipboardList } from 'lucide-react-native';
+import { BookOpen, Trophy, Clock, ChevronRight, Bell, Home, FileText, User, Library, MessageCircle, CreditCard, ArrowRight, ClipboardList, ChevronDown, ChevronUp, Award } from 'lucide-react-native';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
@@ -19,6 +19,30 @@ import DemoBanner from '@/components/DemoBanner';
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL ?? process.env.EXPO_PUBLIC_VIBECODE_BACKEND_URL ?? '';
 
+const CERTIFICATION_PHASES = [
+  {
+    number: '01',
+    label: 'Foundation',
+    subtitle: 'An Introduction to the Physical Language',
+    body: 'The Foundation phase is your entry point into AFeeree\'s Physical Language. You will be introduced to the core vocabulary, concepts, and movement principles that form the bedrock of this practice. Through guided study and structured exploration, you will develop an initial understanding of the research traditions, cultural context, and pedagogical frameworks that inform AFeeree\'s approach.\n\nThis phase is designed to ground you in the fundamentals — building the awareness, curiosity, and discipline needed to advance. Completion of the Foundation phase is not a guarantee of certification; rather, it is the beginning of a journey, offering the knowledge and experience necessary to progress towards the next level of the programme.',
+    accent: '#C9963C',
+  },
+  {
+    number: '02',
+    label: 'Exploration',
+    subtitle: 'Deepening Into Principles and Practice',
+    body: 'The Exploration phase takes you deeper into the heart of the Physical Language. You will immerse yourself in the seven core principles of AFeeree and develop a nuanced understanding of body attitude — the relationship between presence, intention, and physicality that defines this practice.\n\nThis phase introduces you to the art of teaching and creating within the language. You will begin to find your own voice, applying what you have learned in ways that are both personal and grounded in tradition. Through this process of discovery, you will develop the tools, insight, and creative capacity needed to share the Physical Language with others.',
+    accent: '#7C6E5A',
+  },
+  {
+    number: '03',
+    label: 'Demonstration',
+    subtitle: 'Embodying Mastery Through Teaching and Creation',
+    body: 'The Demonstration phase is the culmination of your certification journey. Here, you are called upon to show mastery — to articulately teach and guide others through the Physical Language with clarity, confidence, and depth. You will create, perform, and present work that is expressive of and fully supported by AFeeree\'s principles.\n\nThis phase is not simply an assessment. It is a declaration of your readiness to carry and transmit the Physical Language as a certified practitioner. Through performance and pedagogy, you will demonstrate that the language lives not only in your body, but in your capacity to awaken it in others.',
+    accent: '#3A5A4A',
+  },
+];
+
 // Helper function for haptic feedback on button press
 const triggerHaptic = () => {
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -29,6 +53,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPathway, setShowPathway] = useState(false);
 
   const userName = useUserStore(s => s.name);
   const isOnboarded = useUserStore(s => s.isOnboarded);
@@ -299,6 +324,91 @@ export default function HomeScreen() {
               <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[400], fontSize: 11 }}>— Carrier of Tradition</Text>
             </Text>
           </View>
+        </Animated.View>
+
+        {/* Certification Pathway */}
+        <Animated.View entering={FadeInDown.duration(600).delay(230)} className="px-6 mt-5">
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setShowPathway(v => !v); }}
+            style={{
+              borderRadius: 16,
+              overflow: 'hidden',
+              shadowColor: colors.primary[700],
+              shadowOffset: { width: 0, height: 3 },
+              shadowOpacity: 0.12,
+              shadowRadius: 10,
+              elevation: 3,
+            }}
+          >
+            <LinearGradient
+              colors={[colors.primary[600], colors.primary[500]]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}
+            >
+              <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                <Award size={18} color={colors.gold[300]} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 16 }}>
+                  Certification Pathway
+                </Text>
+                <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 1 }}>
+                  Foundation · Exploration · Demonstration
+                </Text>
+              </View>
+              {showPathway
+                ? <ChevronUp size={18} color="rgba(255,255,255,0.7)" />
+                : <ChevronDown size={18} color="rgba(255,255,255,0.7)" />}
+            </LinearGradient>
+
+            {showPathway && (
+              <View style={{ backgroundColor: 'white', padding: 4 }}>
+                {CERTIFICATION_PHASES.map((phase, i) => (
+                  <View
+                    key={phase.label}
+                    style={{
+                      margin: 8,
+                      marginTop: i === 0 ? 8 : 4,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: colors.neutral[100],
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14, backgroundColor: colors.neutral[50] }}>
+                      <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: phase.accent + '18', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', color: phase.accent, fontSize: 11, letterSpacing: 0.5 }}>{phase.number}</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: colors.neutral[800], fontSize: 15 }}>
+                          {phase.label}
+                        </Text>
+                        <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.neutral[500], fontSize: 12, marginTop: 1 }}>
+                          {phase.subtitle}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={{ padding: 14, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.neutral[100] }}>
+                      {phase.body.split('\n\n').map((para, pi) => (
+                        <Text
+                          key={pi}
+                          style={{ fontFamily: 'DMSans_400Regular', color: colors.neutral[600], fontSize: 13, lineHeight: 20, marginBottom: pi < phase.body.split('\n\n').length - 1 ? 10 : 0 }}
+                        >
+                          {para}
+                        </Text>
+                      ))}
+                    </View>
+                  </View>
+                ))}
+                <View style={{ marginHorizontal: 8, marginBottom: 8, marginTop: 4, padding: 12, borderRadius: 10, backgroundColor: colors.gold[50], borderWidth: 1, borderColor: colors.gold[200] }}>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.primary[700], fontSize: 12, lineHeight: 18, textAlign: 'center' }}>
+                    Participation in the Foundation phase does not guarantee certification. Each phase represents a distinct milestone on the path toward becoming a certified practitioner of the Physical Language.
+                  </Text>
+                </View>
+              </View>
+            )}
+          </Pressable>
         </Animated.View>
 
         {/* Continue Learning Section */}
