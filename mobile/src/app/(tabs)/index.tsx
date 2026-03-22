@@ -292,7 +292,7 @@ export default function HomeScreen() {
               </View>
               <View className="flex-1">
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', color: 'white', fontSize: 16 }}>
-                  Introductory Course — Enrol Now
+                  Foundation Course — Enrol Now
                 </Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 }}>
                   Towards certification — $600 CAD

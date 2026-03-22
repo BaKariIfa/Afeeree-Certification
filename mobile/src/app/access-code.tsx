@@ -293,7 +293,7 @@ export default function AccessCodeScreen() {
                       style={{ fontFamily: 'DMSans_600SemiBold', color: 'white' }}
                       className="text-sm ml-2"
                     >
-                      Introductory Course — Enrol Now
+                      Foundation Course — Enrol Now
                     </Text>
                   </Pressable>
                 </View>
