@@ -12,12 +12,38 @@ import {
   Check,
   Star,
   ArrowRight,
-  Key
+  Key,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react-native';
 import { useFonts, PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
 
 import { colors } from '@/lib/theme';
+
+const CERTIFICATION_PHASES = [
+  {
+    number: '01',
+    label: 'Foundation',
+    subtitle: 'An Introduction to the Physical Language',
+    body: 'The Foundation phase is your entry point into AFeeree\'s Physical Language. You will be introduced to the core vocabulary, concepts, and movement principles that form the bedrock of this practice. Through guided study and structured exploration, you will develop an initial understanding of the research traditions, cultural context, and pedagogical frameworks that inform AFeeree\'s approach.\n\nThis phase is designed to ground you in the fundamentals — building the awareness, curiosity, and discipline needed to advance. Completion of the Foundation phase is not a guarantee of certification; rather, it is the beginning of a journey, offering the knowledge and experience necessary to progress towards the next level of the programme.',
+    accent: '#C9963C',
+  },
+  {
+    number: '02',
+    label: 'Exploration',
+    subtitle: 'Deepening Into Principles and Practice',
+    body: 'The Exploration phase takes you deeper into the heart of the Physical Language. You will immerse yourself in the seven core principles of AFeeree and develop a nuanced understanding of body attitude — the relationship between presence, intention, and physicality that defines this practice.\n\nThis phase introduces you to the art of teaching and creating within the language. You will begin to find your own voice, applying what you have learned in ways that are both personal and grounded in tradition. Through this process of discovery, you will develop the tools, insight, and creative capacity needed to share the Physical Language with others.',
+    accent: '#7C6E5A',
+  },
+  {
+    number: '03',
+    label: 'Demonstration',
+    subtitle: 'Embodying Mastery Through Teaching and Creation',
+    body: 'The Demonstration phase is the culmination of your certification journey. Here, you are called upon to show mastery — to articulately teach and guide others through the Physical Language with clarity, confidence, and depth. You will create, perform, and present work that is expressive of and fully supported by AFeeree\'s principles.\n\nThis phase is not simply an assessment. It is a declaration of your readiness to carry and transmit the Physical Language as a certified practitioner. Through performance and pedagogy, you will demonstrate that the language lives not only in your body, but in your capacity to awaken it in others.',
+    accent: '#3A5A4A',
+  },
+];
 
 export default function LandingPage() {
   const router = useRouter();
@@ -329,6 +355,56 @@ export default function LandingPage() {
               </Text>
             </View>
           ))}
+        </View>
+      </View>
+
+      {/* Certification Pathway Section */}
+      <View style={{ padding: 24, paddingVertical: 60, backgroundColor: colors.primary[700] }}>
+        <Text style={{ fontFamily: 'DMSans_500Medium', color: colors.gold[400], fontSize: 13, letterSpacing: 2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 8 }}>
+          Your Journey
+        </Text>
+        <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 28, textAlign: 'center', marginBottom: 8, lineHeight: 36 }}>
+          Certification Pathway
+        </Text>
+        <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.7)', fontSize: 15, textAlign: 'center', marginBottom: 48, maxWidth: 520, alignSelf: 'center', lineHeight: 24 }}>
+          Becoming a certified practitioner of the Physical Language unfolds across three distinct phases, each building on the last.
+        </Text>
+
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, justifyContent: 'center', maxWidth: 1000, alignSelf: 'center', width: '100%' }}>
+          {CERTIFICATION_PHASES.map((phase) => (
+            <View
+              key={phase.label}
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.07)',
+                borderRadius: 20,
+                padding: 28,
+                width: 300,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.12)',
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: phase.accent + '30', alignItems: 'center', justifyContent: 'center', marginRight: 14, borderWidth: 1, borderColor: phase.accent + '60' }}>
+                  <Text style={{ fontFamily: 'DMSans_600SemiBold', color: phase.accent, fontSize: 13, letterSpacing: 0.5 }}>{phase.number}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white', fontSize: 18 }}>{phase.label}</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: 'rgba(255,255,255,0.55)', fontSize: 12, marginTop: 2 }}>{phase.subtitle}</Text>
+                </View>
+              </View>
+              {phase.body.split('\n\n').map((para, pi) => (
+                <Text key={pi} style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.75)', fontSize: 14, lineHeight: 22, marginBottom: pi < phase.body.split('\n\n').length - 1 ? 12 : 0 }}>
+                  {para}
+                </Text>
+              ))}
+            </View>
+          ))}
+        </View>
+
+        <View style={{ marginTop: 40, padding: 20, borderRadius: 14, backgroundColor: 'rgba(201,150,60,0.15)', borderWidth: 1, borderColor: colors.gold[600] + '60', maxWidth: 600, alignSelf: 'center', width: '100%' }}>
+          <Text style={{ fontFamily: 'DMSans_400Regular', fontStyle: 'italic', color: colors.gold[300], fontSize: 14, lineHeight: 22, textAlign: 'center' }}>
+            Participation in the Foundation phase does not guarantee certification. Each phase represents a distinct milestone on the path toward becoming a certified practitioner of the Physical Language.
+          </Text>
         </View>
       </View>
 
