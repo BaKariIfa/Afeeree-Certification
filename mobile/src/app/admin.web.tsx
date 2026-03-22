@@ -109,7 +109,7 @@ export default function AdminScreen() {
               <Lock size={40} color="#F59E0B" />
             </View>
             <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>JELI Panel</Text>
-            <Text style={{ color: '#9CA3AF', fontSize: 12, marginTop: 2 }}>AFeeree Certification</Text>
+            <Text style={{ color: '#9CA3AF', fontSize: 12, marginTop: 2 }}>Keeper Of the Legacy</Text>
             <Text style={{ color: '#9CA3AF', marginTop: 8 }}>Enter password to continue</Text>
           </View>
 
@@ -138,7 +138,7 @@ export default function AdminScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#111827' }}>
       <View style={{ paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#1F2937' }}>
         <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>JELI Panel</Text>
-        <Text style={{ color: '#9CA3AF', fontSize: 12, marginTop: 2 }}>AFeeree Certification</Text>
+        <Text style={{ color: '#9CA3AF', fontSize: 12, marginTop: 2 }}>Keeper Of the Legacy</Text>
       </View>
 
       <ScrollView style={{ flex: 1, paddingHorizontal: 16, maxWidth: 600, alignSelf: 'center', width: '100%' }}>

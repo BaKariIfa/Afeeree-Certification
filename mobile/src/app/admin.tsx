@@ -428,7 +428,7 @@ export default function AdminScreen() {
                 JELI Panel
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
-                AFeeree Certification
+                Keeper Of the Legacy
               </Text>
             </View>
           </View>
@@ -1327,7 +1327,7 @@ export default function AdminScreen() {
                 JELI Panel
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
-                AFeeree Certification
+                Keeper Of the Legacy
               </Text>
             </View>
           </View>
