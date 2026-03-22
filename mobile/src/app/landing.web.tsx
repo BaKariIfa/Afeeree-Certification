@@ -523,7 +523,7 @@ export default function LandingPage() {
               fontSize: 12,
             }}
           >
-            JELI Panel
+            JELI - Keeper of the Legacy Panel
           </Text>
         </Pressable>
       </View>

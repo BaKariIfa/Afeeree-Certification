@@ -477,10 +477,10 @@ export function AdminPanel({ visible, onClose }: AdminPanelProps) {
                 style={{ fontFamily: 'PlayfairDisplay_700Bold', color: 'white' }}
                 className="text-xl"
               >
-                JELI Panel
+                JELI
               </Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 1 }}>
-                Keeper Of the Legacy
+                Keeper Of the Legacy Panel
               </Text>
             </View>
           </View>
